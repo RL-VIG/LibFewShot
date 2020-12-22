@@ -1,0 +1,16 @@
+train_episode: 1000
+test_episode: 200
+
+save_part:
+  - model_func
+
+# arch info
+backbone:
+  name: Conv64FLeakyReLU
+  kwargs:
+    is_flatten: False
+
+classifier:
+  name: DN4
+  kwargs:
+    n_k: 3
