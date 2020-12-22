@@ -1,0 +1,64 @@
+data_name: miniImageNet
+
+# base info
+way_num: 5
+shot_num: 5
+query_num: 15
+
+# data info
+data_root: /data/dcq/DataSets/miniImageNet
+image_size: 84
+augment: False
+train_episode: 10000
+test_episode: 1000
+
+# train info
+epoch: 50
+
+
+# optimizer info
+optimizer:
+  name: Adam
+  kwargs:
+    lr: 0.001
+  other:
+    model_func: 0.001
+
+# lr_scheduler info
+lr_scheduler:
+  name: StepLR
+  kwargs:
+    gamma: 0.5
+    step_size: 10
+
+
+# result info
+result_root: ./results
+save_interval: 10
+save_part:
+  - model_func
+  - relation_layer
+
+# log info
+log_level: info
+log_interval: 100
+
+# gpu info
+n_gpu: 1
+seed: 0
+deterministic: True
+
+
+# arch info
+backbone:
+  name: Conv64FLeakyReLU
+  kwargs:
+    is_flatten: False
+
+classifier:
+  name: RelationNet
+  kwargs:
+    feat_dim: 64
+    feat_height: 3
+    feat_width: 3
+
