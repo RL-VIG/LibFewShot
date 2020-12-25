@@ -53,7 +53,7 @@ def get_dataloader(config, mode='train'):
     collate_fn = get_collate_fn(config, trfms)
     # collate_fn = None
     dataloader = DataLoader(
-        dataset, batch_size=1, shuffle=False,
-        num_workers=config['n_gpu'] * 4, drop_last=True, collate_fn=collate_fn, pin_memory=True)
+            dataset, batch_size=1, shuffle=True,
+            num_workers=config['n_gpu'] * 4, drop_last=True, collate_fn=collate_fn, pin_memory=True)
 
     return dataloader
