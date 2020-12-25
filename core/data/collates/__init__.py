@@ -1,7 +1,7 @@
 from .collate_fns import *
 
 method_dict = {
-    'vanilla': VanillaCollateFn,  # can't access, replace it
+    'sample5': SampleFiveTimesAugCollateFn,  # can't access, replace it
 }
 
 
