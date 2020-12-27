@@ -1,5 +1,5 @@
 # Custom files
-.DStore
+.DS_Store
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

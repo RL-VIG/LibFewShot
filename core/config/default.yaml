@@ -8,7 +8,7 @@ query_num: 15
 # data info
 data_root: /data/wzy/miniImageNet--ravi
 image_size: 84
-augment: True
+augment: False
 augment_method: sample5
 train_episode: 10000
 test_episode: 1000
