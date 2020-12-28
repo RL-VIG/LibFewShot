@@ -1,3 +1,5 @@
+import torch
+
 from abc import abstractmethod
 
 from torch import nn
@@ -48,3 +50,9 @@ class AbstractModel(nn.Module):
 
     def _init_network(self):
         init_weights(self, self.init_type)
+
+    def sub_optimizer(self, model, config):
+        kwargs = dict()
+        if config['kwargs'] is not None:
+            kwargs.update(config['kwargs'])
+        return getattr(torch.optim, config['name'])(model.parameters(), **kwargs)
