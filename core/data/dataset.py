@@ -3,7 +3,6 @@ import os
 import random
 
 import numpy as np
-import torch
 from PIL import Image
 
 
@@ -39,7 +38,7 @@ def default_loader(path):
 
 
 class FewShotDataset(object):
-    def __init__(self, data_root="", mode="train", transform=None, loader=default_loader,
+    def __init__(self, data_root="", mode="train", loader=default_loader,
                  gray_loader=gray_loader, episode_num=1000, way_num=5, shot_num=5,
                  query_num=5):
         super(FewShotDataset, self).__init__()
@@ -53,7 +52,6 @@ class FewShotDataset(object):
         self.shot_num = shot_num
         self.query_num = query_num
 
-        self.transform = transform
         self.loader = loader
         self.gray_loader = gray_loader
 
@@ -119,16 +117,12 @@ class FewShotDataset(object):
 
             for query in query_list:
                 temp_image = self.loader(query)
-                if self.transform is not None:
-                    temp_image = self.transform(temp_image)
                 query_images.append(temp_image)
 
             # load support_data images
             support_list = data_files['support_list']
             for support in support_list:
                 temp_image = self.loader(support)
-                if self.transform is not None:
-                    temp_image = self.transform(temp_image)
                 support_images.append(temp_image)
 
             # read the label

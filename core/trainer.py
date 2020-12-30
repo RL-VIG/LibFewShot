@@ -166,7 +166,9 @@ class Trainer(object):
     def _init_model(self, config):
         model_func = get_instance(arch, 'backbone', config)
         model = get_instance(arch, 'classifier', config,
-                             config['way_num'], config['shot_num'], config['query_num'],
+                             config['way_num'],
+                             config['shot_num'] * config['augment_times'],
+                             config['query_num'],
                              model_func, self.device)
 
         self.logger.info(model)
