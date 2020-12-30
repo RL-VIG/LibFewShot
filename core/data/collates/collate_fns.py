@@ -1,6 +1,5 @@
 import itertools
 import torch
-import unittest
 
 
 class VanillaCollateFn(object):
@@ -60,8 +59,8 @@ class SampleFiveTimesAugCollateFn(object):
                 [[target]*self.times for target in support_targets]))
             aug_support_targets = [torch.tensor(
                 [target]) for target in aug_support_targets]
-            unittest.TestCase.assertEqual(
-                len(aug_support_images), len(aug_support_targets))
+            assert len(aug_support_images) == len(
+                aug_support_targets), '图像和标签数量不一致'
             return query_images, query_targets, aug_support_images, aug_support_targets
         except TypeError:
             raise TypeError('不应该在dataset传入transform，在collate_fn传入transform')
