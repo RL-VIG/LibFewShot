@@ -9,6 +9,7 @@ import core.model as arch
 from core.data import get_dataloader
 from core.utils import init_logger, prepare_device, init_seed, AverageMeter, \
     count_parameters, save_model, create_dirs
+from core.utils.utils import _init_sharing_strategy
 
 
 def get_instance(module, name, config, *args):
@@ -158,12 +159,16 @@ class Trainer(object):
         val_loader = get_dataloader(config, 'val')
         test_loader = get_dataloader(config, 'test')
 
+        _init_sharing_strategy()
+
         return train_loader, val_loader, test_loader
 
     def _init_model(self, config):
         model_func = get_instance(arch, 'backbone', config)
         model = get_instance(arch, 'classifier', config,
-                             config['way_num'], config['shot_num'], config['query_num'],
+                             config['way_num'],
+                             config['shot_num'] * config['augment_times'],
+                             config['query_num'],
                              model_func, self.device)
 
         self.logger.info(model)

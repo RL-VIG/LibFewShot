@@ -1,9 +1,0 @@
-#!/bin/bash
-# 简单的deploy代码（覆盖式）
-SERVER_IP="114.212.189.245"
-SERVER_PORT="22"
-LOCAL_PATH=$(pwd)
-USER="wzy"
-REMOTE_PATH="/home/wzy" # REMOTE_PATH/DIR_NAME/
-
-scp -P $SERVER_PORT -vrC $LOCAL_PATH $USER@$SERVER_IP:$REMOTE_PATH
