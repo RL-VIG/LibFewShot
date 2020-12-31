@@ -1,9 +1,10 @@
-import torch
-from torch import nn
 import copy
 
-from core.model.abstract_model import AbstractModel
+import torch
+from torch import nn
+
 from core.utils import accuracy
+from .meta_model import MetaModel
 
 
 class Classifier(nn.Module):
@@ -19,8 +20,9 @@ class Classifier(nn.Module):
         return self.layers(x)
 
 
-class ANIL(AbstractModel):
-    def __init__(self, way_num, shot_num, query_num, feature, device, feat_dim=1600, hid_dim=800, inner_optim=None,
+class ANIL(MetaModel):
+    def __init__(self, way_num, shot_num, query_num, feature, device, feat_dim=1600,
+                 hid_dim=800, inner_optim=None,
                  inner_train_iter=10):
         super(ANIL, self).__init__(way_num, shot_num, query_num, feature, device)
         self.feat_dim = feat_dim
