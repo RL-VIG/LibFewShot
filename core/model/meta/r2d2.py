@@ -1,8 +1,8 @@
 import torch
 from torch import nn
 
-from core.model.abstract_model import AbstractModel
 from core.utils import accuracy
+from .meta_model import MetaModel
 
 
 def computeGramMatrix(A, B):
@@ -96,7 +96,7 @@ class R2D2Head(nn.Module):
         return logits
 
 
-class R2D2(AbstractModel):
+class R2D2(MetaModel):
     def __init__(self, way_num, shot_num, query_num, feature, device):
         super(R2D2, self).__init__(way_num, shot_num, query_num, feature, device)
         self.loss_func = nn.CrossEntropyLoss()

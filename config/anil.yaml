@@ -15,7 +15,7 @@ classifier:
   name: ANIL
   kwargs:
     inner_optim:
-      name: ADAM
+      name: Adam
       kwargs:
         lr: 1e-3
     inner_train_iter: 10

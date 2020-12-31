@@ -7,6 +7,7 @@ import numpy as np
 import scipy as sp
 import scipy.stats
 import torch
+import torch.multiprocessing
 
 
 class AverageMeter(object):
@@ -169,5 +170,4 @@ def init_seed(seed=0, deterministic=False):
 
 
 def _init_sharing_strategy(new_strategy='file_system'):
-    import torch.multiprocessing
     torch.multiprocessing.set_sharing_strategy(new_strategy)

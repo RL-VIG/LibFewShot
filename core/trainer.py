@@ -8,7 +8,7 @@ import yaml
 import core.model as arch
 from core.data import get_dataloader
 from core.utils import init_logger, prepare_device, init_seed, AverageMeter, \
-    count_parameters, save_model, create_dirs
+    count_parameters, save_model, create_dirs, ModelType
 from core.utils.utils import _init_sharing_strategy
 
 
@@ -27,9 +27,9 @@ class Trainer(object):
             = self._init_files(config)
         self.logger = getLogger(__name__)
         self.logger.info(config)
+        self.model, self.model_type = self._init_model(config)
         self.train_loader, self.val_loader, self.test_loader \
             = self._init_dataloader(config)
-        self.model = self._init_model(config)
         self.optimizer, self.scheduler = self._init_optim(config)
 
         self.model = self.model.to(self.device)
@@ -107,7 +107,36 @@ class Trainer(object):
         prec1_list = []
 
         end = time()
-        with torch.no_grad():
+        # TODO dirty implementation needs to be changed
+        if self.model_type == ModelType.METRIC:
+            with torch.no_grad():
+                for episode_idx, batch in enumerate(
+                        self.test_loader if is_test else self.val_loader):
+                    data_time.update(time() - end)
+
+                    # calculate the output
+                    output, prec1 = self.model.set_forward(batch)
+
+                    # measure accuracy and record loss
+                    top1.update(prec1[0])
+                    prec1_list.append(prec1)
+
+                    # measure elapsed time
+                    batch_time.update(time() - end)
+                    end = time()
+
+                    if episode_idx != 0 and episode_idx % self.config[
+                        'log_interval'] == 0:
+                        info_str = ('Epoch-({0}): [{1}/{2}]\t'
+                                    'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
+                                    'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
+                                    'Prec@1 {top1.val:.3f} ({top1.avg:.3f})'
+                                    .format(epoch_idx, episode_idx,
+                                            len(self.train_loader),
+                                            batch_time=batch_time, data_time=data_time,
+                                            top1=top1))
+                        self.logger.info(info_str)
+        elif self.model_type == ModelType.META:
             for episode_idx, batch in enumerate(
                     self.test_loader if is_test else self.val_loader):
                 data_time.update(time() - end)
@@ -174,7 +203,7 @@ class Trainer(object):
         self.logger.info(model)
         self.logger.info(count_parameters(model))
 
-        return model
+        return model, model.model_type
 
     def _init_optim(self, config):
         params_idx = []

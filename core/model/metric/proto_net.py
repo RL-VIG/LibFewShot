@@ -1,11 +1,11 @@
 import torch
 from torch import nn
 
-from core.model.abstract_model import AbstractModel
 from core.utils import accuracy
+from .metric_model import MetricModel
 
 
-class ProtoNet(AbstractModel):
+class ProtoNet(MetricModel):
     def __init__(self, way_num, shot_num, query_num, model_func, device):
         super(ProtoNet, self).__init__(way_num, shot_num, query_num, model_func, device)
         self.loss_func = nn.CrossEntropyLoss()

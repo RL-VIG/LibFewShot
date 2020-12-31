@@ -1,8 +1,8 @@
 import torch
 from torch import nn
 
-from core.model.abstract_model import AbstractModel
 from core.utils import accuracy
+from .metric_model import MetricModel
 
 
 class RelationLayer(nn.Module):
@@ -32,7 +32,7 @@ class RelationLayer(nn.Module):
         return out
 
 
-class RelationNet(AbstractModel):
+class RelationNet(MetricModel):
     def __init__(self, way_num, shot_num, query_num, model_func, device, feat_dim=64,
                  feat_height=3, feat_width=3):
         super(RelationNet, self).__init__(way_num, shot_num, query_num, model_func,

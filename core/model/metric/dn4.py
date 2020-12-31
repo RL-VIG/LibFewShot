@@ -2,11 +2,11 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 
-from core.model.abstract_model import AbstractModel
 from core.utils import accuracy
+from .metric_model import MetricModel
 
 
-class DN4(AbstractModel):
+class DN4(MetricModel):
     def __init__(self, way_num, shot_num, query_num, model_func, device, n_k=3):
         super(DN4, self).__init__(way_num, shot_num, query_num, model_func, device)
         self.n_k = n_k
