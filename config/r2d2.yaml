@@ -1,0 +1,16 @@
+train_episode: 1000
+test_episode: 200
+
+save_part:
+  - model_func
+  - classifier
+
+# arch info
+backbone:
+  name: Conv64F
+  kwargs:
+    is_flatten: True
+
+classifier:
+  name: R2D2
+  kwargs:
