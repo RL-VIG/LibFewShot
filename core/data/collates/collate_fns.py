@@ -3,6 +3,36 @@ import itertools
 import torch
 
 
+class GeneralCollateFn(object):
+    def __init__(self, trfms, times):
+        super(GeneralCollateFn, self).__init__()
+        self.trfms = trfms
+        self.times = times  # 如果不做增广，设为1
+
+    def method(self, batch):
+        try:
+            images, targets = zip(*batch)
+
+            images = list(itertools.chain.from_iterable(
+                [[image] * self.times for image in images]))
+            images = [self.trfms(image).unsqueeze(
+                0) for image in images]
+
+            targets = list(itertools.chain.from_iterable(
+                [[target] * self.times for target in targets]))
+            targets = [torch.tensor(
+                [target]) for target in targets]
+
+            assert len(images) == len(
+                targets), '图像和标签数量不一致'
+            return images, targets
+        except TypeError:
+            raise TypeError('不应该在dataset传入transform，在collate_fn传入transform')
+
+    def __call__(self, batch):
+        return self.method(batch)
+
+
 class FewShotAugCollateFn(object):
     """
     增广5次的样例: 01234 -> 0000011111222223333344444

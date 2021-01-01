@@ -1,7 +1,7 @@
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from core.data.dataset import FewShotDataset
+from core.data.dataset import FewShotDataset, GeneralDataset
 from .collates import *
 
 MEAN = [120.39586422 / 255.0, 115.59361427 / 255.0, 104.54012653 / 255.0]
@@ -46,16 +46,19 @@ def get_dataloader(config, mode='train'):
     trfms_list.append(transforms.Normalize(mean=MEAN, std=STD))
     trfms = transforms.Compose(trfms_list)
 
-    dataset = FewShotDataset(data_root=config['data_root'], mode=mode,
-                             way_num=config['way_num'],
-                             shot_num=config['shot_num'],
-                             query_num=config['query_num'],
-                             episode_num=config['train_episode']
-                             if mode == 'train' else config['test_episode'], )
+    dataset = GeneralDataset(data_root=config['data_root'], mode=mode)
 
-    collate_fn = get_collate_fn(config, trfms)
+    # dataset = FewShotDataset(data_root=config['data_root'], mode=mode,
+    #                          way_num=config['way_num'],
+    #                          shot_num=config['shot_num'],
+    #                          query_num=config['query_num'],
+    #                          episode_num=config['train_episode']
+    #                          if mode == 'train' else config['test_episode'], )
 
-    dataloader = DataLoader(dataset, batch_size=1, shuffle=True,
+    collate_fn = get_general_collate_fn(config, trfms)
+    # collate_fn = get_collate_fn(config, trfms)
+
+    dataloader = DataLoader(dataset, batch_size=8, shuffle=True,  # batch_size -> for general_collate_fn debug
                             num_workers=config['n_gpu'] * 4, drop_last=True,
                             collate_fn=collate_fn,
                             pin_memory=True)
