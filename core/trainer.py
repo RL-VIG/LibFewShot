@@ -76,7 +76,7 @@ class Trainer(object):
             # measure accuracy and record loss
 
             losses.update(loss.item())
-            top1.update(prec1[0])
+            top1.update(prec1)
 
             # measure elapsed time
             batch_time.update(time() - end)
@@ -104,8 +104,6 @@ class Trainer(object):
         data_time = AverageMeter()
         top1 = AverageMeter()
 
-        prec1_list = []
-
         end = time()
         # TODO dirty implementation needs to be changed
         if self.model_type == ModelType.METRIC:
@@ -118,8 +116,7 @@ class Trainer(object):
                     output, prec1 = self.model.set_forward(batch)
 
                     # measure accuracy and record loss
-                    top1.update(prec1[0])
-                    prec1_list.append(prec1)
+                    top1.update(prec1)
 
                     # measure elapsed time
                     batch_time.update(time() - end)
@@ -145,8 +142,7 @@ class Trainer(object):
                 output, prec1 = self.model.set_forward(batch)
 
                 # measure accuracy and record loss
-                top1.update(prec1[0])
-                prec1_list.append(prec1)
+                top1.update(prec1)
 
                 # measure elapsed time
                 batch_time.update(time() - end)
