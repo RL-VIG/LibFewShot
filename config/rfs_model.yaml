@@ -18,7 +18,6 @@ classifier:
       name: Adam
       kwargs:
         lr: 1e-2
-    loss_gamma: 2.
     inner_train_iter: 20
     feat_dim: 1600
     num_classes: 64
