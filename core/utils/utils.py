@@ -169,5 +169,5 @@ def init_seed(seed=0, deterministic=False):
         torch.backends.cudnn.deterministic = False
 
 
-def _init_sharing_strategy(new_strategy='file_system'):
+def init_sharing_strategy(new_strategy='file_system'):
     torch.multiprocessing.set_sharing_strategy(new_strategy)

@@ -1,21 +1,13 @@
 from .collate_fns import *
 
-# TODO：differentiate fewshot_collate_fn & general_collate_fn
+from ...utils import ModelType
 
 
-def get_general_collate_fn(config, trfms):
-    try:
+def get_collate_fn(config, trfms, model_type):
+    assert model_type != ModelType.ABSTRACT
+    if model_type == ModelType.PRETRAIN:
         collate_fn = GeneralCollateFn(trfms, config['augment_times'])
-    except:
-        raise NotImplementedError
-
-    return collate_fn
-
-
-def get_collate_fn(config, trfms):
-    try:
+    else:
         collate_fn = FewShotAugCollateFn(trfms, config['augment_times'])
-    except:
-        raise NotImplementedError
 
     return collate_fn

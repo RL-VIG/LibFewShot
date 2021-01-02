@@ -15,16 +15,14 @@ class GeneralCollateFn(object):
 
             images = list(itertools.chain.from_iterable(
                 [[image] * self.times for image in images]))
-            images = [self.trfms(image).unsqueeze(
-                0) for image in images]
+            images = [self.trfms(image).unsqueeze(0) for image in images]
 
             targets = list(itertools.chain.from_iterable(
                 [[target] * self.times for target in targets]))
-            targets = [torch.tensor(
-                [target]) for target in targets]
+            targets = [torch.tensor([target]) for target in targets]
 
-            assert len(images) == len(
-                targets), '图像和标签数量不一致'
+            assert len(images) == len(targets), '图像和标签数量不一致'
+
             return images, targets
         except TypeError:
             raise TypeError('不应该在dataset传入transform，在collate_fn传入transform')
@@ -46,21 +44,21 @@ class FewShotAugCollateFn(object):
     def method(self, batch):
         try:
             query_images, query_targets, support_images, support_targets = batch[0]
-            query_images = [self.trfms(image).unsqueeze(0)
-                            for image in query_images]
-            query_targets = [torch.tensor([target])
-                             for target in query_targets]
+            query_images = [self.trfms(image).unsqueeze(0) for image in query_images]
+            query_targets = [torch.tensor([target]) for target in query_targets]
             # Do aug
             aug_support_images = list(itertools.chain.from_iterable(
                 [[image] * self.times for image in support_images]))
-            aug_support_images = [self.trfms(image).unsqueeze(
-                0) for image in aug_support_images]
+            aug_support_images = [self.trfms(image).unsqueeze(0)
+                                  for image in aug_support_images]
             aug_support_targets = list(itertools.chain.from_iterable(
                 [[target] * self.times for target in support_targets]))
-            aug_support_targets = [torch.tensor(
-                [target]) for target in aug_support_targets]
-            assert len(aug_support_images) == len(
-                aug_support_targets), '图像和标签数量不一致'
+            aug_support_targets = [torch.tensor([target])
+                                   for target in aug_support_targets]
+
+            assert len(aug_support_images) == len(aug_support_targets), \
+                '图像和标签数量不一致'
+
             return query_images, query_targets, aug_support_images, aug_support_targets
         except TypeError:
             raise TypeError('不应该在dataset传入transform，在collate_fn传入transform')
