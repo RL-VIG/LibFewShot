@@ -56,15 +56,6 @@ class ProtoNet(MetricModel):
         prec1, _ = accuracy(output, query_targets, topk=(1, 3))
         return output, prec1, loss
 
-    def train_loop(self, *args, **kwargs):
-        raise NotImplementedError
-
-    def test_loop(self, *args, **kwargs):
-        raise NotImplementedError
-
-    def set_forward_adaptation(self, *args, **kwargs):
-        raise NotImplementedError
-
     def euclidean_dist(self, input1, input2):
         """
         calc euclidean distance for each of the input1 to input2
