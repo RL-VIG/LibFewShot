@@ -80,7 +80,8 @@ class FewShotDataset(object):
             for class_idx, class_name in enumerate(temp_list):
                 image_list = class_img_dict[class_name]
                 support_images = random.sample(image_list, self.shot_num)
-                query_images = [val for val in image_list if val not in support_images]
+                query_images = [
+                    val for val in image_list if val not in support_images]
 
                 if self.query_num < len(query_images):
                     query_images = random.sample(query_images, self.query_num)
@@ -131,3 +132,46 @@ class FewShotDataset(object):
             support_targets.extend(np.tile(target, len(support_list)))
 
         return query_images, query_targets, support_images, support_targets
+
+
+class GeneralDataset(object):
+    #! for miniImageNet
+    def __init__(self, data_root="", mode="train", transform=None, loader=default_loader,
+                 gray_loader=gray_loader, ):
+        super(GeneralDataset, self).__init__()
+        assert mode in ['train', 'val', 'test']
+
+        self.mode = mode
+        self.data_root = data_root
+
+        self.transform = transform
+        self.loader = loader
+        self.gray_loader = gray_loader
+
+        self.data_list, self.class_dict = self._generate_data_list()
+
+    def _generate_data_list(self):
+        meta_csv = os.path.join(self.data_root, '{}.csv'.format(self.mode))
+
+        data_list = []
+        class_img_set = set()
+        with open(meta_csv) as f_csv:
+            f_train = csv.reader(f_csv, delimiter=',')
+            for row in f_train:
+                if f_train.line_num == 1:
+                    continue
+                image_path, img_class = row
+                class_img_tuple = (image_path, img_class)
+                data_list.append(class_img_tuple)
+                class_img_set.add(img_class)
+        class_img_set = dict([(label, index)
+                              for index, label in enumerate(class_img_set)])
+        return data_list, class_img_set
+
+    def __len__(self):
+        return len(self.data_list)
+
+    def __getitem__(self, index):
+        image_path, image_class = self.data_list[index]
+        image = self.loader(os.path.join(self.data_root, 'images', image_path))
+        return image, self.class_dict[image_class]
