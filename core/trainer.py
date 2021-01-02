@@ -132,11 +132,11 @@ class Trainer(object):
                                     'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
                                     'Prec@1 {top1.val:.3f} ({top1.avg:.3f})'
                                     .format(epoch_idx, episode_idx,
-                                            len(self.train_loader),
+                                            len(self.val_loader),
                                             batch_time=batch_time, data_time=data_time,
                                             top1=top1))
                         self.logger.info(info_str)
-        elif self.model_type == ModelType.META:
+        else:
             for episode_idx, batch in enumerate(
                     self.test_loader if is_test else self.val_loader):
                 data_time.update(time() - end)
@@ -157,7 +157,7 @@ class Trainer(object):
                                 'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                                 'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
                                 'Prec@1 {top1.val:.3f} ({top1.avg:.3f})'
-                                .format(epoch_idx, episode_idx, len(self.train_loader),
+                                .format(epoch_idx, episode_idx, len(self.val_loader),
                                         batch_time=batch_time, data_time=data_time,
                                         top1=top1))
                     self.logger.info(info_str)

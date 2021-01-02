@@ -50,7 +50,7 @@ def get_dataloader(config, mode, model_type):
     trfms_list.append(transforms.Normalize(mean=MEAN, std=STD))
     trfms = transforms.Compose(trfms_list)
 
-    if model_type == ModelType.PRETRAIN:
+    if mode == 'train' and model_type == ModelType.PRETRAIN:
         dataset = GeneralDataset(data_root=config['data_root'], mode=mode)
     else:
         dataset = FewShotDataset(data_root=config['data_root'], mode=mode,
@@ -60,8 +60,10 @@ def get_dataloader(config, mode, model_type):
                                  episode_num=config['train_episode']
                                  if mode == 'train' else config['test_episode'], )
 
-    batch_size = config['batch_size'] if model_type == ModelType.PRETRAIN else 1
-    collate_fn = get_collate_fn(config, trfms, model_type)
+    batch_size = config['batch_size'] \
+        if model_type == ModelType.PRETRAIN and mode == 'train' else 1
+    collate_fn = get_collate_fn(config, trfms, mode, model_type)
+
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True,
                             num_workers=config['n_gpu'] * 4, drop_last=True,
                             collate_fn=collate_fn,
