@@ -39,8 +39,7 @@ def default_loader(path):
 
 class FewShotDataset(object):
     def __init__(self, data_root="", mode="train", loader=default_loader,
-                 gray_loader=gray_loader, episode_num=1000, way_num=5, shot_num=5,
-                 query_num=5):
+                 episode_num=1000, way_num=5, shot_num=5, query_num=5):
         super(FewShotDataset, self).__init__()
         assert mode in ['train', 'val', 'test']
 
@@ -53,7 +52,6 @@ class FewShotDataset(object):
         self.query_num = query_num
 
         self.loader = loader
-        self.gray_loader = gray_loader
 
         self.data_list = self._generate_episode_list()
 
@@ -135,18 +133,14 @@ class FewShotDataset(object):
 
 
 class GeneralDataset(object):
-    #! for miniImageNet
-    def __init__(self, data_root="", mode="train", transform=None, loader=default_loader,
-                 gray_loader=gray_loader, ):
+    def __init__(self, data_root="", mode="train", loader=default_loader, ):
         super(GeneralDataset, self).__init__()
         assert mode in ['train', 'val', 'test']
 
         self.mode = mode
         self.data_root = data_root
 
-        self.transform = transform
         self.loader = loader
-        self.gray_loader = gray_loader
 
         self.data_list, self.class_dict = self._generate_data_list()
 

@@ -9,7 +9,7 @@ import core.model as arch
 from core.data import get_dataloader
 from core.utils import init_logger, prepare_device, init_seed, AverageMeter, \
     count_parameters, save_model, create_dirs, ModelType
-from core.utils.utils import _init_sharing_strategy
+from core.utils.utils import init_sharing_strategy
 
 
 def get_instance(module, name, config, *args):
@@ -76,7 +76,7 @@ class Trainer(object):
             # measure accuracy and record loss
 
             losses.update(loss.item())
-            top1.update(prec1[0])
+            top1.update(prec1)
 
             # measure elapsed time
             batch_time.update(time() - end)
@@ -104,8 +104,6 @@ class Trainer(object):
         data_time = AverageMeter()
         top1 = AverageMeter()
 
-        prec1_list = []
-
         end = time()
         # TODO dirty implementation needs to be changed
         if self.model_type == ModelType.METRIC:
@@ -118,8 +116,7 @@ class Trainer(object):
                     output, prec1 = self.model.set_forward(batch)
 
                     # measure accuracy and record loss
-                    top1.update(prec1[0])
-                    prec1_list.append(prec1)
+                    top1.update(prec1)
 
                     # measure elapsed time
                     batch_time.update(time() - end)
@@ -132,11 +129,11 @@ class Trainer(object):
                                     'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
                                     'Prec@1 {top1.val:.3f} ({top1.avg:.3f})'
                                     .format(epoch_idx, episode_idx,
-                                            len(self.train_loader),
+                                            len(self.val_loader),
                                             batch_time=batch_time, data_time=data_time,
                                             top1=top1))
                         self.logger.info(info_str)
-        elif self.model_type == ModelType.META:
+        else:
             for episode_idx, batch in enumerate(
                     self.test_loader if is_test else self.val_loader):
                 data_time.update(time() - end)
@@ -145,8 +142,7 @@ class Trainer(object):
                 output, prec1 = self.model.set_forward(batch)
 
                 # measure accuracy and record loss
-                top1.update(prec1[0])
-                prec1_list.append(prec1)
+                top1.update(prec1)
 
                 # measure elapsed time
                 batch_time.update(time() - end)
@@ -157,7 +153,7 @@ class Trainer(object):
                                 'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                                 'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
                                 'Prec@1 {top1.val:.3f} ({top1.avg:.3f})'
-                                .format(epoch_idx, episode_idx, len(self.train_loader),
+                                .format(epoch_idx, episode_idx, len(self.val_loader),
                                         batch_time=batch_time, data_time=data_time,
                                         top1=top1))
                     self.logger.info(info_str)
@@ -184,11 +180,11 @@ class Trainer(object):
         return result_path, log_path, checkpoints_path
 
     def _init_dataloader(self, config):
-        train_loader = get_dataloader(config, 'train')
-        val_loader = get_dataloader(config, 'val')
-        test_loader = get_dataloader(config, 'test')
+        train_loader = get_dataloader(config, 'train', self.model_type)
+        val_loader = get_dataloader(config, 'val', self.model_type)
+        test_loader = get_dataloader(config, 'test', self.model_type)
 
-        _init_sharing_strategy()
+        init_sharing_strategy()
 
         return train_loader, val_loader, test_loader
 

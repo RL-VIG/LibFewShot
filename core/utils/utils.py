@@ -72,7 +72,7 @@ def accuracy(output, target, topk=(1,)):
         res = []
         for k in topk:
             correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
-            res.append(correct_k.mul_(100.0 / batch_size))
+            res.append(correct_k.mul_(100.0 / batch_size).item())
         return res
 
 
@@ -169,5 +169,5 @@ def init_seed(seed=0, deterministic=False):
         torch.backends.cudnn.deterministic = False
 
 
-def _init_sharing_strategy(new_strategy='file_system'):
+def init_sharing_strategy(new_strategy='file_system'):
     torch.multiprocessing.set_sharing_strategy(new_strategy)

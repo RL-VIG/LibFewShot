@@ -93,15 +93,6 @@ class RelationNet(MetricModel):
         prec1, _ = accuracy(output, query_targets, topk=(1, 3))
         return output, prec1, loss
 
-    def train_loop(self, *args, **kwargs):
-        raise NotImplementedError
-
-    def test_loop(self, *args, **kwargs):
-        raise NotImplementedError
-
-    def set_forward_adaptation(self, *args, **kwargs):
-        raise NotImplementedError
-
     def cal_pairs(self, input1, input2):
         """
 
