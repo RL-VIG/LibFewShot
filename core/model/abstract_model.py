@@ -2,8 +2,8 @@ from abc import abstractmethod
 
 from torch import nn
 
-from core.model import init_weights
 from core.utils import ModelType
+from .init import init_weights
 
 
 class AbstractModel(nn.Module):
