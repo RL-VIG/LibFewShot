@@ -52,7 +52,7 @@ class SKDModel(PretrainModel):
         query_targets = query_targets.detach().cpu().numpy()
 
         output = classifier.predict(query_feat)
-        prec1 = metrics.accuracy_score(query_targets, output)
+        prec1 = metrics.accuracy_score(query_targets, output) * 100
 
         return output, prec1
 

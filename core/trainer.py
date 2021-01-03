@@ -8,7 +8,7 @@ import yaml
 import core.model as arch
 from core.data import get_dataloader
 from core.utils import init_logger, prepare_device, init_seed, AverageMeter, \
-    count_parameters, save_model, create_dirs, ModelType
+    count_parameters, save_model, create_dirs, ModelType, TensorboardWriter
 from core.utils.utils import init_sharing_strategy
 
 
@@ -23,8 +23,10 @@ class Trainer(object):
     def __init__(self, config):
         self.config = config
         self.device, self.list_ids = self._init_device(config)
-        self.result_path, self.log_path, self.checkpoints_path \
+        self.result_path, self.log_path, self.checkpoints_path, self.viz_path \
             = self._init_files(config)
+        self.writer = TensorboardWriter(self.viz_path)
+        self.train_meter, self.val_meter, self.test_meter = self._init_meter()
         self.logger = getLogger(__name__)
         self.logger.info(config)
         self.model, self.model_type = self._init_model(config)
@@ -40,10 +42,15 @@ class Trainer(object):
         for epoch_idx in range(self.config['epoch']):
             self.logger.info('============ Train on the train set ============')
             train_prec1 = self._train(epoch_idx)
+            self.logger.info(' * Prec@1 {:.3f} '.format(train_prec1))
             self.logger.info('============ Validation on the val set ============')
             val_prec1 = self._validate(epoch_idx, is_test=False)
+            self.logger.info(' * Prec@1 {:.3f} Best Prec1 {:.3f}'
+                             .format(val_prec1, best_val_prec1))
             self.logger.info('============ Testing on the test set ============')
             test_prec1 = self._validate(epoch_idx, is_test=True)
+            self.logger.info(' * Prec@1 {:.3f} Best Prec1 {:.3f}'
+                             .format(test_prec1, best_test_prec1))
 
             if val_prec1 > best_test_prec1:
                 best_val_prec1 = val_prec1
@@ -53,17 +60,18 @@ class Trainer(object):
             if epoch_idx != 0 and epoch_idx % self.config['save_interval'] == 0:
                 self._save_model(epoch_idx, is_best=False)
 
+            self.scheduler.step()
+
     def _train(self, epoch_idx):
         self.model.train()
 
-        batch_time = AverageMeter()
-        data_time = AverageMeter()
-        losses = AverageMeter()
-        top1 = AverageMeter()
+        meter = self.train_meter
 
         end = time()
         for episode_idx, batch in enumerate(self.train_loader):
-            data_time.update(time() - end)
+            self.writer.set_step(epoch_idx * len(self.train_loader) + episode_idx)
+
+            meter.update('data_time', time() - end)
 
             # calculate the output
             output, prec1, loss = self.model.set_forward_loss(batch)
@@ -74,35 +82,34 @@ class Trainer(object):
             self.optimizer.step()
 
             # measure accuracy and record loss
-
-            losses.update(loss.item())
-            top1.update(prec1)
+            meter.update('loss', loss.item())
+            meter.update('prec1', prec1)
 
             # measure elapsed time
-            batch_time.update(time() - end)
+            meter.update('batch_time', time() - end)
             end = time()
 
             # print the intermediate results
             if episode_idx != 0 and episode_idx % self.config['log_interval'] == 0:
-                info_str = ('Epoch-({0}): [{1}/{2}]\t'
-                            'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                            'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
-                            'Loss {loss.val:.3f} ({loss.avg:.3f})\t'
-                            'Prec@1 {top1.val:.3f} ({top1.avg:.3f})'
+                info_str = ('Epoch-({}): [{}/{}]\t'
+                            'Time {:.3f} ({:.3f})\t'
+                            'Data {:.3f} ({:.3f})\t'
+                            'Loss {:.3f} ({:.3f})\t'
+                            'Prec@1 {:.3f} ({:.3f})'
                             .format(epoch_idx, episode_idx, len(self.train_loader),
-                                    batch_time=batch_time, data_time=data_time,
-                                    loss=losses, top1=top1))
+                                    meter.last('batch_time'), meter.avg('batch_time'),
+                                    meter.last('data_time'), meter.avg('data_time'),
+                                    meter.last('loss'), meter.avg('loss'),
+                                    meter.last('prec1'), meter.avg('prec1'), ))
                 self.logger.info(info_str)
 
-        return top1.avg
+        return meter.avg('prec1')
 
     def _validate(self, epoch_idx, is_test=False):
         # switch to evaluate mode
         self.model.eval()
 
-        batch_time = AverageMeter()
-        data_time = AverageMeter()
-        top1 = AverageMeter()
+        meter = self.test_meter if is_test else self.val_meter
 
         end = time()
         # TODO dirty implementation needs to be changed
@@ -110,55 +117,66 @@ class Trainer(object):
             with torch.no_grad():
                 for episode_idx, batch in enumerate(
                         self.test_loader if is_test else self.val_loader):
-                    data_time.update(time() - end)
+                    self.writer.set_step(epoch_idx * len(self.val_loader) + episode_idx)
+
+                    meter.update('data_time', time() - end)
 
                     # calculate the output
                     output, prec1 = self.model.set_forward(batch)
 
                     # measure accuracy and record loss
-                    top1.update(prec1)
+                    meter.update('prec1', prec1)
 
                     # measure elapsed time
-                    batch_time.update(time() - end)
+                    meter.update('batch_time', time() - end)
                     end = time()
 
-                    if episode_idx != 0 and episode_idx % self.config[
-                        'log_interval'] == 0:
-                        info_str = ('Epoch-({0}): [{1}/{2}]\t'
-                                    'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                                    'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
-                                    'Prec@1 {top1.val:.3f} ({top1.avg:.3f})'
-                                    .format(epoch_idx, episode_idx,
-                                            len(self.val_loader),
-                                            batch_time=batch_time, data_time=data_time,
-                                            top1=top1))
+                    if episode_idx != 0 and \
+                            episode_idx % self.config['log_interval'] == 0:
+                        info_str = ('Epoch-({}): [{}/{}]\t'
+                                    'Time {:.3f} ({:.3f})\t'
+                                    'Data {:.3f} ({:.3f})\t'
+                                    'Prec@1 {:.3f} ({:.3f})'
+                                    .format(epoch_idx, episode_idx, len(self.val_loader),
+                                            meter.last('batch_time'),
+                                            meter.avg('batch_time'),
+                                            meter.last('data_time'),
+                                            meter.avg('data_time'),
+                                            meter.last('prec1'),
+                                            meter.avg('prec1'), ))
                         self.logger.info(info_str)
         else:
             for episode_idx, batch in enumerate(
                     self.test_loader if is_test else self.val_loader):
-                data_time.update(time() - end)
+                self.writer.set_step(epoch_idx * len(self.val_loader) + episode_idx)
+
+                meter.update('data_time', time() - end)
 
                 # calculate the output
                 output, prec1 = self.model.set_forward(batch)
 
                 # measure accuracy and record loss
-                top1.update(prec1)
+                meter.update('prec1', prec1)
 
                 # measure elapsed time
-                batch_time.update(time() - end)
+                meter.update('batch_time', time() - end)
                 end = time()
 
                 if episode_idx != 0 and episode_idx % self.config['log_interval'] == 0:
-                    info_str = ('Epoch-({0}): [{1}/{2}]\t'
-                                'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                                'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
-                                'Prec@1 {top1.val:.3f} ({top1.avg:.3f})'
+                    info_str = ('Epoch-({}): [{}/{}]\t'
+                                'Time {:.3f} ({:.3f})\t'
+                                'Data {:.3f} ({:.3f})\t'
+                                'Prec@1 {:.3f} ({:.3f})'
                                 .format(epoch_idx, episode_idx, len(self.val_loader),
-                                        batch_time=batch_time, data_time=data_time,
-                                        top1=top1))
+                                        meter.last('batch_time'),
+                                        meter.avg('batch_time'),
+                                        meter.last('data_time'),
+                                        meter.avg('data_time'),
+                                        meter.last('prec1'),
+                                        meter.avg('prec1'), ))
                     self.logger.info(info_str)
 
-        return top1.avg
+        return meter.avg('prec1')
 
     def _init_files(self, config):
         result_dir = '{}-{}-{}-{}' \
@@ -166,9 +184,10 @@ class Trainer(object):
                     config['way_num'], config['shot_num'])
         result_path = os.path.join(config['result_root'], result_dir)
 
-        log_path = os.path.join(result_path, 'log')
         checkpoints_path = os.path.join(result_path, 'checkpoints')
-        create_dirs([result_path, log_path, checkpoints_path])
+        log_path = os.path.join(result_path, 'log_files')
+        viz_path = os.path.join(log_path, 'tfboard_files')
+        create_dirs([result_path, log_path, checkpoints_path, viz_path])
 
         with open(os.path.join(result_path, 'config.yaml'), 'w',
                   encoding='utf-8') as fout:
@@ -177,7 +196,7 @@ class Trainer(object):
         init_logger(config['log_level'], log_path,
                     config['classifier']['name'], config['backbone']['name'], )
 
-        return result_path, log_path, checkpoints_path
+        return result_path, log_path, checkpoints_path, viz_path
 
     def _init_dataloader(self, config):
         train_loader = get_dataloader(config, 'train', self.model_type)
@@ -227,7 +246,7 @@ class Trainer(object):
 
     def _init_device(self, config):
         init_seed(config['seed'], config['deterministic'])
-        device, list_ids = prepare_device(config['n_gpu'])
+        device, list_ids = prepare_device(config['device_ids'], config['n_gpu'])
         return device, list_ids
 
     def _save_model(self, epoch, is_best=False):
@@ -240,3 +259,12 @@ class Trainer(object):
                                save_part, epoch, is_best)
                 else:
                     self.logger.warning('')
+
+    def _init_meter(self):
+        train_meter = AverageMeter('train', ['batch_time', 'data_time', 'loss', 'prec1'],
+                                   self.writer)
+        val_meter = AverageMeter('val', ['batch_time', 'data_time', 'prec1'], self.writer)
+        test_meter = AverageMeter('test', ['batch_time', 'data_time', 'prec1'],
+                                  self.writer)
+
+        return train_meter, val_meter, test_meter

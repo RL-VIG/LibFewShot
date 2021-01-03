@@ -38,3 +38,8 @@ class AbstractModel(nn.Module):
 
     def _init_network(self):
         init_weights(self, self.init_type)
+
+    def reset_base_info(self, way_num, shot_num, query_num):
+        self.way_num = way_num
+        self.shot_num = shot_num
+        self.query_num = query_num
