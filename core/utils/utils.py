@@ -4,6 +4,7 @@ from datetime import datetime
 from logging import getLogger
 
 import numpy as np
+import pandas as pd
 import scipy as sp
 import scipy.stats
 import torch
@@ -15,23 +16,34 @@ class AverageMeter(object):
 
     """
 
-    def __init__(self):
-        self.val = 0
-        self.avg = 0
-        self.sum = 0
-        self.count = 0
+    def __init__(self, name, keys, writer=None):
+        self.name = name
+        self._data = pd.DataFrame(index=keys,
+                                  columns=['last_value', 'total', 'counts', 'average', ])
+        self.writer = writer
+        self.reset()
 
     def reset(self):
-        self.val = 0
-        self.avg = 0
-        self.sum = 0
-        self.count = 0
+        for col in self._data.columns:
+            self._data[col].values[:] = 0
 
-    def update(self, val, n=1):
-        self.val = val
-        self.sum += val * n
-        self.count += n
-        self.avg = self.sum / self.count
+    def update(self, key, value, n=1):
+        if self.writer is not None:
+            full_key = '{}/{}'.format(self.name, key)
+            self.writer.add_scalar(full_key, value)
+        self._data.last_value[key] = value
+        self._data.total[key] += value * n
+        self._data.counts[key] += n
+        self._data.average[key] = self._data.total[key] / self._data.counts[key]
+
+    def avg(self, key):
+        return self._data.average[key]
+
+    def result(self):
+        return dict(self._data.average)
+
+    def last(self, key):
+        return self._data.last_value[key]
 
 
 def get_local_time():
