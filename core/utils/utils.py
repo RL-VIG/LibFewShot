@@ -29,8 +29,8 @@ class AverageMeter(object):
 
     def update(self, key, value, n=1):
         if self.writer is not None:
-            full_key = '{}/{}'.format(self.name, key)
-            self.writer.add_scalar(full_key, value)
+            tag = '{}/{}'.format(self.name, key)
+            self.writer.add_scalar(tag, value)
         self._data.last_value[key] = value
         self._data.total[key] += value * n
         self._data.counts[key] += n
