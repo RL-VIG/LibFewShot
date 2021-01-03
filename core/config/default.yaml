@@ -46,6 +46,7 @@ log_level: info
 log_interval: 100
 
 # gpu info
+device_ids: 1
 n_gpu: 1
 seed: 0
 deterministic: True

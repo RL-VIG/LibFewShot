@@ -227,7 +227,7 @@ class Trainer(object):
 
     def _init_device(self, config):
         init_seed(config['seed'], config['deterministic'])
-        device, list_ids = prepare_device(config['n_gpu'])
+        device, list_ids = prepare_device(config['device_ids'], config['n_gpu'])
         return device, list_ids
 
     def _save_model(self, epoch, is_best=False):

@@ -103,13 +103,14 @@ def create_dirs(dir_paths):
             os.mkdir(dir_path)
 
 
-def prepare_device(n_gpu_use):
+def prepare_device(device_ids, n_gpu_use):
     """
 
     :param n_gpu_use:
     :return:
     """
     logger = getLogger()
+    os.environ["CUDA_VISIBLE_DEVICES"] = str(device_ids)
 
     n_gpu = torch.cuda.device_count()
     if n_gpu_use > 0 and n_gpu == 0:
