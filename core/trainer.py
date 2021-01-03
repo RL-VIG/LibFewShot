@@ -53,6 +53,8 @@ class Trainer(object):
             if epoch_idx != 0 and epoch_idx % self.config['save_interval'] == 0:
                 self._save_model(epoch_idx, is_best=False)
 
+            self.scheduler.step()
+
     def _train(self, epoch_idx):
         self.model.train()
 
