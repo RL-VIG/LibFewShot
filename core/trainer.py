@@ -8,7 +8,7 @@ import yaml
 import core.model as arch
 from core.data import get_dataloader
 from core.utils import init_logger, prepare_device, init_seed, AverageMeter, \
-    count_parameters, save_model, create_dirs, ModelType
+    count_parameters, save_model, create_dirs, ModelType, TensorboardWriter
 from core.utils.utils import init_sharing_strategy
 
 
@@ -23,9 +23,9 @@ class Trainer(object):
     def __init__(self, config):
         self.config = config
         self.device, self.list_ids = self._init_device(config)
-        self.result_path, self.log_path, self.checkpoints_path \
+        self.result_path, self.log_path, self.checkpoints_path, self.viz_path \
             = self._init_files(config)
-        self.writer = None
+        self.writer = TensorboardWriter(self.viz_path)
         self.train_meter, self.val_meter, self.test_meter = self._init_meter()
         self.logger = getLogger(__name__)
         self.logger.info(config)
@@ -42,10 +42,15 @@ class Trainer(object):
         for epoch_idx in range(self.config['epoch']):
             self.logger.info('============ Train on the train set ============')
             train_prec1 = self._train(epoch_idx)
+            self.logger.info(' * Prec@1 {:.3f} '.format(train_prec1))
             self.logger.info('============ Validation on the val set ============')
             val_prec1 = self._validate(epoch_idx, is_test=False)
+            self.logger.info(' * Prec@1 {:.3f} Best Prec1 {:.3f}'
+                             .format(val_prec1, best_val_prec1))
             self.logger.info('============ Testing on the test set ============')
             test_prec1 = self._validate(epoch_idx, is_test=True)
+            self.logger.info(' * Prec@1 {:.3f} Best Prec1 {:.3f}'
+                             .format(test_prec1, best_test_prec1))
 
             if val_prec1 > best_test_prec1:
                 best_val_prec1 = val_prec1
@@ -64,6 +69,8 @@ class Trainer(object):
 
         end = time()
         for episode_idx, batch in enumerate(self.train_loader):
+            self.writer.set_step(epoch_idx * len(self.train_loader) + episode_idx)
+
             meter.update('data_time', time() - end)
 
             # calculate the output
@@ -110,6 +117,8 @@ class Trainer(object):
             with torch.no_grad():
                 for episode_idx, batch in enumerate(
                         self.test_loader if is_test else self.val_loader):
+                    self.writer.set_step(epoch_idx * len(self.val_loader) + episode_idx)
+
                     meter.update('data_time', time() - end)
 
                     # calculate the output
@@ -139,6 +148,8 @@ class Trainer(object):
         else:
             for episode_idx, batch in enumerate(
                     self.test_loader if is_test else self.val_loader):
+                self.writer.set_step(epoch_idx * len(self.val_loader) + episode_idx)
+
                 meter.update('data_time', time() - end)
 
                 # calculate the output
@@ -173,9 +184,10 @@ class Trainer(object):
                     config['way_num'], config['shot_num'])
         result_path = os.path.join(config['result_root'], result_dir)
 
-        log_path = os.path.join(result_path, 'log')
         checkpoints_path = os.path.join(result_path, 'checkpoints')
-        create_dirs([result_path, log_path, checkpoints_path])
+        log_path = os.path.join(result_path, 'log_files')
+        viz_path = os.path.join(log_path, 'tfboard_files')
+        create_dirs([result_path, log_path, checkpoints_path, viz_path])
 
         with open(os.path.join(result_path, 'config.yaml'), 'w',
                   encoding='utf-8') as fout:
@@ -184,7 +196,7 @@ class Trainer(object):
         init_logger(config['log_level'], log_path,
                     config['classifier']['name'], config['backbone']['name'], )
 
-        return result_path, log_path, checkpoints_path
+        return result_path, log_path, checkpoints_path, viz_path
 
     def _init_dataloader(self, config):
         train_loader = get_dataloader(config, 'train', self.model_type)
