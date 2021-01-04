@@ -10,38 +10,48 @@ class Conv64F(nn.Module):
         Input:  3 * 84 *84
         Output: 64 * 5 * 5
     """
-    def __init__(self, is_flatten=False):
+
+    def __init__(self, is_flatten=False, is_feature=False):
         super(Conv64F, self).__init__()
 
         self.is_flatten = is_flatten
-        self.features = nn.Sequential(
+        self.is_feature = is_feature
+
+        self.layer1 = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(64),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2), )
+        self.layer2 = nn.Sequential(
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(64),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2), )
+        self.layer3 = nn.Sequential(
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(64),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2), )
+        self.layer4 = nn.Sequential(
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(64),
-            nn.ReLU(),
+            nn.ReLU(inplace=True),
             nn.MaxPool2d(kernel_size=2, stride=2),
         )
 
     def forward(self, x):
-        out = self.features(x)
-        if self.is_flatten:
-            out = out.view(out.size(0), -1)
+        out1 = self.layer1(x)
+        out2 = self.layer2(out1)
+        out3 = self.layer3(out2)
+        out4 = self.layer4(out3)
 
-        return out
+        if self.is_flatten:
+            out4 = out4.view(out4.size(0), -1)
+
+        if self.is_feature:
+            return out1, out2, out3, out4
+
+        return out4
 
 
 class Conv64FLeakyReLU(nn.Module):
@@ -53,33 +63,87 @@ class Conv64FLeakyReLU(nn.Module):
         Input:  3 * 84 *84
         Output: 64 * 21 * 21
     """
-    def __init__(self, is_flatten=False):
+
+    def __init__(self, is_flatten=False, is_feature=False):
         super(Conv64FLeakyReLU, self).__init__()
 
         self.is_flatten = is_flatten
-        self.features = nn.Sequential(
+        self.is_feature = is_feature
+
+        self.layer1 = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(64),
             nn.LeakyReLU(0.2, True),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-
+            nn.MaxPool2d(kernel_size=2, stride=2), )
+        self.layer2 = nn.Sequential(
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(64),
             nn.LeakyReLU(0.2, True),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-
+            nn.MaxPool2d(kernel_size=2, stride=2), )
+        self.layer3 = nn.Sequential(
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(64),
-            nn.LeakyReLU(0.2, True),
-
+            nn.LeakyReLU(0.2, True), )
+        self.layer4 = nn.Sequential(
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(64),
-            nn.LeakyReLU(0.2, True)
-        )
+            nn.LeakyReLU(0.2, True), )
 
     def forward(self, x):
-        out = self.features(x)
-        if self.is_flatten:
-            out = out.view(out.size(0), -1)
+        out1 = self.layer1(x)
+        out2 = self.layer2(out1)
+        out3 = self.layer3(out2)
+        out4 = self.layer4(out3)
 
-        return out
+        if self.is_flatten:
+            out4 = out4.view(out4.size(0), -1)
+
+        if self.is_feature:
+            return out1, out2, out3, out4
+
+        return out4
+
+
+class Conv64FReLU(nn.Module):
+    """
+    https://github.com/floodsung/LearningToCompare_FSL/blob/master/miniimagenet/miniimagenet_train_few_shot.py
+    """
+
+    def __init__(self, is_flatten=False, is_feature=False):
+        super(Conv64FReLU, self).__init__()
+
+        self.is_flatten = is_flatten
+        self.is_feature = is_feature
+
+        self.layer1 = nn.Sequential(
+            nn.Conv2d(3, 64, kernel_size=3, padding=0),
+            nn.BatchNorm2d(64, momentum=1, affine=True),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(2))
+        self.layer2 = nn.Sequential(
+            nn.Conv2d(64, 64, kernel_size=3, padding=0),
+            nn.BatchNorm2d(64, momentum=1, affine=True),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(2))
+        self.layer3 = nn.Sequential(
+            nn.Conv2d(64, 64, kernel_size=3, padding=1),
+            nn.BatchNorm2d(64, momentum=1, affine=True),
+            nn.ReLU(inplace=True))
+        self.layer4 = nn.Sequential(
+            nn.Conv2d(64, 64, kernel_size=3, padding=1),
+            nn.BatchNorm2d(64, momentum=1, affine=True),
+            nn.ReLU(inplace=True))
+
+    def forward(self, x):
+        out1 = self.layer1(x)
+        out2 = self.layer2(out1)
+        out3 = self.layer3(out2)
+        out4 = self.layer4(out3)
+
+        if self.is_flatten:
+            out4 = out4.view(out4.size(0), -1)
+
+        if self.is_feature:
+            return out1, out2, out3, out4
+
+        return out4
