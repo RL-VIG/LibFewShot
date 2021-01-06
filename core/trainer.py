@@ -112,40 +112,11 @@ class Trainer(object):
         meter = self.test_meter if is_test else self.val_meter
 
         end = time()
-        # TODO dirty implementation needs to be changed
         if self.model_type == ModelType.METRIC:
-            with torch.no_grad():
-                for episode_idx, batch in enumerate(
-                        self.test_loader if is_test else self.val_loader):
-                    self.writer.set_step(epoch_idx * len(self.val_loader) + episode_idx)
-
-                    meter.update('data_time', time() - end)
-
-                    # calculate the output
-                    output, prec1 = self.model.set_forward(batch)
-
-                    # measure accuracy and record loss
-                    meter.update('prec1', prec1)
-
-                    # measure elapsed time
-                    meter.update('batch_time', time() - end)
-                    end = time()
-
-                    if episode_idx != 0 and \
-                            episode_idx % self.config['log_interval'] == 0:
-                        info_str = ('Epoch-({}): [{}/{}]\t'
-                                    'Time {:.3f} ({:.3f})\t'
-                                    'Data {:.3f} ({:.3f})\t'
-                                    'Prec@1 {:.3f} ({:.3f})'
-                                    .format(epoch_idx, episode_idx, len(self.val_loader),
-                                            meter.last('batch_time'),
-                                            meter.avg('batch_time'),
-                                            meter.last('data_time'),
-                                            meter.avg('data_time'),
-                                            meter.last('prec1'),
-                                            meter.avg('prec1'), ))
-                        self.logger.info(info_str)
+            enable_grad = False
         else:
+            enable_grad = True
+        with torch.set_grad_enabled(enable_grad):
             for episode_idx, batch in enumerate(
                     self.test_loader if is_test else self.val_loader):
                 self.writer.set_step(epoch_idx * len(self.val_loader) + episode_idx)
@@ -162,7 +133,8 @@ class Trainer(object):
                 meter.update('batch_time', time() - end)
                 end = time()
 
-                if episode_idx != 0 and episode_idx % self.config['log_interval'] == 0:
+                if episode_idx != 0 and \
+                        episode_idx % self.config['log_interval'] == 0:
                     info_str = ('Epoch-({}): [{}/{}]\t'
                                 'Time {:.3f} ({:.3f})\t'
                                 'Data {:.3f} ({:.3f})\t'
