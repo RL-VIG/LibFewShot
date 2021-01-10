@@ -13,12 +13,14 @@ str_level_dict = {
 }
 
 
-def init_logger(log_level, result_root, classifier, backbone):
+def init_logger(log_level, result_root, classifier, backbone, is_train=True):
     if log_level not in str_level_dict:
         raise KeyError
 
     level = str_level_dict[log_level]
-    file_name = '{}-{}-{}.log'.format(classifier, backbone, get_local_time())
+    file_name = '{}-{}-{}-{}.log'.format(classifier, backbone,
+                                         'train' if is_train else 'test',
+                                         get_local_time())
     log_path = os.path.join(result_root, file_name)
 
     logging.config.dictConfig({

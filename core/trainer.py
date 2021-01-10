@@ -4,12 +4,12 @@ from time import time
 
 import torch
 import yaml
+from torch import nn
 
 import core.model as arch
 from core.data import get_dataloader
 from core.utils import init_logger, prepare_device, init_seed, AverageMeter, \
     count_parameters, save_model, create_dirs, ModelType, TensorboardWriter
-from core.utils.utils import init_sharing_strategy
 
 
 def get_instance(module, name, config, *args):
@@ -33,8 +33,6 @@ class Trainer(object):
         self.train_loader, self.val_loader, self.test_loader \
             = self._init_dataloader(config)
         self.optimizer, self.scheduler = self._init_optim(config)
-
-        self.model = self.model.to(self.device)
 
     def train_loop(self):
         best_val_prec1 = float('-inf')
@@ -175,8 +173,6 @@ class Trainer(object):
         val_loader = get_dataloader(config, 'val', self.model_type)
         test_loader = get_dataloader(config, 'test', self.model_type)
 
-        init_sharing_strategy()
-
         return train_loader, val_loader, test_loader
 
     def _init_model(self, config):
@@ -189,6 +185,16 @@ class Trainer(object):
 
         self.logger.info(model)
         self.logger.info(count_parameters(model))
+
+        model = model.to(self.device)
+        if len(self.list_ids) > 1:
+            parallel_list = self.config['parallel_part']
+            if parallel_list is not None:
+                for parallel_part in parallel_list:
+                    if hasattr(model, parallel_part):
+                        setattr(model, parallel_part,
+                                nn.DataParallel(getattr(model, parallel_part),
+                                                device_ids=self.list_ids))
 
         return model, model.model_type
 
@@ -222,13 +228,14 @@ class Trainer(object):
         return device, list_ids
 
     def _save_model(self, epoch, is_best=False):
-        save_model(self.model, self.checkpoints_path, 'model', epoch, is_best)
+        save_model(self.model, self.checkpoints_path, 'model', epoch, is_best,
+                   len(self.list_ids) > 1)
         save_list = self.config['save_part']
         if save_list is not None:
             for save_part in save_list:
                 if hasattr(self.model, save_part):
                     save_model(getattr(self.model, save_part), self.checkpoints_path,
-                               save_part, epoch, is_best)
+                               save_part, epoch, is_best, len(self.list_ids) > 1)
                 else:
                     self.logger.warning('')
 
