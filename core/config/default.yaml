@@ -40,7 +40,6 @@ result_root: ./results
 save_interval: 10
 save_part:
   - model_func
-  - relation_layer
 
 # log info
 log_level: info
@@ -49,20 +48,8 @@ log_interval: 100
 # gpu info
 device_ids: 1
 n_gpu: 1
+parallel_part:
+  - model_func
 seed: 0
 deterministic: True
-
-
-# arch info
-backbone:
-  name: Conv64FLeakyReLU
-  kwargs:
-    is_flatten: False
-
-classifier:
-  name: RelationNet
-  kwargs:
-    feat_dim: 64
-    feat_height: 3
-    feat_width: 3
 
