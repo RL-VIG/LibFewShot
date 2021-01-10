@@ -9,7 +9,6 @@ import core.model as arch
 from core.data import get_dataloader
 from core.utils import init_logger, prepare_device, init_seed, AverageMeter, \
     count_parameters, save_model, create_dirs, ModelType, TensorboardWriter
-from core.utils.utils import init_sharing_strategy
 
 
 def get_instance(module, name, config, *args):
@@ -174,8 +173,6 @@ class Trainer(object):
         train_loader = get_dataloader(config, 'train', self.model_type)
         val_loader = get_dataloader(config, 'val', self.model_type)
         test_loader = get_dataloader(config, 'test', self.model_type)
-
-        init_sharing_strategy()
 
         return train_loader, val_loader, test_loader
 
