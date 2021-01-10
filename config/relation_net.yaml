@@ -1,0 +1,26 @@
+train_episode: 1000
+test_episode: 500
+
+save_part:
+  - model_func
+  - relation_layer
+
+# gpu info
+device_ids: 1,2
+n_gpu: 2
+parallel_part:
+  - model_func
+  - relation_layer
+
+# arch info
+backbone:
+  name: Conv64FLeakyReLU
+  kwargs:
+    is_flatten: False
+
+classifier:
+  name: RelationNet
+  kwargs:
+    feat_dim: 64
+    feat_height: 3
+    feat_width: 3

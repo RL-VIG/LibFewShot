@@ -26,15 +26,8 @@ class Baseline(PretrainModel):
         :param batch:
         :return:
         """
-        query_images, query_targets, support_images, support_targets = batch
-        query_images = torch.cat(query_images, 0)
-        query_targets = torch.cat(query_targets, 0)
-        support_images = torch.cat(support_images, 0)
-        support_targets = torch.cat(support_targets, 0)
-        query_images = query_images.to(self.device)
-        query_targets = query_targets.to(self.device)
-        support_images = support_images.to(self.device)
-        support_targets = support_targets.to(self.device)
+        support_images, support_targets, query_images, query_targets = \
+            self.progress_batch(batch)
 
         with torch.no_grad():
             support_feat = self.model_func(support_images)
@@ -54,8 +47,6 @@ class Baseline(PretrainModel):
         :return:
         """
         images, targets = batch
-        images = torch.cat(images, 0)
-        targets = torch.cat(targets, 0)
         images = images.to(self.device)
         targets = targets.to(self.device)
 

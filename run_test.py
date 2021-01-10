@@ -3,7 +3,7 @@ import os
 from core.config import Config
 from core.test import Test
 
-PATH = './results/Baseline-Conv64F-5-5'
+PATH = './results/RelationNet-Conv64FLeakyReLU-5-5'
 VAR_DICT = {
     'device_ids': 0,
     'test_epoch': 5

@@ -104,15 +104,8 @@ class R2D2(MetaModel):
         self._init_network()
 
     def set_forward(self, batch, ):
-        query_images, query_targets, support_images, support_targets = batch
-        query_images = torch.cat(query_images, 0)
-        query_targets = torch.cat(query_targets, 0)
-        support_images = torch.cat(support_images, 0)
-        support_targets = torch.cat(support_targets, 0)
-        query_images = query_images.to(self.device)
-        query_targets = query_targets.to(self.device)
-        support_images = support_images.to(self.device)
-        support_targets = support_targets.to(self.device)
+        support_images, support_targets, query_images, query_targets = \
+            self.progress_batch(batch)
 
         with torch.no_grad():
             support_feat = self.model_func(support_images)
@@ -125,15 +118,8 @@ class R2D2(MetaModel):
         return output, prec1
 
     def set_forward_loss(self, batch, ):
-        query_images, query_targets, support_images, support_targets = batch
-        query_images = torch.cat(query_images, 0)
-        query_targets = torch.cat(query_targets, 0)
-        support_images = torch.cat(support_images, 0)
-        support_targets = torch.cat(support_targets, 0)
-        query_images = query_images.to(self.device)
-        query_targets = query_targets.to(self.device)
-        support_images = support_images.to(self.device)
-        support_targets = support_targets.to(self.device)
+        support_images, support_targets, query_images, query_targets = \
+            self.progress_batch(batch)
 
         emb_query = self.model_func(query_images)
         emb_support = self.model_func(support_images)
@@ -142,7 +128,8 @@ class R2D2(MetaModel):
         emb_query = emb_query.unsqueeze(0)
         emb_support = emb_support.unsqueeze(0)
 
-        output = self.classifier(emb_query, emb_support, support_targets, self.way_num, self.shot_num)
+        output = self.classifier(emb_query, emb_support, support_targets, self.way_num,
+                                 self.shot_num)
 
         output = output.squeeze()
         loss = self.loss_func(output, query_targets)
