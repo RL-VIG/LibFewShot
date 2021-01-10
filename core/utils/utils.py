@@ -1,5 +1,6 @@
 import os
 import random
+from collections import OrderedDict
 from datetime import datetime
 from logging import getLogger
 
@@ -141,7 +142,7 @@ def prepare_device(device_ids, n_gpu_use):
     return device, list_ids
 
 
-def save_model(model, save_path, name, epoch, is_best=False):
+def save_model(model, save_path, name, epoch, is_best=False, is_parallel=False):
     """
 
     :param model:
@@ -149,14 +150,23 @@ def save_model(model, save_path, name, epoch, is_best=False):
     :param name:
     :param epoch:
     :param is_best:
+    :param is_parallel:
     :return:
     """
     if is_best:
         save_name = os.path.join(save_path, '{}_best.pth'.format(name))
-        torch.save(model.state_dict(), save_name)
     else:
         save_name = os.path.join(save_path, '{}_{:0>5d}.pth'.format(name, epoch))
+
+    if is_parallel:
+        state_dict = OrderedDict()
+        for k, v in model.state_dict().items():
+            name = '.'.join([name for name in k.split('.') if name != 'module'])
+            state_dict[name] = v
+        torch.save(state_dict, save_name)
+    else:
         torch.save(model.state_dict(), save_name)
+
     return save_name
 
 
