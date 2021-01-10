@@ -52,13 +52,8 @@ class RelationNet(MetricModel):
         :param batch:
         :return:
         """
-        query_images, query_targets, support_images, _ = batch
-        query_images = torch.cat(query_images, 0)
-        query_targets = torch.cat(query_targets, 0)
-        support_images = torch.cat(support_images, 0)
-        query_images = query_images.to(self.device)
-        query_targets = query_targets.to(self.device)
-        support_images = support_images.to(self.device)
+        support_images, support_targets, query_images, query_targets = \
+            self.progress_batch(batch)
 
         query_feat = self.model_func(query_images)
         support_feat = self.model_func(support_images)
@@ -75,13 +70,8 @@ class RelationNet(MetricModel):
         :param batch:
         :return:
         """
-        query_images, query_targets, support_images, _ = batch
-        query_images = torch.cat(query_images, 0)
-        query_targets = torch.cat(query_targets, 0)
-        support_images = torch.cat(support_images, 0)
-        query_images = query_images.to(self.device)
-        query_targets = query_targets.to(self.device)
-        support_images = support_images.to(self.device)
+        support_images, support_targets, query_images, query_targets = \
+            self.progress_batch(batch)
 
         query_feat = self.model_func(query_images)
         support_feat = self.model_func(support_images)
