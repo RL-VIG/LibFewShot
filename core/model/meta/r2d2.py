@@ -109,65 +109,64 @@ class R2D2(MetaModel):
 
     def set_forward(self, batch, ):
         support_images, support_targets, query_images, query_targets = \
-            self.progress_batch(batch)
+            self.progress_batch2(batch)
+        episode = support_images.size(0)
 
-        emb_query = self.model_func(query_images)
-        emb_support = self.model_func(support_images)
+        prec1_list = []
+        output_list = []
+        for i in range(episode):
+            episode_support_images = support_images[i, :]
+            episode_query_images = query_images[i, :]
+            episode_support_targets = support_targets[i, :].contiguous().view(-1)
+            episode_query_targets = query_targets[i, :].contiguous().view(-1)
 
-        # TODO 第1维是episode_num，暂时默认为1
-        emb_query = emb_query.unsqueeze(0)
-        emb_support = emb_support.unsqueeze(0)
+            emb_support = self.model_func(episode_support_images)
+            emb_query = self.model_func(episode_query_images)
 
-        output = self.classifier(emb_query, emb_support, support_targets, self.way_num, self.shot_num, self.gamma)
-        output = self.alpha * output + self.beta
-        prec1, _ = accuracy(output.squeeze(), query_targets, topk=(1, 3))
+            emb_support = emb_support.unsqueeze(0)
+            emb_query = emb_query.unsqueeze(0)
 
+            output = self.classifier(emb_query, emb_support, episode_support_targets, self.way_num, self.shot_num,
+                                     self.gamma)
+            output = self.alpha * output + self.beta
+            prec1, _ = accuracy(output.squeeze(), episode_query_targets, topk=(1, 3))
+
+            prec1_list.append(prec1)
+
+        prec1 = torch.mean(torch.tensor(prec1_list))
+        output = torch.tensor(output_list)
         return output, prec1
 
     def set_forward_loss(self, batch, ):
-        # support_images, support_targets, query_images, query_targets = \
-        #     self.progress_batch(batch)
-
-        images, _ = batch
-        b, c, h, w = images.size()
-        episode = b // (self.way_num * (self.shot_num + self.query_num))
-        local_target = self._generate_local_targets(episode)
-
-        images = images.to(self.device)
-        local_target = local_target.to(self.device)
-
+        support_images, support_targets, query_images, query_targets = \
+            self.progress_batch2(batch)
+        episode = support_images.size(0)
         # emb_feat = self.model_func(images)
-        images = images.contiguous().view(episode, self.way_num, self.shot_num + self.query_num, c, h, w)
-        local_target = local_target.contiguous().view(episode, self.way_num, -1)
 
         loss_list = []
         prec1_list = []
         output_list = []
         for i in range(episode):
-            episode_images = images[i:i + 1, :]
-            episode_targets = local_target[i:i + 1, :]
+            episode_support_images = support_images[i, :]
+            episode_query_images = query_images[i, :]
+            episode_support_targets = support_targets[i, :].contiguous().view(-1)
+            episode_query_targets = query_targets[i, :].contiguous().view(-1)
 
-            support_images = episode_images[:, :, :self.shot_num, :, :, :].contiguous().view(-1, c, h, w)
-            query_images = episode_images[:, :, self.shot_num:, :, :, :].contiguous().view(-1, c, h, w)
-            support_targets = episode_targets[:, :, :self.shot_num].contiguous().view(-1)
-            query_targets = episode_targets[:, :, self.shot_num:].contiguous().view(-1)
+            emb_support = self.model_func(episode_support_images)
+            emb_query = self.model_func(episode_query_images)
 
-            emb_support = self.model_func(support_images)
-            emb_query = self.model_func(query_images)
-
-            # FIXME 换一种写法
             emb_support = emb_support.unsqueeze(0)
             emb_query = emb_query.unsqueeze(0)
 
-            output = self.classifier(emb_query, emb_support, support_targets, self.way_num, self.shot_num, self.gamma)
+            output = self.classifier(emb_query, emb_support, episode_support_targets, self.way_num, self.shot_num,
+                                     self.gamma)
             output = self.alpha * output + self.beta
-            loss = self.loss_func(output.squeeze(), query_targets)
-            prec1, _ = accuracy(output.squeeze(), query_targets, topk=(1, 3))
+            loss = self.loss_func(output.squeeze(), episode_query_targets)
+            prec1, _ = accuracy(output.squeeze(), episode_query_targets, topk=(1, 3))
 
             loss_list.append(loss)
             prec1_list.append(prec1)
 
-        # FIXME 怎么计算多任务loss和prec1
         loss = torch.mean(torch.stack(loss_list))
         prec1 = torch.mean(torch.tensor(prec1_list))
         output = torch.tensor(output_list)
