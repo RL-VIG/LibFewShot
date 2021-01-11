@@ -10,6 +10,7 @@ episode_size: 1
 # data info
 data_root: /data/wzy/miniImageNet--ravi
 image_size: 84
+use_memory: False
 augment: True
 augment_times: 1
 train_episode: 10000

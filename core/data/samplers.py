@@ -5,18 +5,19 @@ from torch.utils.data import Sampler
 
 class CategoriesSampler(Sampler):
 
-    def __init__(self, label, episode_size, episode_num, way_num, image_num):
-        super(CategoriesSampler, self).__init__(label)
+    def __init__(self, label_list, label_num, episode_size, episode_num, way_num,
+                 image_num):
+        super(CategoriesSampler, self).__init__(label_list)
 
         self.episode_size = episode_size
         self.episode_num = episode_num
         self.way_num = way_num
         self.image_num = image_num
 
-        label = np.array(label)
+        label_list = np.array(label_list)
         self.idx_list = []
-        for label_idx in range(max(label) + 1):
-            ind = np.argwhere(label == label_idx).reshape(-1)
+        for label_idx in range(label_num):
+            ind = np.argwhere(label_list == label_idx).reshape(-1)
             ind = torch.from_numpy(ind)
             self.idx_list.append(ind)
 

@@ -50,15 +50,17 @@ def get_dataloader(config, mode, model_type):
     trfms_list.append(transforms.Normalize(mean=MEAN, std=STD))
     trfms = transforms.Compose(trfms_list)
 
-    dataset = GeneralDataset(data_root=config['data_root'], mode=mode, trfms=trfms)
-    label_list = dataset.label_list
+    dataset = GeneralDataset(data_root=config['data_root'], mode=mode,
+                             use_memory=config['use_memory'], trfms=trfms)
 
     if mode == 'train' and model_type == ModelType.PRETRAIN:
         dataloader = DataLoader(dataset, batch_size=config['batch_size'], shuffle=True,
                                 num_workers=config['n_gpu'] * 4, drop_last=True,
                                 pin_memory=True)
     else:
-        sampler = CategoriesSampler(label=label_list, episode_size=config['episode_size'],
+        sampler = CategoriesSampler(label_list=dataset.label_list,
+                                    label_num=dataset.label_num,
+                                    episode_size=config['episode_size'],
                                     episode_num=config['train_episode']
                                     if mode == 'train' else config['test_episode'],
                                     way_num=config['way_num'],
