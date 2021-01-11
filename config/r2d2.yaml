@@ -1,39 +1,61 @@
-train_episode: 1000
-test_episode: 200
+data_name: miniImageNet
 
+# base info
 way_num: 5
 shot_num: 5
 query_num: 15
+batch_size: 128
+episode_size: 1
 
-# FIXME 网络有三个可学习参数，无法保存
-save_part:
-  - model_func
-#  - alpha
-#  - beta
-#  - gamma
+# data info
+data_root: /data/yxs/miniImageNet--ravi
+image_size: 84
+augment: True
+augment_times: 1
+train_episode: 1000
+test_episode: 200
 
 # train info
-epoch: 200
+epoch: 100
 
 # arch info
 backbone:
   name: R2D2Embedding
   kwargs:
-
 classifier:
   name: R2D2
   kwargs:
 
-
+# optimizer info
 optimizer:
   name: Adam
   kwargs:
     lr: 0.001
   other:
 
-
+# lr_scheduler info
 lr_scheduler:
   name: StepLR
   kwargs:
     gamma: 0.5
-    step_size: 20000
+    step_size: 10
+
+
+# result info
+result_root: ./results
+save_interval: 10
+save_part:
+
+# log info
+log_level: info
+log_interval: 100
+
+# gpu info
+device_ids: 0
+n_gpu: 1
+parallel_part:
+  - model_func
+  - classifier
+seed: 0
+deterministic: True
+
