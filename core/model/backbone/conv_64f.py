@@ -187,4 +187,5 @@ class R2D2Embedding(nn.Module):
         b3 = self.block3(b2)
         b4 = self.block4(b3)
         # Flatten and concatenate the output of the 3rd and 4th conv blocks as proposed in R2D2 paper.
+        # return b3.view(b3.size(0), -1), b4.view(b4.size(0), -1)
         return torch.cat((b3.view(b3.size(0), -1), b4.view(b4.size(0), -1)), 1)
