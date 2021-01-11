@@ -75,19 +75,10 @@ class AbstractModel(nn.Module):
         episode_size = b // (self.way_num * (self.shot_num + self.query_num))
         local_targets = self._generate_local_targets(episode_size)
 
-        images = images.view(episode_size, self.way_num, self.shot_num + self.query_num, c, h, w)
-        local_targets = local_targets.view(episode_size, self.way_num, self.shot_num + self.query_num)
+        images = images.to(self.device)
+        local_targets = local_targets.to(self.device)
 
-        support_images = images[:, :, :self.shot_num, :, :, :].contiguous() \
-            .view(episode_size, self.way_num * self.shot_num, c, h, w).to(self.device)
-        support_targets = local_targets[:, :, :self.shot_num].contiguous() \
-            .view(episode_size, self.way_num * self.shot_num).to(self.device)
-        query_images = images[:, :, self.shot_num:, :, :, :].contiguous() \
-            .view(episode_size, self.way_num * self.query_num, c, h, w).to(self.device)
-        query_targets = local_targets[:, :, self.shot_num:].contiguous() \
-            .view(episode_size, self.way_num * self.query_num).to(self.device)
-
-        return support_images, support_targets, query_images, query_targets
+        return images, local_targets
 
     def reset_base_info(self, way_num, shot_num, query_num):
         self.way_num = way_num
