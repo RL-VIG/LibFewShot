@@ -1,16 +1,39 @@
 train_episode: 1000
 test_episode: 200
 
+way_num: 5
+shot_num: 5
+query_num: 15
+
+# FIXME 网络有三个可学习参数，无法保存
 save_part:
   - model_func
-  - classifier
+#  - alpha
+#  - beta
+#  - gamma
+
+# train info
+epoch: 200
 
 # arch info
 backbone:
-  name: Conv64F
+  name: R2D2Embedding
   kwargs:
-    is_flatten: True
 
 classifier:
   name: R2D2
   kwargs:
+
+
+optimizer:
+  name: Adam
+  kwargs:
+    lr: 0.001
+  other:
+
+
+lr_scheduler:
+  name: StepLR
+  kwargs:
+    gamma: 0.5
+    step_size: 20000

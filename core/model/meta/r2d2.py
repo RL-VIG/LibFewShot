@@ -64,18 +64,17 @@ class R2D2Head(nn.Module):
     https://arxiv.org/abs/1805.08136
     """
 
-    def __init__(self, ratio=50.0):
+    def __init__(self):
         super(R2D2Head, self).__init__()
-        self.ratio = ratio
 
-    def forward(self, query, support, support_labels, n_way, n_shot):
+    def forward(self, query, support, support_labels, n_way, n_shot, ratio=50.0):
         tasks_per_batch = query.size(0)
         n_support = support.size(1)
 
-        assert (query.dim() == 3)
-        assert (support.dim() == 3)
-        assert (query.size(0) == support.size(0) and query.size(2) == support.size(2))
-        assert (n_support == n_way * n_shot)  # n_support must equal to n_way * n_shot
+        # assert (query.dim() == 3)
+        # assert (support.dim() == 3)
+        # assert (query.size(0) == support.size(0) and query.size(2) == support.size(2))
+        # assert (n_support == n_way * n_shot)  # n_support must equal to n_way * n_shot
 
         support_labels_one_hot = one_hot(support_labels.view(tasks_per_batch * n_support), n_way)
         support_labels_one_hot = support_labels_one_hot.view(tasks_per_batch, n_support, n_way)
@@ -84,7 +83,7 @@ class R2D2Head(nn.Module):
 
         # Compute the dual form solution of the ridge regression.
         # W = X^T(X X^T - lambda * I)^(-1) Y
-        ridge_sol = computeGramMatrix(support, support) + self.ratio * id_matrix
+        ridge_sol = computeGramMatrix(support, support) + ratio * id_matrix
         ridge_sol = binv(ridge_sol)
         ridge_sol = torch.bmm(support.transpose(1, 2), ridge_sol)
         ridge_sol = torch.bmm(ridge_sol, support_labels_one_hot)
@@ -97,47 +96,83 @@ class R2D2Head(nn.Module):
 
 
 class R2D2(MetaModel):
-    def __init__(self, way_num, shot_num, query_num, feature, device):
+    def __init__(self, way_num, shot_num, query_num, feature, device, inner_optim=None, inner_train_iter=10):
         super(R2D2, self).__init__(way_num, shot_num, query_num, feature, device)
+        self.register_parameter('alpha', nn.Parameter(torch.tensor([1.])))
+        self.register_parameter('beta', nn.Parameter(torch.tensor([0.])))
+        self.register_parameter('gamma', nn.Parameter(torch.tensor([50.])))
         self.loss_func = nn.CrossEntropyLoss()
         self.classifier = R2D2Head()
+        self.inner_optim = inner_optim
+        self.inner_train_iter = inner_train_iter
         self._init_network()
 
     def set_forward(self, batch, ):
         support_images, support_targets, query_images, query_targets = \
-            self.progress_batch(batch)
+            self.progress_batch2(batch)
+        episode = support_images.size(0)
 
-        with torch.no_grad():
-            support_feat = self.model_func(support_images)
-        classifier_copy = self.train_loop(support_feat, support_targets)
+        prec1_list = []
+        output_list = []
+        for i in range(episode):
+            episode_support_images = support_images[i, :]
+            episode_query_images = query_images[i, :]
+            episode_support_targets = support_targets[i, :].contiguous().view(-1)
+            episode_query_targets = query_targets[i, :].contiguous().view(-1)
 
-        query_feat = self.model_func(query_images)
-        output = classifier_copy(query_feat)
-        prec1, _ = accuracy(output, query_targets, topk=(1, 3))
+            emb_support = self.model_func(episode_support_images)
+            emb_query = self.model_func(episode_query_images)
 
+            emb_support = emb_support.unsqueeze(0)
+            emb_query = emb_query.unsqueeze(0)
+
+            output = self.classifier(emb_query, emb_support, episode_support_targets, self.way_num, self.shot_num,
+                                     self.gamma)
+            output = self.alpha * output + self.beta
+            prec1, _ = accuracy(output.squeeze(), episode_query_targets, topk=(1, 3))
+
+            prec1_list.append(prec1)
+
+        prec1 = torch.mean(torch.tensor(prec1_list))
+        output = torch.tensor(output_list)
         return output, prec1
 
     def set_forward_loss(self, batch, ):
         support_images, support_targets, query_images, query_targets = \
-            self.progress_batch(batch)
+            self.progress_batch2(batch)
+        episode = support_images.size(0)
+        # emb_feat = self.model_func(images)
 
-        emb_query = self.model_func(query_images)
-        emb_support = self.model_func(support_images)
+        loss_list = []
+        prec1_list = []
+        output_list = []
+        for i in range(episode):
+            episode_support_images = support_images[i, :]
+            episode_query_images = query_images[i, :]
+            episode_support_targets = support_targets[i, :].contiguous().view(-1)
+            episode_query_targets = query_targets[i, :].contiguous().view(-1)
 
-        # TODO 第1维是episode_num，暂时默认为1
-        emb_query = emb_query.unsqueeze(0)
-        emb_support = emb_support.unsqueeze(0)
+            emb_support = self.model_func(episode_support_images)
+            emb_query = self.model_func(episode_query_images)
 
-        output = self.classifier(emb_query, emb_support, support_targets, self.way_num,
-                                 self.shot_num)
+            emb_support = emb_support.unsqueeze(0)
+            emb_query = emb_query.unsqueeze(0)
 
-        output = output.squeeze()
-        loss = self.loss_func(output, query_targets)
-        prec1, _ = accuracy(output, query_targets, topk=(1, 3))
+            output = self.classifier(emb_query, emb_support, episode_support_targets, self.way_num, self.shot_num,
+                                     self.gamma)
+            output = self.alpha * output + self.beta
+            loss = self.loss_func(output.squeeze(), episode_query_targets)
+            prec1, _ = accuracy(output.squeeze(), episode_query_targets, topk=(1, 3))
 
+            loss_list.append(loss)
+            prec1_list.append(prec1)
+
+        loss = torch.mean(torch.stack(loss_list))
+        prec1 = torch.mean(torch.tensor(prec1_list))
+        output = torch.tensor(output_list)
         return output, prec1, loss
 
-    def train_loop(self, support_feat, support_targets):
+    def train_loop(self, emb_support, support_targets):
         raise NotImplementedError
 
     def test_loop(self, *args, **kwargs):
