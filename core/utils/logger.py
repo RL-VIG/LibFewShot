@@ -5,10 +5,11 @@ from logging import config
 from core.utils.utils import get_local_time
 
 str_level_dict = {
-    'info': logging.INFO,
+    'notest': logging.NOTSET,
     'debug': logging.DEBUG,
-    'error': logging.ERROR,
+    'info': logging.INFO,
     'warning': logging.WARNING,
+    'error': logging.ERROR,
     'critical': logging.CRITICAL
 }
 

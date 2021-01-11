@@ -1,5 +1,7 @@
 import csv
 import os
+import pickle
+from logging import getLogger
 
 from PIL import Image
 from torch.utils.data import Dataset
@@ -37,20 +39,31 @@ def default_loader(path):
 
 
 class GeneralDataset(Dataset):
-    def __init__(self, data_root="", mode="train", loader=default_loader, trfms=None):
+    def __init__(self, data_root="", mode="train", loader=default_loader,
+                 use_memory=True, trfms=None):
         super(GeneralDataset, self).__init__()
         assert mode in ['train', 'val', 'test']
 
         self.data_root = data_root
         self.mode = mode
         self.loader = loader
+        self.use_memory = use_memory
         self.trfms = trfms
+        self.logger = getLogger(__name__)
 
-        self.data_list, self.label_list, self.class_label_dict \
-            = self._generate_data_list()
+        if use_memory:
+            cache_path = os.path.join(data_root, '{}.pth'.format(mode))
+            self.data_list, self.label_list, self.class_label_dict = \
+                self._load_cache(cache_path)
+        else:
+            self.data_list, self.label_list, self.class_label_dict \
+                = self._generate_data_list()
 
-        self.num_classes = len(self.class_label_dict)
+        self.label_num = len(self.class_label_dict)
         self.length = len(self.data_list)
+
+        self.logger.info('load {} image with {} label.'
+                         .format(self.length, self.label_num))
 
     def _generate_data_list(self):
         meta_csv = os.path.join(self.data_root, '{}.csv'.format(self.mode))
@@ -72,13 +85,36 @@ class GeneralDataset(Dataset):
 
         return data_list, label_list, class_label_dict
 
+    def _load_cache(self, cache_path):
+        if os.path.exists(cache_path):
+            self.logger.info('load cache from {}...'.format(cache_path))
+            with open(cache_path, 'rb') as fin:
+                data_list, label_list, class_label_dict = pickle.load(fin)
+        else:
+            self.logger.info('dump the cache to {}, please wait...'.format(cache_path))
+            data_list, label_list, class_label_dict = self._save_cache(cache_path)
+
+        return data_list, label_list, class_label_dict
+
+    def _save_cache(self, cache_path):
+        data_list, label_list, class_label_dict = self._generate_data_list()
+        data_list = [self.loader(os.path.join(self.data_root, 'images', path))
+                     for path in data_list]
+
+        with open(cache_path, 'wb') as fout:
+            pickle.dump((data_list, label_list, class_label_dict), fout)
+        return data_list, label_list, class_label_dict
+
     def __len__(self):
         return self.length
 
     def __getitem__(self, idx):
-        image_name = self.data_list[idx]
-        image_path = os.path.join(self.data_root, 'images', image_name)
-        data = self.loader(image_path)
+        if self.use_memory:
+            data = self.data_list[idx]
+        else:
+            image_name = self.data_list[idx]
+            image_path = os.path.join(self.data_root, 'images', image_name)
+            data = self.loader(image_path)
 
         if self.trfms is not None:
             data = self.trfms(data)
