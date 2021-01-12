@@ -77,30 +77,21 @@ class ANIL(MetaModel):
         self._init_network()
 
     def set_forward(self, batch, ):
-        support_images, support_targets, query_images, query_targets = \
-            self.progress_batch2(batch)
-        episode = support_images.size(0)
+        images, targets = self.progress_batch2(batch)
+        episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
 
-        prec1_list = []
-        output_list = []
-        for i in range(episode):
-            episode_support_images = support_images[i, :]
-            episode_query_images = query_images[i, :]
-            episode_support_targets = support_targets[i, :].contiguous().view(-1)
-            episode_query_targets = query_targets[i, :].contiguous().view(-1)
+        emb = self.model_func(images)
+        emb = emb.contiguous().view(episode_size, self.way_num, self.shot_num + self.query_num, -1)
+        targets = targets.contiguous().view(episode_size, self.way_num, self.shot_num + self.query_num)
 
-            with torch.no_grad():
-                emb_support = self.model_func(episode_support_images)
-                emb_query = self.model_func(episode_query_images)
-            classifier_copy = self.train_loop(emb_support, episode_support_targets)
+        emb_support = emb[:, :, :self.shot_num, :].contiguous().view(episode_size, self.way_num * self.shot_num, -1)
+        emb_query = emb[:, :, self.shot_num:, :].contiguous().view(episode_size, self.way_num * self.query_num, -1)
+        support_targets = targets[:, :, :self.shot_num].contiguous().view(episode_size, -1)
+        query_targets = targets[:, :, self.shot_num:].contiguous().view(-1)
 
-            output = classifier_copy(emb_query)
-            prec1, _ = accuracy(output.squeeze(), episode_query_targets, topk=(1, 3))
+        output = self.classifier(emb_query, emb_support, support_targets)
 
-            prec1_list.append(prec1)
-
-        prec1 = torch.mean(torch.tensor(prec1_list))
-        output = torch.tensor(output_list)
+        prec1, _ = accuracy(output.squeeze(), query_targets, topk=(1, 3))
         return output, prec1
 
     def set_forward_loss(self, batch, ):
