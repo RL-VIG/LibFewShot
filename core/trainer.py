@@ -64,6 +64,7 @@ class Trainer(object):
         self.model.train()
 
         meter = self.train_meter
+        meter.reset()
         episode_size = self.config['episode_size']
 
         end = time()
@@ -110,6 +111,7 @@ class Trainer(object):
         self.model.eval()
 
         meter = self.test_meter if is_test else self.val_meter
+        meter.reset()
         episode_size = self.config['episode_size']
 
         end = time()
