@@ -6,10 +6,41 @@ from core.utils import accuracy
 from .metric_model import MetricModel
 
 
+class DN4Layer(nn.Module):
+    def __init__(self, way_num, shot_num, query_num, n_k):
+        super(DN4Layer, self).__init__()
+        self.way_num = way_num
+        self.shot_num = shot_num
+        self.query_num = query_num
+        self.n_k = n_k
+
+    def forward(self, query_feat, support_feat):
+        t, wq, c, h, w = query_feat.size()
+        _, ws, _, _, _ = support_feat.size()
+
+        # t, wq, c, hw -> t, wq, hw, c -> t, wq, 1, hw, c
+        query_feat = query_feat.view(t, self.way_num * self.query_num, c, h * w) \
+            .permute(0, 1, 3, 2)
+        query_feat = F.normalize(query_feat, p=3, dim=2).unsqueeze(2)
+
+        # t, ws, c, h, w -> t, w, s, c, hw -> t, 1, w, c, shw
+        support_feat = support_feat.view(t, self.way_num, self.shot_num, c, h * w) \
+            .permute(0, 1, 3, 2, 4).contiguous() \
+            .view(t, self.way_num, c, self.shot_num * h * w)
+        support_feat = F.normalize(support_feat, p=2, dim=2).unsqueeze(1)
+
+        # t, wq, w, hw, shw -> t, wq, w, hw, n_k -> t, wq, w
+        relation = torch.matmul(query_feat, support_feat)
+        topk_value, _ = torch.topk(relation, self.n_k, dim=-1)
+        score = torch.sum(topk_value, dim=[3, 4])
+
+        return score
+
+
 class DN4(MetricModel):
     def __init__(self, way_num, shot_num, query_num, model_func, device, n_k=3):
         super(DN4, self).__init__(way_num, shot_num, query_num, model_func, device)
-        self.n_k = n_k
+        self.dn4_layer = DN4Layer(way_num, shot_num, query_num, n_k)
         self.loss_func = nn.CrossEntropyLoss()
         self._init_network()
 
@@ -19,14 +50,27 @@ class DN4(MetricModel):
         :param batch:
         :return:
         """
-        support_images, support_targets, query_images, query_targets = \
-            self.progress_batch(batch)
+        images, targets = self.progress_batch2(batch)
+        episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
 
-        query_feat = self.model_func(query_images)
-        support_feat = self.model_func(support_images)
+        feat = self.model_func(images)
+        _, c, h, w = feat.size()
 
-        output = self.calc_image2class(query_feat, support_feat)
+        feat = feat.view(episode_size, self.way_num, self.shot_num + self.query_num,
+                         c, h, w)
+        targets = targets.view(episode_size, self.way_num, self.shot_num + self.query_num)
+
+        support_feat = feat[:, :, :self.shot_num, :, :, :].contiguous() \
+            .view(episode_size, self.way_num * self.shot_num, c, h, w)
+        query_feat = feat[:, :, self.shot_num:, :, :, :].contiguous() \
+            .view(episode_size, self.way_num * self.query_num, c, h, w)
+        query_targets = targets[:, :, self.shot_num:].contiguous() \
+            .view(-1)
+
+        output = self.dn4_layer(query_feat, support_feat) \
+            .view(episode_size * self.way_num * self.query_num, self.way_num)
         prec1, _ = accuracy(output, query_targets, topk=(1, 3))
+
         return output, prec1
 
     def set_forward_loss(self, batch):
@@ -35,39 +79,26 @@ class DN4(MetricModel):
         :param batch:
         :return:
         """
-        support_images, support_targets, query_images, query_targets = \
-            self.progress_batch(batch)
+        images, targets = self.progress_batch2(batch)
+        episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
 
-        query_feat = self.model_func(query_images)
-        support_feat = self.model_func(support_images)
+        feat = self.model_func(images)
+        _, c, h, w = feat.size()
 
-        output = self.calc_image2class(query_feat, support_feat)
+        feat = feat.view(episode_size, self.way_num, self.shot_num + self.query_num,
+                         c, h, w)
+        targets = targets.view(episode_size, self.way_num, self.shot_num + self.query_num)
+
+        support_feat = feat[:, :, :self.shot_num, :, :, :].contiguous() \
+            .view(episode_size, self.way_num * self.shot_num, c, h, w)
+        query_feat = feat[:, :, self.shot_num:, :, :, :].contiguous() \
+            .view(episode_size, self.way_num * self.query_num, c, h, w)
+        query_targets = targets[:, :, self.shot_num:].contiguous() \
+            .view(-1)
+
+        output = self.dn4_layer(query_feat, support_feat) \
+            .view(episode_size * self.way_num * self.query_num, self.way_num)
         loss = self.loss_func(output, query_targets)
         prec1, _ = accuracy(output, query_targets, topk=(1, 3))
+
         return output, prec1, loss
-
-    def calc_image2class(self, input1, input2):
-        """
-
-        :param input1: (query_num * way_num, feat_dim, feat_width, feat_height)
-        :param input2: (support_num * way_num, feat_dim, feat_width, feat_height)
-        :return: query_num * way_num * way_num, feat_dim, feat_width, feat_height
-        """
-        feat_dim = input1.size(1)
-
-        # way_num * query_num, 1, feat_width * feat_height, feat_dim
-        input1 = input1.view(self.way_num * self.query_num, feat_dim, -1).permute(0, 2, 1)
-        input1 = F.normalize(input1, p=2, dim=2).unsqueeze(1)
-
-        # way_num, feat_dim, shot_num * feat_width * feat_height
-        input2 = input2.view(self.way_num, self.shot_num, feat_dim, -1) \
-            .permute(0, 2, 1, 3).contiguous().view(self.way_num, feat_dim, -1)
-        input2 = F.normalize(input2, p=1, dim=1)
-
-        # way_num * query_num, way_num, feat_width * feat_height,
-        # shot_num * feat_width * feat_height
-        relation = torch.matmul(input1, input2)
-        topk_value, _ = torch.topk(relation, self.n_k)
-        score = torch.sum(topk_value, dim=[2, 3])
-
-        return score

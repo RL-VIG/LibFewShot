@@ -64,10 +64,11 @@ class Trainer(object):
         self.model.train()
 
         meter = self.train_meter
+        episode_size = self.config['episode_size']
 
         end = time()
-        for episode_idx, batch in enumerate(self.train_loader):
-            self.writer.set_step(epoch_idx * len(self.train_loader) + episode_idx)
+        for batch_idx, batch in enumerate(self.train_loader):
+            self.writer.set_step(epoch_idx + 1.0 * batch_idx / len(self.train_loader))
 
             meter.update('data_time', time() - end)
 
@@ -88,13 +89,14 @@ class Trainer(object):
             end = time()
 
             # print the intermediate results
-            if episode_idx != 0 and episode_idx % self.config['log_interval'] == 0:
+            if batch_idx != 0 and batch_idx % self.config['log_interval'] == 0:
                 info_str = ('Epoch-({}): [{}/{}]\t'
                             'Time {:.3f} ({:.3f})\t'
                             'Data {:.3f} ({:.3f})\t'
                             'Loss {:.3f} ({:.3f})\t'
                             'Prec@1 {:.3f} ({:.3f})'
-                            .format(epoch_idx, episode_idx, len(self.train_loader),
+                            .format(epoch_idx, batch_idx * episode_size,
+                                    len(self.train_loader),
                                     meter.last('batch_time'), meter.avg('batch_time'),
                                     meter.last('data_time'), meter.avg('data_time'),
                                     meter.last('loss'), meter.avg('loss'),
@@ -108,6 +110,7 @@ class Trainer(object):
         self.model.eval()
 
         meter = self.test_meter if is_test else self.val_meter
+        episode_size = self.config['episode_size']
 
         end = time()
         if self.model_type == ModelType.METRIC:
@@ -115,9 +118,9 @@ class Trainer(object):
         else:
             enable_grad = True
         with torch.set_grad_enabled(enable_grad):
-            for episode_idx, batch in enumerate(
+            for batch_idx, batch in enumerate(
                     self.test_loader if is_test else self.val_loader):
-                self.writer.set_step(epoch_idx * len(self.val_loader) + episode_idx)
+                self.writer.set_step(epoch_idx + 1.0 * batch_idx / len(self.test_loader))
 
                 meter.update('data_time', time() - end)
 
@@ -131,13 +134,14 @@ class Trainer(object):
                 meter.update('batch_time', time() - end)
                 end = time()
 
-                if episode_idx != 0 and \
-                        episode_idx % self.config['log_interval'] == 0:
+                if batch_idx != 0 and \
+                        batch_idx % self.config['log_interval'] == 0:
                     info_str = ('Epoch-({}): [{}/{}]\t'
                                 'Time {:.3f} ({:.3f})\t'
                                 'Data {:.3f} ({:.3f})\t'
                                 'Prec@1 {:.3f} ({:.3f})'
-                                .format(epoch_idx, episode_idx, len(self.val_loader),
+                                .format(epoch_idx, batch_idx * episode_size,
+                                        len(self.val_loader),
                                         meter.last('batch_time'),
                                         meter.avg('batch_time'),
                                         meter.last('data_time'),
