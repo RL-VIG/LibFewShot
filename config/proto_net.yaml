@@ -1,0 +1,22 @@
+train_episode: 10000
+test_episode: 600
+episode_size: 32
+
+save_part:
+  - model_func
+
+device_ids: 0,1,2,3
+n_gpu: 4
+parallel_part:
+  - model_func
+  - proto_layer
+
+# arch info
+backbone:
+  name: Conv64FLeakyReLU
+  kwargs:
+    is_flatten: True
+
+classifier:
+  name: ProtoNet
+  kwargs: ~
