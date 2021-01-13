@@ -50,7 +50,7 @@ class Trainer(object):
             self.logger.info(' * Prec@1 {:.3f} Best Prec1 {:.3f}'
                              .format(test_prec1, best_test_prec1))
 
-            if val_prec1 > best_test_prec1:
+            if val_prec1 > best_val_prec1:
                 best_val_prec1 = val_prec1
                 best_test_prec1 = test_prec1
                 self._save_model(epoch_idx, is_best=True)
