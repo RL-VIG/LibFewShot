@@ -56,6 +56,7 @@ class Test(object):
         self.model.eval()
 
         meter = self.test_meter
+        meter.reset()
         accuracies = []
 
         end = time()
