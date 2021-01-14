@@ -3,10 +3,13 @@ import os
 from core.config import Config
 from core.test import Test
 
-PATH = './results/RelationNet-Conv64FLeakyReLU-5-5'
+PATH = './results/DN4-Conv64FLeakyReLU-5-5'
 VAR_DICT = {
-    'device_ids': 0,
-    'test_epoch': 5
+    'test_epoch': 5,
+    'device_ids': '2,3',
+    'n_gpu': 2,
+    'test_episode': 600,
+    'episode_size': 4
 }
 
 if __name__ == '__main__':
