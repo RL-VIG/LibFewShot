@@ -12,7 +12,8 @@ DEFAULT_FILE = os.path.join(get_cur_path(), 'default.yaml')
 
 
 class Config(object):
-    def __init__(self, config_file=None, variable_dict=None):
+    def __init__(self, config_file=None, variable_dict=None, is_resume=False):
+        self.is_resume = is_resume
         self.default_dict = self._load_config_files(DEFAULT_FILE)
         self.file_dict = self._load_config_files(config_file)
         self.variable_dict = self._load_variable_dict(variable_dict)
@@ -50,5 +51,5 @@ class Config(object):
         config_dict.update(self.default_dict)
         config_dict.update(self.file_dict)
         config_dict.update(self.variable_dict)
-
+        config_dict['resume'] = self.is_resume
         return config_dict
