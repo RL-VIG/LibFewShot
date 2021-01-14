@@ -4,6 +4,7 @@ from time import time
 
 import numpy as np
 import torch
+from torch import nn
 
 import core.model as arch
 from core.data import get_dataloader
@@ -29,8 +30,6 @@ class Test(object):
         self.logger.info(config)
         self.model, self.model_type = self._init_model(config)
         self.test_loader = self._init_dataloader(config)
-
-        self.model = self.model.to(self.device)
 
     def test_loop(self):
         total_accuracy = 0.0
@@ -118,8 +117,6 @@ class Test(object):
     def _init_dataloader(self, config):
         test_loader = get_dataloader(config, 'test', self.model_type)
 
-        # init_sharing_strategy()
-
         return test_loader
 
     def _init_model(self, config):
@@ -133,8 +130,19 @@ class Test(object):
         self.logger.info(model)
         self.logger.info(count_parameters(model))
 
+        self.logger.info('load the state dict from {}.'.format(self.state_dict_path))
         state_dict = torch.load(self.state_dict_path, map_location='cpu')
         model.load_state_dict(state_dict)
+
+        model = model.to(self.device)
+        if len(self.list_ids) > 1:
+            parallel_list = self.config['parallel_part']
+            if parallel_list is not None:
+                for parallel_part in parallel_list:
+                    if hasattr(model, parallel_part):
+                        setattr(model, parallel_part,
+                                nn.DataParallel(getattr(model, parallel_part),
+                                                device_ids=self.list_ids))
 
         return model, model.model_type
 
