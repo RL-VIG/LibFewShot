@@ -1,0 +1,24 @@
+train_episode: 10000
+test_episode: 600
+episode_size: 8
+
+save_part:
+  - model_func
+
+device_ids: 2,3
+n_gpu: 2
+parallel_part:
+  - model_func
+  - convm_layer
+
+
+# arch info
+backbone:
+  name: Conv64FLeakyReLU
+  kwargs:
+    is_flatten: False
+
+classifier:
+  name: ConvMNet
+  kwargs:
+    n_local: 441
