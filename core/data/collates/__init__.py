@@ -1,5 +1,5 @@
 from .collate_fns import *
-
+from .contrib import *
 from ...utils import ModelType
 
 
@@ -8,6 +8,6 @@ def get_collate_fn(config, trfms, mode, model_type, ):
     if mode == 'train' and model_type == ModelType.PRETRAIN:
         collate_fn = GeneralCollateFn(trfms, config['augment_times'])
     else:
-        collate_fn = FewShotAugCollateFn(trfms, config['augment_times'])
+        collate_fn = FewShotAugCollateFn(trfms, config['augment_times'], config['way_num'],config['shot_num'],config['query_num'],config['episode_size'])
 
     return collate_fn
