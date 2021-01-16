@@ -114,7 +114,7 @@ class R2D2(MetaModel):
         images = images.to(self.device)
 
         emb = self.model_func(images)
-        emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb)
+        emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb,mode=1)
 
         output = self.classifier(emb_query, emb_support, support_targets)
 
@@ -127,7 +127,7 @@ class R2D2(MetaModel):
         images = images.to(self.device)
 
         emb = self.model_func(images)
-        emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb)
+        emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb,mode=1)
 
         output = self.classifier(emb_query, emb_support, support_targets)
 
