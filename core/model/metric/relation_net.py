@@ -52,11 +52,11 @@ class RelationNet(MetricModel):
         :param batch:
         :return:
         """
-        support_images, support_targets, query_images, query_targets = \
-            self.progress_batch(batch)
+        images, global_targets = batch
+        images = images.to(self.device)
 
-        query_feat = self.model_func(query_images)
-        support_feat = self.model_func(support_images)
+        emb = self.model_func(images)
+        support_feat, query_feat, support_targets, query_targets = self.split_by_episode(emb, mode=3)
 
         relation_pairs = self.cal_pairs(query_feat, support_feat)
         output = self.relation_layer(relation_pairs).view(-1, self.way_num)
@@ -70,11 +70,11 @@ class RelationNet(MetricModel):
         :param batch:
         :return:
         """
-        support_images, support_targets, query_images, query_targets = \
-            self.progress_batch(batch)
+        images, global_targets = batch
+        images = images.to(self.device)
 
-        query_feat = self.model_func(query_images)
-        support_feat = self.model_func(support_images)
+        emb = self.model_func(images)
+        support_feat, query_feat, support_targets, query_targets = self.split_by_episode(emb, mode=3)
 
         relation_pairs = self.cal_pairs(query_feat, support_feat)
         output = self.relation_layer(relation_pairs).view(-1, self.way_num)
