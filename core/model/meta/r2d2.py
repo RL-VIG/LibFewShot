@@ -110,17 +110,12 @@ class R2D2(MetaModel):
         self._init_network()
 
     def set_forward(self, batch, ):
-        images, targets = self.progress_batch2(batch)
-        episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        images, global_targets = batch
+        images = images.to(self.device)
 
         emb = self.model_func(images)
-        emb = emb.contiguous().view(episode_size, self.way_num, self.shot_num + self.query_num, -1)
-        targets = targets.contiguous().view(episode_size, self.way_num, self.shot_num + self.query_num)
+        emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb)
 
-        emb_support = emb[:, :, :self.shot_num, :].contiguous().view(episode_size, self.way_num * self.shot_num, -1)
-        emb_query = emb[:, :, self.shot_num:, :].contiguous().view(episode_size, self.way_num * self.query_num, -1)
-        support_targets = targets[:, :, :self.shot_num].contiguous().view(episode_size, -1)
-        query_targets = targets[:, :, self.shot_num:].contiguous().view(-1)
         output = self.classifier(emb_query, emb_support, support_targets)
 
         output = output.contiguous().view(-1, self.way_num)
@@ -128,17 +123,12 @@ class R2D2(MetaModel):
         return output, prec1
 
     def set_forward_loss(self, batch, ):
-        images, targets = self.progress_batch2(batch)
-        episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        images, global_targets = batch
+        images = images.to(self.device)
 
         emb = self.model_func(images)
-        emb = emb.contiguous().view(episode_size, self.way_num, self.shot_num + self.query_num, -1)
-        targets = targets.contiguous().view(episode_size, self.way_num, self.shot_num + self.query_num)
+        emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb)
 
-        emb_support = emb[:, :, :self.shot_num, :].contiguous().view(episode_size, self.way_num * self.shot_num, -1)
-        emb_query = emb[:, :, self.shot_num:, :].contiguous().view(episode_size, self.way_num * self.query_num, -1)
-        support_targets = targets[:, :, :self.shot_num].contiguous().view(episode_size, -1)
-        query_targets = targets[:, :, self.shot_num:].contiguous().view(-1)
         output = self.classifier(emb_query, emb_support, support_targets)
 
         output = output.contiguous().view(-1, self.way_num)
