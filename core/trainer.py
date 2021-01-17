@@ -71,7 +71,8 @@ class Trainer(object):
 
         end = time()
         for batch_idx, batch in enumerate(self.train_loader):
-            self.writer.set_step(epoch_idx + 1.0 * batch_idx / len(self.train_loader))
+            self.writer.set_step(epoch_idx * len(self.train_loader)
+                                 + batch_idx * episode_size)
 
             meter.update('data_time', time() - end)
 
@@ -124,7 +125,8 @@ class Trainer(object):
         with torch.set_grad_enabled(enable_grad):
             for batch_idx, batch in enumerate(
                     self.test_loader if is_test else self.val_loader):
-                self.writer.set_step(epoch_idx + 1.0 * batch_idx / len(self.test_loader))
+                self.writer.set_step(epoch_idx * len(self.test_loader)
+                                     + batch_idx * episode_size)
 
                 meter.update('data_time', time() - end)
 
