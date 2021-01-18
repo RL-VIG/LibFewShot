@@ -42,20 +42,11 @@ class ProtoNet(MetricModel):
         :param batch:
         :return:
         """
-        images, targets = self.progress_batch2(batch)
+        images, global_targets = batch
+        images = images.to(self.device)
         episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
-
-        feat = self.model_func(images)
-        _, c = feat.size()
-
-        feat = feat.view(episode_size, self.way_num, self.shot_num + self.query_num, c)
-        targets = targets.view(episode_size, self.way_num, self.shot_num + self.query_num)
-
-        support_feat = feat[:, :, :self.shot_num, :].contiguous() \
-            .view(episode_size, self.way_num * self.shot_num, c)
-        query_feat = feat[:, :, self.shot_num:, :].contiguous() \
-            .view(episode_size, self.way_num * self.query_num, c)
-        query_targets = targets[:, :, self.shot_num:].contiguous().view(-1)
+        emb = self.model_func(images)
+        support_feat, query_feat, support_targets, query_targets = self.split_by_episode(emb,mode=1)
 
         output = self.proto_layer(query_feat, support_feat) \
             .view(episode_size * self.way_num * self.query_num, self.way_num)
@@ -69,20 +60,11 @@ class ProtoNet(MetricModel):
         :param batch:
         :return:
         """
-        images, targets = self.progress_batch2(batch)
+        images, global_targets = batch
+        images = images.to(self.device)
         episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
-
-        feat = self.model_func(images)
-        _, c = feat.size()
-
-        feat = feat.view(episode_size, self.way_num, self.shot_num + self.query_num, c)
-        targets = targets.view(episode_size, self.way_num, self.shot_num + self.query_num)
-
-        support_feat = feat[:, :, :self.shot_num, :].contiguous() \
-            .view(episode_size, self.way_num * self.shot_num, c)
-        query_feat = feat[:, :, self.shot_num:, :].contiguous() \
-            .view(episode_size, self.way_num * self.query_num, c)
-        query_targets = targets[:, :, self.shot_num:].contiguous().view(-1)
+        emb = self.model_func(images)
+        support_feat, query_feat, support_targets, query_targets = self.split_by_episode(emb,mode=1)
 
         output = self.proto_layer(query_feat, support_feat) \
             .view(episode_size * self.way_num * self.query_num, self.way_num)

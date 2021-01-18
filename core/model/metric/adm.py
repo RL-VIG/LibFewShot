@@ -23,11 +23,11 @@ class ADM(MetricModel):
         :param batch:
         :return:
         """
-        support_images, support_targets, query_images, query_targets = \
-            self.progress_batch(batch)
-
-        query_feat = self.model_func(query_images)
-        support_feat = self.model_func(support_images)
+        images, global_targets = batch
+        images = images.to(self.device)
+        episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        emb = self.model_func(images)
+        support_feat, query_feat, support_targets, query_targets = self.split_by_episode(emb,mode=3)
 
         output = self._cal_adm_sim(query_feat, support_feat)
         prec1, _ = accuracy(output, query_targets, topk=(1, 3))
@@ -39,11 +39,11 @@ class ADM(MetricModel):
         :param batch:
         :return:
         """
-        support_images, support_targets, query_images, query_targets = \
-            self.progress_batch(batch)
-
-        query_feat = self.model_func(query_images)
-        support_feat = self.model_func(support_images)
+        images, global_targets = batch
+        images = images.to(self.device)
+        episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        emb = self.model_func(images)
+        support_feat, query_feat, support_targets, query_targets = self.split_by_episode(emb,mode=3)
 
         output = self._cal_adm_sim(query_feat, support_feat)
         loss = self.loss_func(output, query_targets)

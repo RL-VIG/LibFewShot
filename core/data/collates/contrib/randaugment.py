@@ -1,6 +1,10 @@
 # Copyright © https://github.com/ildoonet/pytorch-randaugment
 # code in this file is adpated from rpmcruz/autoaugment
 # https://github.com/rpmcruz/autoaugment/blob/master/transformations.py
+
+
+
+
 import random
 
 import PIL, PIL.ImageOps, PIL.ImageEnhance, PIL.ImageDraw
@@ -251,7 +255,7 @@ class CutoutDefault(object):
 
 
 class RandAugment:
-    def __init__(self, n, m):
+    def __init__(self, n=1, m=1):
         self.n = n
         self.m = m      # [0, 30]
         self.augment_list = augment_list()
