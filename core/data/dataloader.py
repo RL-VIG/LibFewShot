@@ -2,14 +2,12 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 
 from core.data.dataset import GeneralDataset
-from .collates import get_collate_fn
+from .collates import get_collate_fn,get_augment_method
 from .samplers import CategoriesSampler
 from ..utils import ModelType
 
 MEAN = [120.39586422 / 255.0, 115.59361427 / 255.0, 104.54012653 / 255.0]
 STD = [70.68188272 / 255.0, 68.27635443 / 255.0, 72.54505529 / 255.0]
-
-CJ_DICT = {'brightness': 0.4, 'contrast': 0.4, 'saturation': 0.4}
 
 
 def get_dataloader(config, mode, model_type):
@@ -33,8 +31,8 @@ def get_dataloader(config, mode, model_type):
         else:
             raise RuntimeError
 
-        trfms_list.append(transforms.ColorJitter(**CJ_DICT))
-        trfms_list.append(transforms.RandomHorizontalFlip())
+        aug_method = get_augment_method(config)
+        trfms_list += aug_method
     else:
         if config['image_size'] == 224:
             trfms_list.append(transforms.Resize((224, 224)))
@@ -43,9 +41,6 @@ def get_dataloader(config, mode, model_type):
         else:
             raise RuntimeError
 
-    # TODO no longer support the augment times, need future fix
-    assert config['augment_times'] == 1, \
-        'no longer support the augment times, need future fix'
 
     trfms_list.append(transforms.ToTensor())
     trfms_list.append(transforms.Normalize(mean=MEAN, std=STD))

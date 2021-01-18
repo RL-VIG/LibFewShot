@@ -1,5 +1,5 @@
 from .collate_fns import *
-from .contrib import *
+from .contrib import get_augment_method
 from ...utils import ModelType
 
 
