@@ -56,6 +56,7 @@ class Test(object):
 
         meter = self.test_meter
         meter.reset()
+        episode_size = self.config['episode_size']
         accuracies = []
 
         end = time()
@@ -66,7 +67,8 @@ class Test(object):
 
         with torch.set_grad_enabled(enable_grad):
             for episode_idx, batch in enumerate(self.test_loader):
-                self.writer.set_step(epoch_idx * len(self.test_loader) + episode_idx)
+                self.writer.set_step(epoch_idx * len(self.test_loader)
+                                     + episode_idx * episode_size)
 
                 meter.update('data_time', time() - end)
 
