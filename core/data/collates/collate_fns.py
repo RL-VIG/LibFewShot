@@ -24,6 +24,10 @@ class GeneralCollateFn(object):
 
             assert len(images) == len(targets), '图像和标签数量不一致'
 
+            images = torch.stack(images).squeeze(dim=1)  #! PyTorch 1.7才有vstack，暂时用这个代替
+
+            targets = torch.tensor(targets,dtype=torch.int64)
+
             return images, targets
         except TypeError:
             raise TypeError('不应该在dataset传入transform，在collate_fn传入transform')
