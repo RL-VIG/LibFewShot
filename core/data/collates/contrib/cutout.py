@@ -1,7 +1,12 @@
 # Copyright © https://github.com/uoguelph-mlrg/Cutout
+# Modify Cutout for adjust this framework's transforms
 import torch
 import numpy as np
 
+#         >>> transform=transforms.Compose([
+#         >>>     transforms.Resize(256),
+#         >>>     Cutout(n_holes=args.n_holes, length=args.length)
+#         >>>     transforms.ToTensor()])
 
 class Cutout(object):
     """Randomly mask out one or more patches from an image.
@@ -9,7 +14,7 @@ class Cutout(object):
         n_holes (int): Number of patches to cut out of each image.
         length (int): The length (in pixels) of each square patch.
     """
-    def __init__(self, n_holes, length):
+    def __init__(self, n_holes=1, length=1):
         self.n_holes = n_holes
         self.length = length
 
@@ -20,8 +25,10 @@ class Cutout(object):
         Returns:
             Tensor: Image with n_holes of dimension length x length cut out of it.
         """
-        h = img.size(1)
-        w = img.size(2)
+        img = np.asarray(img)
+
+        h = img.shape[0]
+        w = img.shape[1]
 
         mask = np.ones((h, w), np.float32)
 
@@ -36,8 +43,8 @@ class Cutout(object):
 
             mask[y1: y2, x1: x2] = 0.
 
-        mask = torch.from_numpy(mask)
-        mask = mask.expand_as(img)
+        mask = np.expand_dims(mask,2).repeat(3,axis=2)
+
         img = img * mask
 
         return img
