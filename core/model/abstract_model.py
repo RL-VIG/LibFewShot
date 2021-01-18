@@ -84,8 +84,14 @@ class AbstractModel(nn.Module):
                                                                                       h, w)
             support_targets = local_labels[:, :, :self.shot_num].contiguous().view(-1)
             query_targets = local_labels[:, :, self.shot_num:].contiguous().view(-1)
+        elif mode ==4: #pretrain baseline input 2D, return 2D(w/o episode) E.g.baseline set_forward FIXME: 暂时用来处理还没有实现multi-task的方法
+            features = features.view(self.way_num,self.shot_num + self.query_num,-1)
+            support_features = features[:,:self.shot_num, :].contiguous().view(self.way_num * self.shot_num, -1)
+            query_features = features[:,self.shot_num:, :].contiguous().view(self.way_num * self.query_num, -1)
+            support_targets = local_labels[:, :, :self.shot_num].contiguous().view(-1)
+            query_targets = local_labels[:, :, self.shot_num:].contiguous().view(-1)
         else:
-            raise Exception("mode should in [1,2,3], not {}".format(mode))
+            raise Exception("mode should in [1,2,3,4], not {}".format(mode))
 
         return support_features, query_features, support_targets, query_targets
 
