@@ -1,16 +1,22 @@
-train_episode: 1000
-test_episode: 500
+data_name: miniImageNet
 
-save_part:
-  - model_func
-  - relation_layer
+# base info
+way_num: 5
+shot_num: 1
+query_num: 15
+batch_size: 128
+episode_size: 1
 
-# gpu info
-device_ids: 1,2
-n_gpu: 2
-parallel_part:
-  - model_func
-  - relation_layer
+# data info
+data_root: /data/yxs/miniImageNet--ravi
+image_size: 84
+augment: True
+augment_times: 1
+train_episode: 10000
+test_episode: 1000
+
+# train info
+epoch: 50
 
 # arch info
 backbone:
@@ -24,3 +30,23 @@ classifier:
     feat_dim: 64
     feat_height: 3
     feat_width: 3
+
+# result info
+result_root: ./results
+save_interval: 10
+save_part:
+  - model_func
+  - relation_layer
+
+# log info
+log_level: info
+log_interval: 100
+
+# gpu info
+device_ids: 2
+n_gpu: 1
+parallel_part:
+  - model_func
+  - relation_layer
+seed: 0
+deterministic: True
