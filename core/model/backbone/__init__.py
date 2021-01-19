@@ -1,6 +1,8 @@
 from .conv_64f import *
+from .conv_32f import *
 from .resnet_12 import *
 from .resnet_18 import *
+from .maml_backbone import *
 
 
 def get_backbone(config):
@@ -8,6 +10,8 @@ def get_backbone(config):
     kwargs.update(config['backbone']['kwargs'])
     if config['backbone']['name'] == 'Conv64F':
         model_func = Conv64F(**kwargs)
+    elif config['backbone']['name'] == 'Conv32F':
+        model_func = Conv32F(**kwargs)
     elif config['backbone']['name'] == 'Conv64FLeakyReLU':
         model_func = Conv64FLeakyReLU(**kwargs)
     elif config['backbone']['name'] == 'Conv64FReLU':
@@ -16,6 +20,8 @@ def get_backbone(config):
         model_func = resnet12(**kwargs)
     elif config['backbone']['name'] == 'ResNet18':
         model_func = resnet18(**kwargs)
+    elif config['backbone']['name'] == 'Conv64F_fw':
+        model_func = Conv64F_fw(**kwargs)
     else:
         raise NotImplementedError
 
