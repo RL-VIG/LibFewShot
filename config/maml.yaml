@@ -20,26 +20,25 @@ epoch: 50
 
 # arch info
 backbone:
-  name: Conv32F
+  name: Conv64F_fw
   kwargs:
     is_flatten: True
 
 classifier:
-  name: ANIL
+  name: MAML
   kwargs:
     inner_optim:
-      name: Adam
-      kwargs:
-        lr: 1e-3
-    inner_train_iter: 10
-    feat_dim: 800
-    hid_dim: 800
+        lr: 1e-2
+    inner_train_iter: 5
+    feat_dim: 1600
 
+# optimizer info
 optimizer:
   name: Adam
   kwargs:
     lr: 0.001
   other:
+    model_func: 0.001
 
 # lr_scheduler info
 lr_scheduler:
@@ -52,16 +51,16 @@ lr_scheduler:
 result_root: ./results
 save_interval: 10
 save_part:
+  - model_func
 
 # log info
 log_level: info
 log_interval: 100
 
 # gpu info
-device_ids: 2
+device_ids: 0
 n_gpu: 1
 parallel_part:
   - model_func
-  - classifier
 seed: 0
 deterministic: True
