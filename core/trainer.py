@@ -9,7 +9,7 @@ from torch import nn
 import core.model as arch
 from core.data import get_dataloader
 from core.utils import init_logger, prepare_device, init_seed, AverageMeter, \
-    count_parameters, save_model, create_dirs, ModelType, TensorboardWriter
+    count_parameters, save_model, create_dirs, ModelType, TensorboardWriter, SaveType
 
 
 def get_instance(module, name, config, *args):
@@ -32,12 +32,12 @@ class Trainer(object):
         self.model, self.model_type = self._init_model(config)
         self.train_loader, self.val_loader, self.test_loader \
             = self._init_dataloader(config)
-        self.optimizer, self.scheduler = self._init_optim(config)
+        self.optimizer, self.scheduler, self.from_epoch = self._init_optim(config)
 
     def train_loop(self):
         best_val_prec1 = float('-inf')
         best_test_prec1 = float('-inf')
-        for epoch_idx in range(self.config['epoch']):
+        for epoch_idx in range(self.from_epoch + 1, self.config['epoch']):
             self.logger.info('============ Train on the train set ============')
             train_prec1 = self._train(epoch_idx)
             self.logger.info(' * Prec@1 {:.3f} '.format(train_prec1))
@@ -53,12 +53,14 @@ class Trainer(object):
             if val_prec1 > best_val_prec1:
                 best_val_prec1 = val_prec1
                 best_test_prec1 = test_prec1
-                self._save_model(epoch_idx, is_best=True)
+                self._save_model(epoch_idx, SaveType.BEST)
 
             if epoch_idx != 0 and epoch_idx % self.config['save_interval'] == 0:
-                self._save_model(epoch_idx, is_best=False)
+                self._save_model(epoch_idx, SaveType.NORMAL)
 
-            self.scheduler.step()
+            self._save_model(epoch_idx, SaveType.LAST)
+
+            self.scheduler.step(epoch_idx)
 
     def _train(self, epoch_idx):
         self.model.train()
@@ -69,7 +71,8 @@ class Trainer(object):
 
         end = time()
         for batch_idx, batch in enumerate(self.train_loader):
-            self.writer.set_step(epoch_idx + 1.0 * batch_idx / len(self.train_loader))
+            self.writer.set_step(epoch_idx * len(self.train_loader)
+                                 + batch_idx * episode_size)
 
             meter.update('data_time', time() - end)
 
@@ -122,7 +125,8 @@ class Trainer(object):
         with torch.set_grad_enabled(enable_grad):
             for batch_idx, batch in enumerate(
                     self.test_loader if is_test else self.val_loader):
-                self.writer.set_step(epoch_idx + 1.0 * batch_idx / len(self.test_loader))
+                self.writer.set_step(epoch_idx * len(self.test_loader)
+                                     + batch_idx * episode_size)
 
                 meter.update('data_time', time() - end)
 
@@ -192,6 +196,13 @@ class Trainer(object):
         self.logger.info(model)
         self.logger.info(count_parameters(model))
 
+        if self.config['resume']:
+            resume_path = os.path.join(self.checkpoints_path, 'model_last.pth')
+            self.logger.info('load the resume model state dict from {}.'
+                             .format(resume_path))
+            state_dict = torch.load(resume_path, map_location='cpu')['model']
+            model.load_state_dict(state_dict)
+
         model = model.to(self.device)
         if len(self.list_ids) > 1:
             parallel_list = self.config['parallel_part']
@@ -225,25 +236,38 @@ class Trainer(object):
         optimizer = get_instance(torch.optim, 'optimizer', config, params_dict_list)
         scheduler = get_instance(torch.optim.lr_scheduler, 'lr_scheduler', config,
                                  optimizer)
+        from_epoch = -1
+        if self.config['resume']:
+            resume_path = os.path.join(self.checkpoints_path, 'model_last.pth')
+            self.logger.info('load the optimizer model state dict from {}.'
+                             .format(resume_path))
+            all_state_dict = torch.load(resume_path, map_location='cpu')
+            state_dict = all_state_dict['optimizer']
+            optimizer.load_state_dict(state_dict)
+            from_epoch = all_state_dict['epoch']
+            self.logger.info('model resume from the epoch {}'.format(from_epoch))
 
-        return optimizer, scheduler
+        return optimizer, scheduler, from_epoch
 
     def _init_device(self, config):
         init_seed(config['seed'], config['deterministic'])
         device, list_ids = prepare_device(config['device_ids'], config['n_gpu'])
         return device, list_ids
 
-    def _save_model(self, epoch, is_best=False):
-        save_model(self.model, self.checkpoints_path, 'model', epoch, is_best,
-                   len(self.list_ids) > 1)
-        save_list = self.config['save_part']
-        if save_list is not None:
-            for save_part in save_list:
-                if hasattr(self.model, save_part):
-                    save_model(getattr(self.model, save_part), self.checkpoints_path,
-                               save_part, epoch, is_best, len(self.list_ids) > 1)
-                else:
-                    self.logger.warning('')
+    def _save_model(self, epoch, save_type=SaveType.NORMAL):
+        save_model(self.model, self.optimizer, self.checkpoints_path, 'model', epoch,
+                   save_type, len(self.list_ids) > 1)
+
+        if save_type != SaveType.LAST:
+            save_list = self.config['save_part']
+            if save_list is not None:
+                for save_part in save_list:
+                    if hasattr(self.model, save_part):
+                        save_model(getattr(self.model, save_part), self.optimizer,
+                                   self.checkpoints_path, save_part, epoch, save_type,
+                                   len(self.list_ids) > 1)
+                    else:
+                        self.logger.warning('')
 
     def _init_meter(self):
         train_meter = AverageMeter('train', ['batch_time', 'data_time', 'loss', 'prec1'],

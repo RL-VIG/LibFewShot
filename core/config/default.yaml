@@ -18,7 +18,8 @@ test_episode: 1000
 
 # train info
 epoch: 50
-
+test_epoch: 5
+resume: False
 
 # optimizer info
 optimizer:

@@ -32,12 +32,11 @@ class SKDModel(PretrainModel):
         :param batch:
         :return:
         """
-        support_images, support_targets, query_images, query_targets = \
-            self.progress_batch(batch)
-
+        images, global_targets = batch
+        images = images.to(self.device)
         with torch.no_grad():
-            support_feat = self.model_func(support_images)
-            query_feat = self.model_func(query_images)
+            emb = self.model_func(images)
+        support_feat, query_feat, support_targets, query_targets = self.split_by_episode(emb,mode=4)
 
         classifier = self.test_loop(support_feat, support_targets)
 

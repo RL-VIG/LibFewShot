@@ -11,6 +11,8 @@ import scipy.stats
 import torch
 import torch.multiprocessing
 
+from core.utils import SaveType
+
 
 class AverageMeter(object):
     """
@@ -122,7 +124,7 @@ def prepare_device(device_ids, n_gpu_use):
     :param n_gpu_use:
     :return:
     """
-    logger = getLogger()
+    logger = getLogger(__name__)
     os.environ["CUDA_VISIBLE_DEVICES"] = str(device_ids)
 
     n_gpu = torch.cuda.device_count()
@@ -142,30 +144,43 @@ def prepare_device(device_ids, n_gpu_use):
     return device, list_ids
 
 
-def save_model(model, save_path, name, epoch, is_best=False, is_parallel=False):
+def save_model(model, optimizer, save_path, name, epoch, save_type=SaveType.LAST,
+               is_parallel=False):
     """
 
     :param model:
+    :param optimizer:
     :param save_path:
     :param name:
     :param epoch:
-    :param is_best:
+    :param save_type:
     :param is_parallel:
     :return:
     """
-    if is_best:
-        save_name = os.path.join(save_path, '{}_best.pth'.format(name))
-    else:
+
+    if save_type == SaveType.NORMAL:
         save_name = os.path.join(save_path, '{}_{:0>5d}.pth'.format(name, epoch))
+    elif save_type == SaveType.BEST:
+        save_name = os.path.join(save_path, '{}_best.pth'.format(name))
+    elif save_type == SaveType.LAST:
+        save_name = os.path.join(save_path, '{}_last.pth'.format(name))
+
+    else:
+        raise RuntimeError
 
     if is_parallel:
-        state_dict = OrderedDict()
+        model_state_dict = OrderedDict()
         for k, v in model.state_dict().items():
             name = '.'.join([name for name in k.split('.') if name != 'module'])
-            state_dict[name] = v
-        torch.save(state_dict, save_name)
+            model_state_dict[name] = v
     else:
-        torch.save(model.state_dict(), save_name)
+        model_state_dict = model.state_dict()
+
+    if save_type == SaveType.NORMAL or save_type == SaveType.BEST:
+        torch.save(model_state_dict, save_name)
+    else:
+        torch.save({'epoch': epoch, 'model': model_state_dict,
+                    'optimizer': optimizer.state_dict()}, save_name)
 
     return save_name
 
