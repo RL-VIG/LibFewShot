@@ -82,7 +82,8 @@ class ANIL(MetaModel):
         images = images.to(self.device)
 
         emb = self.model_func(images)
-        emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb,mode=1)
+        emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb, mode=1)
+        episode_size = emb_support.size(0)
 
         output_list = []
         for i in range(episode_size):
@@ -99,7 +100,8 @@ class ANIL(MetaModel):
         images = images.to(self.device)
 
         emb = self.model_func(images)
-        emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb,mode=1)
+        emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb, mode=1)
+        episode_size = emb_support.size(0)
 
         output_list = []
         for i in range(episode_size):

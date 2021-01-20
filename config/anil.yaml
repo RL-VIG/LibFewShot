@@ -5,7 +5,7 @@ way_num: 5
 shot_num: 5
 query_num: 15
 batch_size: 128
-episode_size: 1
+episode_size: 2
 
 # data info
 data_root: /data/yxs/miniImageNet--ravi
