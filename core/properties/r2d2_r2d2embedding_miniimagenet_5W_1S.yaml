@@ -1,0 +1,66 @@
+data_name: miniImageNet
+
+# base info
+way_num: 5
+shot_num: 1
+query_num: 15
+batch_size: 128
+episode_size: 1
+
+# data info
+data_root: /data/yxs/miniImageNet--ravi
+image_size: 84
+augment: True
+augment_times: 1
+train_episode: 10000
+test_episode: 1000
+
+# train info
+epoch: 50
+
+# arch info
+backbone:
+  name: R2D2Embedding
+  kwargs:
+classifier:
+  name: R2D2
+  kwargs:
+    inner_optim:
+      name: Adam
+      kwargs:
+        lr: 1e-3
+    inner_train_iter: 10
+
+# optimizer info
+optimizer:
+  name: Adam
+  kwargs:
+    lr: 0.001
+  other:
+
+# lr_scheduler info
+lr_scheduler:
+  name: StepLR
+  kwargs:
+    gamma: 0.5
+    step_size: 10
+
+
+# result info
+result_root: ./results
+save_interval: 10
+save_part:
+
+# log info
+log_level: info
+log_interval: 100
+
+# gpu info
+device_ids: 0
+n_gpu: 1
+parallel_part:
+  - model_func
+  - classifier
+seed: 0
+deterministic: True
+

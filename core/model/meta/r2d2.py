@@ -115,17 +115,11 @@ class R2D2(MetaModel):
         images = images.to(self.device)
 
         emb = self.model_func(images)
-        emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb,mode=1)
-
-        emb_support = emb[:, :, :self.shot_num, :].contiguous().view(episode_size, self.way_num * self.shot_num, -1)
-        emb_query = emb[:, :, self.shot_num:, :].contiguous().view(episode_size, self.way_num * self.query_num, -1)
-        support_targets = targets[:, :, :self.shot_num].contiguous().view(episode_size, -1)
-        query_targets = targets[:, :, self.shot_num:].contiguous().view(-1)
+        emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb, mode=1)
         output, W = self.classifier(emb_query, emb_support, support_targets)
 
         # self.train_loop(emb_support, support_targets, W)
         # output = self.alpha * output + self.beta
-        output = self.classifier(emb_query, emb_support, support_targets)
 
         output = output.contiguous().view(-1, self.way_num)
         prec1, _ = accuracy(output.squeeze(), query_targets, topk=(1, 3))
@@ -136,17 +130,11 @@ class R2D2(MetaModel):
         images = images.to(self.device)
 
         emb = self.model_func(images)
-        emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb,mode=1)
-
-        emb_support = emb[:, :, :self.shot_num, :].contiguous().view(episode_size, self.way_num * self.shot_num, -1)
-        emb_query = emb[:, :, self.shot_num:, :].contiguous().view(episode_size, self.way_num * self.query_num, -1)
-        support_targets = targets[:, :, :self.shot_num].contiguous().view(episode_size, -1)
-        query_targets = targets[:, :, self.shot_num:].contiguous().view(-1)
+        emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb, mode=1)
         output, W = self.classifier(emb_query, emb_support, support_targets)
 
         # self.train_loop(emb_support, support_targets, W)
         # output = self.alpha * output + self.beta
-        output = self.classifier(emb_query, emb_support, support_targets)
 
         output = output.contiguous().view(-1, self.way_num)
         loss = self.loss_func(output, query_targets)
