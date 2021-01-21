@@ -4,7 +4,7 @@ data_name: miniImageNet
 way_num: 5
 shot_num: 1
 query_num: 15
-batch_size: 128
+batch_size: 16
 episode_size: 1
 
 # data info
@@ -16,37 +16,56 @@ train_episode: 10000
 test_episode: 1000
 
 # train info
-epoch: 50
+epoch: 100
 
 # arch info
 backbone:
-  name: Conv64FLeakyReLU
+  name: Conv64F
   kwargs:
-    is_flatten: False
+    is_flatten: True
 
 classifier:
-  name: RelationNet
+  name: Baseline
   kwargs:
+    inner_optim:
+      name: Adam
+      kwargs:
+        lr: 1e-3
+    inner_train_iter: 100
+    inner_batch_size: 4
     feat_dim: 64
-    feat_height: 3
-    feat_width: 3
+    num_classes: 64
+
+# optimizer info
+optimizer:
+  name: Adam
+  kwargs:
+    lr: 0.001
+  other:
+    model_func: 0.001
+
+# lr_scheduler info
+lr_scheduler:
+  name: StepLR
+  kwargs:
+    gamma: 1.0
+    step_size: 10
 
 # result info
 result_root: ./results
 save_interval: 10
 save_part:
   - model_func
-  - relation_layer
+  - classifier
 
 # log info
 log_level: info
 log_interval: 100
 
 # gpu info
-device_ids: 2
+device_ids: 0
 n_gpu: 1
 parallel_part:
   - model_func
-  - relation_layer
 seed: 0
 deterministic: True

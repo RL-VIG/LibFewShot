@@ -5,22 +5,22 @@ way_num: 5
 shot_num: 5
 query_num: 15
 batch_size: 128
-episode_size: 4
+episode_size: 2
 
 # data info
 data_root: /data/yxs/miniImageNet--ravi
 image_size: 84
 augment: True
 augment_times: 1
-train_episode: 1000
-test_episode: 200
+train_episode: 10000
+test_episode: 1000
 
 # train info
-epoch: 100
+epoch: 50
 
 # arch info
 backbone:
-  name: Conv64F
+  name: Conv32F
   kwargs:
     is_flatten: True
 
@@ -32,7 +32,7 @@ classifier:
       kwargs:
         lr: 1e-3
     inner_train_iter: 10
-    feat_dim: 1600
+    feat_dim: 800
     hid_dim: 800
 
 optimizer:
@@ -58,8 +58,8 @@ log_level: info
 log_interval: 100
 
 # gpu info
-device_ids: 0, 1
-n_gpu: 2
+device_ids: 2
+n_gpu: 1
 parallel_part:
   - model_func
   - classifier

@@ -37,9 +37,9 @@ class MetaModel(AbstractModel):
     def set_forward_adaptation(self, *args, **kwargs):
         pass
 
-    def sub_optimizer(self, model, config):
+    def sub_optimizer(self, parameters, config):
         kwargs = dict()
 
         if config['kwargs'] is not None:
             kwargs.update(config['kwargs'])
-        return getattr(torch.optim, config['name'])(model.parameters(), **kwargs)
+        return getattr(torch.optim, config['name'])(parameters, **kwargs)

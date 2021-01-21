@@ -20,33 +20,47 @@ epoch: 50
 
 # arch info
 backbone:
-  name: Conv64FLeakyReLU
+  name: Conv64F_fw
   kwargs:
-    is_flatten: False
+    is_flatten: True
 
 classifier:
-  name: RelationNet
+  name: MAML
   kwargs:
-    feat_dim: 64
-    feat_height: 3
-    feat_width: 3
+    inner_optim:
+        lr: 1e-2
+    inner_train_iter: 5
+    feat_dim: 1600
+
+# optimizer info
+optimizer:
+  name: Adam
+  kwargs:
+    lr: 0.001
+  other:
+    model_func: 0.001
+
+# lr_scheduler info
+lr_scheduler:
+  name: StepLR
+  kwargs:
+    gamma: 0.5
+    step_size: 10
 
 # result info
 result_root: ./results
 save_interval: 10
 save_part:
   - model_func
-  - relation_layer
 
 # log info
 log_level: info
 log_interval: 100
 
 # gpu info
-device_ids: 2
+device_ids: 0
 n_gpu: 1
 parallel_part:
   - model_func
-  - relation_layer
 seed: 0
 deterministic: True

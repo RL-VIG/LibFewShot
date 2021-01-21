@@ -7,12 +7,12 @@ from .pretrain_model import PretrainModel
 
 class Baseline(PretrainModel):
     def __init__(self, way_num, shot_num, query_num, model_func, device, feat_dim,
-                 num_classes, inner_optim=None, inner_train_iter=20):
+                 num_classes, inner_optim=None, inner_batch_size=4, inner_train_iter=20):
         super(Baseline, self).__init__(way_num, shot_num, query_num, model_func, device)
-
         self.feat_dim = feat_dim
         self.num_classes = num_classes
         self.inner_optim = inner_optim
+        self.inner_batch_size = inner_batch_size
         self.inner_train_iter = inner_train_iter
 
         self.classifier = nn.Linear(self.feat_dim, self.num_classes)
@@ -22,7 +22,6 @@ class Baseline(PretrainModel):
 
     def set_forward(self, batch, ):
         """
-
         :param batch:
         :return:
         """
@@ -41,7 +40,6 @@ class Baseline(PretrainModel):
 
     def set_forward_loss(self, batch):
         """
-
         :param batch:
         :return:
         """
@@ -65,13 +63,20 @@ class Baseline(PretrainModel):
         classifier = classifier.to(self.device)
 
         classifier.train()
-        for i in range(self.inner_train_iter):
-            output = classifier(support_feat)
+        support_size = support_feat.size(0)
+        for epoch in range(self.inner_train_iter):
+            rand_id = torch.randperm(support_size)
+            for i in range(0, support_size, self.inner_batch_size):
+                select_id = rand_id[i:min(i + self.inner_batch_size, support_size)]
+                batch = support_feat[select_id]
+                target = support_targets[select_id]
 
-            loss = self.loss_func(output, support_targets)
+                output = classifier(batch)
 
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+                loss = self.loss_func(output, target)
+
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
 
         return classifier

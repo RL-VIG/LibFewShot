@@ -12,11 +12,11 @@ data_root: /data/yxs/miniImageNet--ravi
 image_size: 84
 augment: True
 augment_times: 1
-train_episode: 1000
-test_episode: 200
+train_episode: 10000
+test_episode: 1000
 
 # train info
-epoch: 100
+epoch: 50
 
 # arch info
 backbone:
@@ -25,6 +25,11 @@ backbone:
 classifier:
   name: R2D2
   kwargs:
+    inner_optim:
+      name: Adam
+      kwargs:
+        lr: 1e-3
+    inner_train_iter: 10
 
 # optimizer info
 optimizer:
@@ -51,7 +56,7 @@ log_level: info
 log_interval: 100
 
 # gpu info
-device_ids: 0
+device_ids: 3
 n_gpu: 1
 parallel_part:
   - model_func

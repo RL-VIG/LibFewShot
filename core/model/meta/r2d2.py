@@ -68,6 +68,8 @@ class R2D2Head(nn.Module):
         super(R2D2Head, self).__init__()
         self.way_num = way_num
         self.shot_num = shot_num
+        self.register_parameter('alpha', nn.Parameter(torch.tensor([1.])))
+        self.register_parameter('beta', nn.Parameter(torch.tensor([0.])))
         self.register_parameter('gamma', nn.Parameter(torch.tensor([50.])))
 
     def forward(self, query, support, support_labels):
@@ -95,18 +97,17 @@ class R2D2Head(nn.Module):
         # Compute the classification score.
         # score = W X
         logits = torch.bmm(query, ridge_sol)
-        return logits
+        logits = self.alpha * logits + self.beta
+        return logits, ridge_sol
 
 
 class R2D2(MetaModel):
     def __init__(self, way_num, shot_num, query_num, feature, device, inner_optim=None, inner_train_iter=10):
         super(R2D2, self).__init__(way_num, shot_num, query_num, feature, device)
-        self.register_parameter('alpha', nn.Parameter(torch.tensor([1.])))
-        self.register_parameter('beta', nn.Parameter(torch.tensor([0.])))
         self.loss_func = nn.CrossEntropyLoss()
         self.classifier = R2D2Head(self.way_num, self.shot_num)
-        self.inner_optim = inner_optim
-        self.inner_train_iter = inner_train_iter
+        # self.inner_optim = inner_optim
+        # self.inner_train_iter = inner_train_iter
         self._init_network()
 
     def set_forward(self, batch, ):
@@ -114,9 +115,11 @@ class R2D2(MetaModel):
         images = images.to(self.device)
 
         emb = self.model_func(images)
-        emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb,mode=1)
+        emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb, mode=1)
+        output, W = self.classifier(emb_query, emb_support, support_targets)
 
-        output = self.classifier(emb_query, emb_support, support_targets)
+        # self.train_loop(emb_support, support_targets, W)
+        # output = self.alpha * output + self.beta
 
         output = output.contiguous().view(-1, self.way_num)
         prec1, _ = accuracy(output.squeeze(), query_targets, topk=(1, 3))
@@ -127,16 +130,27 @@ class R2D2(MetaModel):
         images = images.to(self.device)
 
         emb = self.model_func(images)
-        emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb,mode=1)
+        emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb, mode=1)
+        output, W = self.classifier(emb_query, emb_support, support_targets)
 
-        output = self.classifier(emb_query, emb_support, support_targets)
+        # self.train_loop(emb_support, support_targets, W)
+        # output = self.alpha * output + self.beta
 
         output = output.contiguous().view(-1, self.way_num)
         loss = self.loss_func(output, query_targets)
         prec1, _ = accuracy(output.squeeze(), query_targets, topk=(1, 3))
         return output, prec1, loss
 
-    def train_loop(self, emb_support, support_targets):
+    def train_loop(self, emb_support, support_targets, W):
+        # optimizer = self.sub_optimizer([{"params": self.alpha}, {"params": self.beta}], self.inner_optim)
+        # for i in range(self.inner_train_iter):
+        #     predict = torch.bmm(emb_support, W).contiguous().view(-1, self.way_num).detach()
+        #     predict = self.alpha * predict + self.beta
+        #     loss = self.loss_func(predict, support_targets.contiguous().view(-1))
+        #
+        #     optimizer.zero_grad()
+        #     loss.backward()
+        #     optimizer.step()
         raise NotImplementedError
 
     def test_loop(self, *args, **kwargs):
