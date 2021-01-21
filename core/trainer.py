@@ -60,7 +60,7 @@ class Trainer(object):
 
             self._save_model(epoch_idx, SaveType.LAST)
 
-            self.scheduler.step(epoch_idx)
+            self.scheduler.step()
 
     def _train(self, epoch_idx):
         self.model.train()
@@ -239,11 +239,13 @@ class Trainer(object):
         from_epoch = -1
         if self.config['resume']:
             resume_path = os.path.join(self.checkpoints_path, 'model_last.pth')
-            self.logger.info('load the optimizer model state dict from {}.'
+            self.logger.info('load the optimizer, lr_scheduler and epoch state dict from {}.'
                              .format(resume_path))
             all_state_dict = torch.load(resume_path, map_location='cpu')
             state_dict = all_state_dict['optimizer']
             optimizer.load_state_dict(state_dict)
+            state_dict = all_state_dict['lr_scheduler']
+            scheduler.load_state_dict(state_dict)
             from_epoch = all_state_dict['epoch']
             self.logger.info('model resume from the epoch {}'.format(from_epoch))
 
@@ -255,7 +257,7 @@ class Trainer(object):
         return device, list_ids
 
     def _save_model(self, epoch, save_type=SaveType.NORMAL):
-        save_model(self.model, self.optimizer, self.checkpoints_path, 'model', epoch,
+        save_model(self.model, self.optimizer, self.scheduler, self.checkpoints_path, 'model', epoch,
                    save_type, len(self.list_ids) > 1)
 
         if save_type != SaveType.LAST:
@@ -263,7 +265,7 @@ class Trainer(object):
             if save_list is not None:
                 for save_part in save_list:
                     if hasattr(self.model, save_part):
-                        save_model(getattr(self.model, save_part), self.optimizer,
+                        save_model(getattr(self.model, save_part), self.optimizer, self.scheduler,
                                    self.checkpoints_path, save_part, epoch, save_type,
                                    len(self.list_ids) > 1)
                     else:

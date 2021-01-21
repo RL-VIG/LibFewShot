@@ -144,12 +144,13 @@ def prepare_device(device_ids, n_gpu_use):
     return device, list_ids
 
 
-def save_model(model, optimizer, save_path, name, epoch, save_type=SaveType.LAST,
+def save_model(model, optimizer, lr_Scheduler, save_path, name, epoch, save_type=SaveType.LAST,
                is_parallel=False):
     """
 
     :param model:
     :param optimizer:
+    :param lr_Scheduler
     :param save_path:
     :param name:
     :param epoch:
@@ -180,7 +181,8 @@ def save_model(model, optimizer, save_path, name, epoch, save_type=SaveType.LAST
         torch.save(model_state_dict, save_name)
     else:
         torch.save({'epoch': epoch, 'model': model_state_dict,
-                    'optimizer': optimizer.state_dict()}, save_name)
+                    'optimizer': optimizer.state_dict(),
+                    'lr_scheduler': lr_Scheduler.state_dict()}, save_name)
 
     return save_name
 
