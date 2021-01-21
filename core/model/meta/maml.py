@@ -50,18 +50,10 @@ class MAML(MetaModel):
             self.model_func,
             self.classifier,
         )
-        torch.autograd.set_detect_anomaly(True)
-        images, targets = self.progress_batch2(batch)
-        b, c, h, w = images.size()
-        episode_size = b // (self.way_num * (self.shot_num + self.query_num))
-
-        images = images.contiguous().view(episode_size, self.way_num, (self.shot_num + self.query_num), c, h, w)
-        targets = targets.contiguous().view(episode_size, self.way_num, (self.shot_num + self.query_num), -1)
-
-        support_images = images[:, :, :self.shot_num, :, :, :]
-        query_images = images[:, :, self.shot_num:, :, :, :]
-        support_targets = targets[:, :, :self.shot_num, :]
-        query_targets = targets[:, :, self.shot_num:, :]
+        images, _ = batch
+        images = images.to(self.device)
+        support_images, query_images, support_targets, query_targets = self.split_by_episode(images, mode=2)
+        episode_size, _, c, h, w = support_images.size()
 
         output_list = []
         loss_list = []
@@ -70,11 +62,11 @@ class MAML(MetaModel):
             episode_support_images = support_images[i].contiguous().reshape(-1, c, h, w)
             episode_query_images = query_images[i].contiguous().reshape(-1, c, h, w)
             episode_support_targets = support_targets[i].reshape(-1)
-            episode_query_targets = query_targets[i].reshape(-1)
+            # episode_query_targets = query_targets[i].reshape(-1)
             self.train_loop(episode_support_images, episode_support_targets)
             output = self.model(episode_query_images)
-            loss = self.loss_func(output, episode_query_targets)
-            prec1, _ = accuracy(output, episode_query_targets, topk=(1, 3))
+            loss = self.loss_func(output, query_targets)
+            prec1, _ = accuracy(output, query_targets, topk=(1, 3))
 
             output_list.append(output)
             loss_list.append(loss)
@@ -89,18 +81,10 @@ class MAML(MetaModel):
             self.model_func,
             self.classifier,
         )
-        torch.autograd.set_detect_anomaly(True)
-        images, targets = self.progress_batch2(batch)
-        b, c, h, w = images.size()
-        episode_size = b // (self.way_num * (self.shot_num + self.query_num))
-
-        images = images.contiguous().view(episode_size, self.way_num, (self.shot_num + self.query_num), c, h, w)
-        targets = targets.contiguous().view(episode_size, self.way_num, (self.shot_num + self.query_num), -1)
-
-        support_images = images[:, :, :self.shot_num, :, :, :]
-        query_images = images[:, :, self.shot_num:, :, :, :]
-        support_targets = targets[:, :, :self.shot_num, :]
-        query_targets = targets[:, :, self.shot_num:, :]
+        images, _ = batch
+        images = images.to(self.device)
+        support_images, query_images, support_targets, query_targets = self.split_by_episode(images, mode=2)
+        episode_size, _, c, h, w = support_images.size()
 
         output_list = []
         loss_list = []
@@ -109,11 +93,11 @@ class MAML(MetaModel):
             episode_support_images = support_images[i].contiguous().reshape(-1, c, h, w)
             episode_query_images = query_images[i].contiguous().reshape(-1, c, h, w)
             episode_support_targets = support_targets[i].reshape(-1)
-            episode_query_targets = query_targets[i].reshape(-1)
+            # episode_query_targets = query_targets[i].reshape(-1)
             self.train_loop(episode_support_images, episode_support_targets)
             output = self.model(episode_query_images)
-            loss = self.loss_func(output, episode_query_targets)
-            prec1, _ = accuracy(output, episode_query_targets, topk=(1, 3))
+            loss = self.loss_func(output, query_targets)
+            prec1, _ = accuracy(output, query_targets, topk=(1, 3))
 
             output_list.append(output)
             loss_list.append(loss)

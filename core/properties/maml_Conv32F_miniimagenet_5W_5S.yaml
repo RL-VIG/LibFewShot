@@ -2,7 +2,7 @@ data_name: miniImageNet
 
 # base info
 way_num: 5
-shot_num: 1
+shot_num: 5
 query_num: 15
 batch_size: 128
 episode_size: 1
@@ -20,7 +20,7 @@ epoch: 50
 
 # arch info
 backbone:
-  name: Conv64F_fw
+  name: Conv32F_fw
   kwargs:
     is_flatten: True
 

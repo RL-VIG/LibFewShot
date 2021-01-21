@@ -20,7 +20,7 @@ epoch: 50
 
 # arch info
 backbone:
-  name: Conv64F_fw
+  name: Conv32F_fw
   kwargs:
     is_flatten: True
 

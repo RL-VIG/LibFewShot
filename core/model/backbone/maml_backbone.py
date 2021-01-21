@@ -140,3 +140,56 @@ class Conv64F_fw(nn.Module):
             return out1, out2, out3, out4
 
         return out4
+
+
+class Conv32F_fw(nn.Module):
+    """
+        Four convolutional blocks network, each of which consists of a Covolutional layer,
+        a Batch Normalizaiton layer, a ReLU layer and a Maxpooling layer.
+        Used in the original ProtoNet: https://github.com/jakesnell/prototypical-networks.git.
+
+        Input:  3 * 84 *84
+        Output: 32 * 5 * 5
+    """
+
+    def __init__(self, is_flatten=False, is_feature=False):
+        super(Conv32F_fw, self).__init__()
+
+        self.is_flatten = is_flatten
+        self.is_feature = is_feature
+
+        self.layer1 = nn.Sequential(
+            Conv2d_fw(3, 32, kernel_size=3, stride=1, padding=1),
+            BatchNorm2d_fw(32),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2), )
+        self.layer2 = nn.Sequential(
+            Conv2d_fw(32, 32, kernel_size=3, stride=1, padding=1),
+            BatchNorm2d_fw(32),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2), )
+        self.layer3 = nn.Sequential(
+            Conv2d_fw(32, 32, kernel_size=3, stride=1, padding=1),
+            BatchNorm2d_fw(32),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2), )
+        self.layer4 = nn.Sequential(
+            Conv2d_fw(32, 32, kernel_size=3, stride=1, padding=1),
+            BatchNorm2d_fw(32),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+        )
+
+    def forward(self, x):
+        out1 = self.layer1(x)
+        out2 = self.layer2(out1)
+        out3 = self.layer3(out2)
+        out4 = self.layer4(out3)
+
+        if self.is_flatten:
+            out4 = out4.view(out4.size(0), -1)
+
+        if self.is_feature:
+            return out1, out2, out3, out4
+
+        return out4
