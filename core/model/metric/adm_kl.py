@@ -1,21 +1,19 @@
 import torch
 from torch import nn
-from torch.nn import functional as F
 
 from core.utils import accuracy
 from .metric_model import MetricModel
 
 
-class ADMLayer(nn.Module):
-    def __init__(self,way_num, shot_num, query_num,n_k,device):
-        super(ADMLayer, self).__init__()
+class KLLayer(nn.Module):
+    def __init__(self,way_num, shot_num, query_num,n_k,device,CMS = False):
+        super(KLLayer, self).__init__()
         self.way_num = way_num
         self.shot_num = shot_num
         self.query_num = query_num
         self.n_k= n_k
         self.device = device
-        self.norm_layer = nn.BatchNorm1d(self.way_num * 2, affine=True)
-        self.fc_layer = nn.Conv1d(1, 1, kernel_size=2, stride=1, dilation=5, bias=False)
+        self.CMS = CMS
 
     def _cal_cov_matrix_batch(self, feat):  # feature: e *  Batch * descriptor_num * 64
         e, _, n_local, c = feat.size()
@@ -66,11 +64,34 @@ class ADMLayer(nn.Module):
         maha_prod = maha_prod.squeeze(4)
         maha_prod = maha_prod.squeeze(3)  # e * 75 * 5
 
-        matrix_det = torch.slogdet(cov2).logabsdet.unsqueeze(1) - torch.slogdet(cov1).logabsdet.unsqueeze(2)
+        matrix_det = torch.logdet(cov2).unsqueeze(1) - torch.logdet(cov1).unsqueeze(2)
 
         kl_dist = trace_dist + maha_prod + matrix_det - mean1.size(3)
 
         return kl_dist / 2.
+
+    def _cal_support_remaining(self, S):   # S: e * 5 * 441 * 64
+        e,w,d,c = S.shape
+        episode_indices = torch.tensor([j for i in range(
+                S.size(1)) for j in range(S.size(1)) if i != j]).to(self.device)
+        S_new = torch.index_select(S, 1, episode_indices)
+        S_new = S_new.view([e,w,-1,c])
+
+        # S_new = [] # 5 * 441 * 64 ADM source code
+        # for ii in range(S.size(0)):
+        #
+        #     indices = [j for j in range(S.size(0))]
+        #     indices.pop(ii)
+        #     indices = torch.tensor(indices).cuda()
+        #
+        #     S_clone = S.clone()
+        #     S_remain = torch.index_select(S_clone, 0, indices)           # 4 * 441 * 64
+        #     S_remain = S_remain.contiguous().view(-1, S_remain.size(2))  # 1764 * 64
+        #     S_new.append(S_remain.unsqueeze(0))
+        #
+        # S_new = torch.cat(S_new, 0)   # 5 * 1764 * 64
+        
+        return S_new
 
     # Calculate KL divergence Distance
     def _cal_adm_sim(self, query_feat, support_feat):
@@ -83,7 +104,6 @@ class ADMLayer(nn.Module):
         # query_mean: e * 75 * 1 * 64  query_cov: e * 75 * 64 * 64
         e, b, c, h, w = query_feat.size()
         e, s, _, _, _ = support_feat.size()
-
         query_mean, query_cov = self._cal_cov_batch(query_feat)
 
         query_feat = query_feat.view(e, b, c, -1).permute(0, 1, 3, 2).contiguous()
@@ -98,40 +118,24 @@ class ADMLayer(nn.Module):
         # Calculate the Wasserstein Distance
         kl_dis = -self._calc_kl_dist_batch(query_mean, query_cov, s_mean, s_cov)  # e * 75 * 5
 
-        # Calculate the Image-to-Class Similarity
-        query_norm = F.normalize(query_feat, p=2, dim=3)
-        support_norm = F.normalize(support_feat, p=2, dim=3)
-        support_norm = support_norm.view(e, self.way_num, self.shot_num * h * w, c)
+        if self.CMS: # ADM_KL_CMS
+            # Find the remaining support set
+            support_set_remain = self._cal_support_remaining(support_set)
+            s_remain_mean, s_remain_cov = self._cal_cov_matrix_batch(support_set_remain) # s_remain_mean: e * 5 * 1 * 64  s_remain_cov: e * 5 * 64 * 64
+            kl_dis2 = self._calc_kl_dist_batch(query_mean, query_cov, s_remain_mean, s_remain_cov)  # e * 75 * 5
+            kl_dis = kl_dis+kl_dis2
 
-        # cosine similarity between a query set and a support set
-        # e * 75 * 5 * 441 * 2205
-        inner_prod_matrix = torch.matmul(query_norm.unsqueeze(2),
-                                         support_norm.permute(0, 1, 3, 2).unsqueeze(1))
-
-        # choose the top-k nearest neighbors
-        # e * 75 * 5 * 441 * 1
-        topk_value, topk_index = torch.topk(inner_prod_matrix, self.n_k, 4)
-        inner_sim = torch.sum(torch.sum(topk_value, 4), 3)  # e * 75 * 5
-
-        # Using FC layer to combine two parts ---- The original
-        adm_sim_soft = torch.cat((kl_dis, inner_sim), 2)
-
-        adm_sim_soft = torch.cat([self.norm_layer(each_task).unsqueeze(1) for each_task in adm_sim_soft])
-        # e * 75 * 1 * 10
-
-        adm_sim_soft = self.fc_layer(adm_sim_soft).squeeze(1).reshape([e, b, -1])
-
-        return adm_sim_soft
+        return kl_dis
 
     def forward(self, query_feat, support_feat):
         return self._cal_adm_sim(query_feat,support_feat)
 
 
-class ADM(MetricModel):
-    def __init__(self, way_num, shot_num, query_num, model_func, device, n_k=3):
-        super(ADM, self).__init__(way_num, shot_num, query_num, model_func, device)
+class ADM_KL(MetricModel):
+    def __init__(self, way_num, shot_num, query_num, model_func, device, n_k=3,CMS=False):
+        super(ADM_KL, self).__init__(way_num, shot_num, query_num, model_func, device)
         self.n_k = n_k
-        self.adm_layer = ADMLayer(way_num, shot_num, query_num,n_k,device)
+        self.kl_layer = KLLayer(way_num, shot_num, query_num, n_k, device, CMS)
         self.loss_func = nn.CrossEntropyLoss()
         self._init_network()
 
@@ -147,7 +151,7 @@ class ADM(MetricModel):
         emb = self.model_func(images)
         support_feat, query_feat, support_targets, query_targets = self.split_by_episode(emb, mode=2)
 
-        output = self.adm_layer(query_feat, support_feat).view(episode_size*self.way_num*self.query_num,-1)
+        output = self.kl_layer(query_feat, support_feat).view(episode_size * self.way_num * self.query_num, -1)
         prec1, _ = accuracy(output, query_targets, topk=(1, 3))
         return output, prec1
 
@@ -163,7 +167,7 @@ class ADM(MetricModel):
         emb = self.model_func(images)
         support_feat, query_feat, support_targets, query_targets = self.split_by_episode(emb, mode=2)
         # assume here we will get n_dim=5
-        output = self.adm_layer(query_feat, support_feat).view(episode_size*self.way_num*self.query_num,-1)
+        output = self.kl_layer(query_feat, support_feat).view(episode_size * self.way_num * self.query_num, -1)
         loss = self.loss_func(output, query_targets)
         prec1, _ = accuracy(output, query_targets, topk=(1, 3))
         return output, prec1, loss

@@ -64,7 +64,7 @@ class AbstractModel(nn.Module):
                                                                                  self.way_num * self.query_num, -1)
             support_targets = local_labels[:, :, :self.shot_num].contiguous().view(episode_size, -1)
             query_targets = local_labels[:, :, self.shot_num:].contiguous().view(-1)
-        elif mode == 2:  # input 2D, return 5D(with episode) E.g.DN4
+        elif mode == 2:  # input 4D, return 5D(with episode) E.g.DN4
             b, c, h, w = features.shape
             features = features.contiguous().view(episode_size, self.way_num, self.shot_num + self.query_num, c, h, w)
             support_features = features[:, :, :self.shot_num, :, ...].contiguous().view(episode_size,
@@ -75,7 +75,7 @@ class AbstractModel(nn.Module):
                                                                                       h, w)
             support_targets = local_labels[:, :, :self.shot_num].contiguous().view(episode_size, -1)
             query_targets = local_labels[:, :, self.shot_num:].contiguous().view(-1)
-        elif mode == 3:  # input 2D, return 4D(w/o episode) E.g.realationnet FIXME: 暂时用来处理还没有实现multi-task的方法
+        elif mode == 3:  # input 4D, return 4D(w/o episode) E.g.realationnet FIXME: 暂时用来处理还没有实现multi-task的方法
             b, c, h, w = features.shape
             features = features.contiguous().view(self.way_num, self.shot_num + self.query_num, c, h, w)
             support_features = features[:, :self.shot_num, :, ...].contiguous().view(self.way_num * self.shot_num, c,
