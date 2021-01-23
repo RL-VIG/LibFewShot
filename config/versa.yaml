@@ -1,0 +1,69 @@
+data_name: miniImageNet
+
+# base info
+way_num: 5
+shot_num: 1
+query_num: 15
+batch_size: 128
+episode_size: 1
+
+# data info
+data_root: /data/yxs/miniImageNet--ravi
+image_size: 84
+use_memory: False
+augment: True
+augment_times: 1
+train_episode: 10000
+test_episode: 1000
+
+# train info
+epoch: 50
+test_epoch: 5
+resume: False
+
+# arch info
+backbone:
+  name: Conv64Five
+  kwargs:
+    is_flatten: True
+
+classifier:
+  name: VERSA
+  kwargs:
+    feat_dim: 256
+    hid_dim: 256
+    sample_num: 10
+
+# optimizer info
+optimizer:
+  name: Adam
+  kwargs:
+    lr: 0.0001
+  other:
+
+# lr_scheduler info
+lr_scheduler:
+  name: StepLR
+  kwargs:
+    gamma: 1.0
+    step_size: 10
+
+
+# result info
+result_root: ./results
+save_interval: 10
+save_part:
+  - model_func
+
+# log info
+log_level: info
+log_interval: 100
+
+# gpu info
+device_ids: 1
+n_gpu: 1
+parallel_part:
+  - model_func
+seed: 0
+deterministic: True
+

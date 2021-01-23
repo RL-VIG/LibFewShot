@@ -3,6 +3,7 @@ from .conv_32f import *
 from .resnet_12 import *
 from .resnet_18 import *
 from .maml_backbone import *
+from .conv_64five import *
 
 
 def get_backbone(config):
@@ -22,6 +23,8 @@ def get_backbone(config):
         model_func = resnet18(**kwargs)
     elif config['backbone']['name'] == 'Conv64F_fw':
         model_func = Conv64F_fw(**kwargs)
+    elif config['backbone']['name'] == 'Conv64Five':
+        model_func = Conv64Five(**kwargs)
     else:
         raise NotImplementedError
 
