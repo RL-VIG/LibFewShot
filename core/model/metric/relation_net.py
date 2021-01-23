@@ -55,10 +55,11 @@ class RelationNet(MetricModel):
         images, global_targets = batch
         images = images.to(self.device)
 
-        emb = self.model_func(images)
-        support_feat, query_feat, support_targets, query_targets = self.split_by_episode(emb, mode=3)
+        feat = self.model_func(images)
+        support_feat, query_feat, support_targets, query_targets \
+            = self.split_by_episode(feat, mode=2)
 
-        relation_pairs = self.cal_pairs(query_feat, support_feat)
+        relation_pairs = self._calc_pairs(query_feat, support_feat)
         output = self.relation_layer(relation_pairs).view(-1, self.way_num)
 
         prec1, _ = accuracy(output, query_targets, topk=(1, 3))
@@ -73,32 +74,34 @@ class RelationNet(MetricModel):
         images, global_targets = batch
         images = images.to(self.device)
 
-        emb = self.model_func(images)
-        support_feat, query_feat, support_targets, query_targets = self.split_by_episode(emb, mode=3)
+        feat = self.model_func(images)
+        support_feat, query_feat, support_targets, query_targets \
+            = self.split_by_episode(feat, mode=2)
 
-        relation_pairs = self.cal_pairs(query_feat, support_feat)
+        relation_pairs = self._calc_pairs(query_feat, support_feat)
         output = self.relation_layer(relation_pairs).view(-1, self.way_num)
 
         loss = self.loss_func(output, query_targets)
         prec1, _ = accuracy(output, query_targets, topk=(1, 3))
         return output, prec1, loss
 
-    def cal_pairs(self, input1, input2):
+    def _calc_pairs(self, query_feat, support_feat):
         """
 
-        :param input1: (query_num * way_num, feat_dim, feat_width, feat_height)
-        :param input2: (support_num * way_num, feat_dim, feat_width, feat_height)
+        :param query_feat: (task_num, query_num * way_num, feat_dim, feat_width, feat_height)
+        :param support_feat: (task_num, support_num * way_num, feat_dim, feat_width, feat_height)
         :return: query_num * way_num * way_num, feat_dim, feat_width, feat_height
         """
-        _, c, h, w = input1.size()
-        # query_num * way_num, way_num, feat_dim, feat_width, feat_height
-        input1 = input1.unsqueeze(0).repeat(self.way_num, 1, 1, 1, 1)
-        input1 = torch.transpose(input1, 0, 1)
+        t, _, c, h, w = query_feat.size()
+        # t, w, wq, c, h, w -> t, wq, w, c, h, w
+        query_feat = query_feat.unsqueeze(1).repeat(1, self.way_num, 1, 1, 1, 1)
+        query_feat = torch.transpose(query_feat, 1, 2)
 
-        # query_num * way_num, way_num, feat_dim, feat_width, feat_height
-        input2 = input2.view(self.way_num, self.shot_num, c, h, w)
-        input2 = torch.sum(input2, dim=1).unsqueeze(0) \
-            .repeat(self.way_num * self.query_num, 1, 1, 1, 1)
+        # t, w, s, c, h, w -> t, 1, w, c, h, w -> t, wq, w, c, h, w
+        support_feat = support_feat.view(t, self.way_num, self.shot_num, c, h, w)
+        support_feat = torch.sum(support_feat, dim=(2,)).unsqueeze(1) \
+            .repeat(1, self.way_num * self.query_num, 1, 1, 1, 1)
 
-        relation_pairs = torch.cat((input1, input2), dim=2).view(-1, c * 2, h, w)
+        # t, wq, w, 2c, h, w -> twqw, 2c, h, w
+        relation_pairs = torch.cat((query_feat, support_feat), dim=3).view(-1, c * 2, h, w)
         return relation_pairs
