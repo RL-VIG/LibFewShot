@@ -5,9 +5,9 @@ from core.utils import accuracy
 from .metric_model import MetricModel
 
 
-class ADMLayer(nn.Module):
+class KLLayer(nn.Module):
     def __init__(self,way_num, shot_num, query_num,n_k,device,CMS = False):
-        super(ADMLayer, self).__init__()
+        super(KLLayer, self).__init__()
         self.way_num = way_num
         self.shot_num = shot_num
         self.query_num = query_num
@@ -135,7 +135,7 @@ class ADM_KL(MetricModel):
     def __init__(self, way_num, shot_num, query_num, model_func, device, n_k=3,CMS=False):
         super(ADM_KL, self).__init__(way_num, shot_num, query_num, model_func, device)
         self.n_k = n_k
-        self.adm_layer = ADMLayer(way_num, shot_num, query_num,n_k,device,CMS)
+        self.kl_layer = KLLayer(way_num, shot_num, query_num, n_k, device, CMS)
         self.loss_func = nn.CrossEntropyLoss()
         self._init_network()
 
@@ -151,7 +151,7 @@ class ADM_KL(MetricModel):
         emb = self.model_func(images)
         support_feat, query_feat, support_targets, query_targets = self.split_by_episode(emb, mode=2)
 
-        output = self.adm_layer(query_feat, support_feat).view(episode_size*self.way_num*self.query_num,-1)
+        output = self.kl_layer(query_feat, support_feat).view(episode_size * self.way_num * self.query_num, -1)
         prec1, _ = accuracy(output, query_targets, topk=(1, 3))
         return output, prec1
 
@@ -167,7 +167,7 @@ class ADM_KL(MetricModel):
         emb = self.model_func(images)
         support_feat, query_feat, support_targets, query_targets = self.split_by_episode(emb, mode=2)
         # assume here we will get n_dim=5
-        output = self.adm_layer(query_feat, support_feat).view(episode_size*self.way_num*self.query_num,-1)
+        output = self.kl_layer(query_feat, support_feat).view(episode_size * self.way_num * self.query_num, -1)
         loss = self.loss_func(output, query_targets)
         prec1, _ = accuracy(output, query_targets, topk=(1, 3))
         return output, prec1, loss
