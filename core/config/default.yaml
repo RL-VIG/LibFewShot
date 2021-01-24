@@ -42,6 +42,7 @@ result_root: ./results
 save_interval: 10
 save_part:
   - model_func
+pretrain_path: ~
 
 # log info
 log_level: info
