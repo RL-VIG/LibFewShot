@@ -196,6 +196,12 @@ class Trainer(object):
         self.logger.info(model)
         self.logger.info(count_parameters(model))
 
+        if self.config['pretrain_path'] is not None:
+            self.logger.info('load pretrain model_func from {}'
+                             .format(self.config['pretrain_path']))
+            state_dict = torch.load(self.config['pretrain_path'], map_location='cpu')
+            model.model_func.load_state_dict(state_dict)
+
         if self.config['resume']:
             resume_path = os.path.join(self.checkpoints_path, 'model_last.pth')
             self.logger.info('load the resume model state dict from {}.'
