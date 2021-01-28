@@ -66,9 +66,9 @@ class VERSA(MetaModel):
         self.weight_logvars = Predictor(self.feat_dim, self.hid_dim, self.hid_dim)
         self.bias_means = Predictor(self.feat_dim, self.hid_dim, 1)
         self.bias_logvars = Predictor(self.feat_dim, self.hid_dim, 1)
-        self.a = 0
 
-        self.head = VERSA_HEAD(way_num, sample_num)
+        # self.head = VERSA_HEAD(way_num, sample_num)
+        self.loss_func = nn.CrossEntropyLoss(reduction='none')
 
     def set_forward(self, batch, ):
         images, _ = batch
@@ -110,12 +110,37 @@ class VERSA(MetaModel):
         bias_means = self.bias_means(class_feat).permute((0, 2, 1))
         bias_logvars = self.bias_logvars(class_feat).permute((0, 2, 1))
 
-        averaged_predictions, task_score = self.head(query_feat, query_targets, weight_means, weight_logvars,
-                                                     bias_means, bias_logvars)
+        prediction_list = []
+        task_score_list = []
+        for i in range(episode_size):
+            episode_query_feat = query_feat[i]
+            episode_query_targets = query_targets[i]
+            weight_mean = weight_means[i]
+            weight_logvar = weight_logvars[i]
+            bias_mean = bias_means[i]
+            bias_logvar = bias_logvars[i]
+
+            logits_mean_query = torch.matmul(episode_query_feat, weight_mean) + bias_mean
+            logits_log_var_query = torch.log(
+                torch.matmul(episode_query_feat ** 2, torch.exp(weight_logvar)) + torch.exp(bias_logvar))
+            logits_sample_query = self.sample_normal(logits_mean_query, logits_log_var_query,
+                                                     self.sample_num).contiguous().reshape(-1, self.way_num)
+
+            query_label_tiled = episode_query_targets.repeat(self.sample_num)
+            loss = -self.loss_func(logits_sample_query, query_label_tiled)
+            loss = loss.contiguous().reshape(self.sample_num, -1)
+            task_score = torch.logsumexp(loss, dim=0) - torch.log(
+                torch.as_tensor(self.sample_num, dtype=torch.float).to(episode_query_feat.device))
+            logits_sample_query = logits_sample_query.contiguous().reshape(self.sample_num, -1, self.way_num)
+            averaged_predictions = torch.logsumexp(logits_sample_query, dim=0) - torch.log(
+                torch.as_tensor(self.sample_num, dtype=torch.float).to(episode_query_feat.device))
+            prediction_list.append(averaged_predictions)
+            task_score_list.append(task_score)
+
+        averaged_predictions = torch.cat(prediction_list, dim=0)
         prec1, _ = accuracy(averaged_predictions, query_targets.reshape(-1), topk=(1, 3))
+        task_score = torch.cat(task_score_list, dim=0)
         loss = -torch.mean(task_score, dim=0)
-        self.a += 1
-        print(self.a)
         return averaged_predictions, prec1, loss
 
     def train_loop(self, *args, **kwargs):
@@ -126,3 +151,8 @@ class VERSA(MetaModel):
 
     def set_forward_adaptation(self, *args, **kwargs):
         pass
+
+    def sample_normal(self, mu, log_variance, num_samples):
+        shape = torch.cat([torch.as_tensor([num_samples]), torch.as_tensor(mu.size())])
+        eps = torch.randn(shape.cpu().numpy().tolist()).to(log_variance.device)
+        return mu + eps * torch.sqrt(torch.exp(log_variance))
