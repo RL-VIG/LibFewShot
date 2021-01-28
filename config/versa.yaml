@@ -5,7 +5,7 @@ way_num: 5
 shot_num: 1
 query_num: 15
 batch_size: 128
-episode_size: 1
+episode_size: 8
 
 # data info
 data_root: /data/yxs/miniImageNet--ravi
@@ -17,7 +17,7 @@ train_episode: 10000
 test_episode: 1000
 
 # train info
-epoch: 50
+epoch: 40
 test_epoch: 5
 resume: False
 
@@ -26,6 +26,7 @@ backbone:
   name: Conv64Five
   kwargs:
     is_flatten: True
+    drop_prob: 0.5
 
 classifier:
   name: VERSA
@@ -38,7 +39,7 @@ classifier:
 optimizer:
   name: Adam
   kwargs:
-    lr: 0.0001
+    lr: 0.00025
   other:
 
 # lr_scheduler info
@@ -54,16 +55,25 @@ result_root: ./results
 save_interval: 10
 save_part:
   - model_func
+  - weight_means
+  - weight_logvars
+  - bias_means
+  - bias_logvars
 
 # log info
 log_level: info
 log_interval: 100
 
 # gpu info
-device_ids: 1
+device_ids: 4
 n_gpu: 1
 parallel_part:
   - model_func
+  - weight_means
+  - weight_logvars
+  - bias_means
+  - bias_logvars
+  - head
 seed: 0
 deterministic: True
 
