@@ -17,7 +17,7 @@ train_episode: 10000
 test_episode: 1000
 
 # train info
-epoch: 40
+epoch: 100
 test_epoch: 5
 resume: False
 
@@ -46,8 +46,8 @@ optimizer:
 lr_scheduler:
   name: StepLR
   kwargs:
-    gamma: 1.0
-    step_size: 10
+    gamma: 0.5
+    step_size: 20
 
 
 # result info
@@ -65,7 +65,7 @@ log_level: info
 log_interval: 100
 
 # gpu info
-device_ids: 4
+device_ids: 0
 n_gpu: 1
 parallel_part:
   - model_func
@@ -75,5 +75,5 @@ parallel_part:
   - bias_logvars
   - head
 seed: 0
-deterministic: True
+deterministic: False
 

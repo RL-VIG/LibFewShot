@@ -16,7 +16,7 @@ class Conv64Five(nn.Module):
 
         self.is_flatten = is_flatten
         self.is_feature = is_feature
-        self.drop_prob = drop_prob
+        self.drop_prob = 0.1
 
         self.layer1 = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False),

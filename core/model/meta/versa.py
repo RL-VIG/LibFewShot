@@ -73,6 +73,7 @@ class VERSA(MetaModel):
     def set_forward(self, batch, ):
         images, _ = batch
         images = images.to(self.device)
+        images.required_grad = True
 
         feat = self.model_func(images)
         support_feat, query_feat, support_targets, query_targets = self.split_by_episode(feat, mode=1)
@@ -87,8 +88,26 @@ class VERSA(MetaModel):
         bias_means = self.bias_means(class_feat).permute((0, 2, 1))
         bias_logvars = self.bias_logvars(class_feat).permute((0, 2, 1))
 
-        averaged_predictions, _ = self.head(query_feat, query_targets, weight_means, weight_logvars,
-                                            bias_means, bias_logvars)
+        prediction_list = []
+        for i in range(episode_size):
+            episode_query_feat = query_feat[i]
+            weight_mean = weight_means[i]
+            weight_logvar = weight_logvars[i]
+            bias_mean = bias_means[i]
+            bias_logvar = bias_logvars[i]
+
+            logits_mean_query = torch.matmul(episode_query_feat, weight_mean) + bias_mean
+            logits_log_var_query = torch.log(
+                torch.matmul(episode_query_feat ** 2, torch.exp(weight_logvar)) + torch.exp(bias_logvar))
+            logits_sample_query = self.sample_normal(logits_mean_query, logits_log_var_query,
+                                                     self.sample_num).contiguous().reshape(-1, self.way_num)
+
+            logits_sample_query = logits_sample_query.contiguous().reshape(self.sample_num, -1, self.way_num)
+            averaged_predictions = torch.logsumexp(logits_sample_query, dim=0) - torch.log(
+                torch.as_tensor(self.sample_num, dtype=torch.float).to(episode_query_feat.device))
+            prediction_list.append(averaged_predictions)
+
+        averaged_predictions = torch.cat(prediction_list, dim=0)
         prec1, _ = accuracy(averaged_predictions, query_targets.reshape(-1), topk=(1, 3))
         return averaged_predictions, prec1
 
