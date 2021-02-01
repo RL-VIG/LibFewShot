@@ -5,54 +5,60 @@ way_num: 5
 shot_num: 1
 query_num: 15
 batch_size: 128
-episode_size: 1
+episode_size: 8
 
 # data info
 data_root: /data/yxs/miniImageNet--ravi
 image_size: 84
+use_memory: False
 augment: True
 augment_times: 1
 train_episode: 10000
 test_episode: 1000
 
 # train info
-epoch: 50
+epoch: 100
+test_epoch: 5
+resume: False
 
 # arch info
 backbone:
-  name: Conv64F_fw
+  name: Conv64Five
   kwargs:
     is_flatten: True
+    drop_prob: 0.5
 
 classifier:
-  name: MAML
+  name: VERSA
   kwargs:
-    inner_optim:
-        lr: 1e-2
-    inner_train_iter: 5
-    feat_dim: 1600
+    feat_dim: 256
+    hid_dim: 256
+    sample_num: 10
 
 # optimizer info
 optimizer:
   name: Adam
   kwargs:
-    lr: 0.001
+    lr: 0.00025
   other:
-    model_func: 0.001
 
 # lr_scheduler info
 lr_scheduler:
   name: StepLR
   kwargs:
     gamma: 0.5
-    step_size: 10
+    step_size: 20
+
 
 # result info
 result_root: ./results
 save_interval: 10
 save_part:
   - model_func
-  - classifier
+  - weight_means
+  - weight_logvars
+  - bias_means
+  - bias_logvars
 
 # log info
 log_level: info
@@ -63,5 +69,11 @@ device_ids: 0
 n_gpu: 1
 parallel_part:
   - model_func
+  - weight_means
+  - weight_logvars
+  - bias_means
+  - bias_logvars
+  - head
 seed: 0
-deterministic: True
+deterministic: False
+
