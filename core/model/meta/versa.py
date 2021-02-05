@@ -69,6 +69,8 @@ class VERSA(MetaModel):
 
         self.head = VERSA_HEAD(way_num, sample_num)
 
+        self._init_network()
+
     def set_forward(self, batch, ):
         images, _ = batch
         images = images.to(self.device)
@@ -115,10 +117,10 @@ class VERSA(MetaModel):
         return averaged_predictions, prec1, loss
 
     def train_loop(self, *args, **kwargs):
-        pass
+        raise NotImplementedError
 
     def test_loop(self, *args, **kwargs):
-        pass
+        raise NotImplementedError
 
     def set_forward_adaptation(self, *args, **kwargs):
-        pass
+        raise NotImplementedError
