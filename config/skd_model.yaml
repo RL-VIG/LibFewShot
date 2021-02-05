@@ -1,9 +1,46 @@
-train_episode: 1000
-test_episode: 500
+data_name: miniImageNet
+
+# base info
+way_num: 5
+shot_num: 5
+query_num: 15
+batch_size: 128
+episode_size: 5
+
+# data info
+data_root: /data/dcq/DataSets/miniImageNet
+image_size: 84
+use_memory: False
+augment: True
+augment_times: 1
+train_episode: 5000
+test_episode: 1000
+
+# train info
+epoch: 50
+test_epoch: 5
+resume: False
 
 save_part:
   - model_func
-  - classifier
+  - cls_classifier
+  - rot_classifier
+
+
+# log info
+log_level: info
+log_interval: 100
+
+# gpu info
+device_ids: 2,3
+n_gpu: 2
+parallel_part:
+  - model_func
+  - cls_classifier
+  - rot_classifier
+  - distill_layer
+seed: 1
+deterministic: True
 
 # arch info
 backbone:
@@ -14,11 +51,11 @@ backbone:
 classifier:
   name: SKDModel
   kwargs:
-    inner_optim:
-      name: Adam
-      kwargs:
-        lr: 1e-2
-    loss_gamma: 2.
-    inner_train_iter: 20
     feat_dim: 1600
     num_classes: 64
+    gamma: 1.
+    alpha: 1.
+    is_distill: True
+    model_func_path: ./results/SKDModel-Conv64F-5-5/checkpoints/model_func_best.pth
+    cls_classifier_path: ./results/SKDModel-Conv64F-5-5/checkpoints/cls_classifier_best.pth
+    rot_classifier_path: ./results/SKDModel-Conv64F-5-5/checkpoints/rot_classifier_best.pth
