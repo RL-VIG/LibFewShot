@@ -1,9 +1,44 @@
-train_episode: 1000
-test_episode: 500
+data_name: miniImageNet
+
+# base info
+way_num: 5
+shot_num: 5
+query_num: 15
+batch_size: 128
+episode_size: 5
+
+# data info
+data_root: /data/dcq/DataSets/miniImageNet
+image_size: 84
+use_memory: False
+augment: True
+augment_times: 1
+train_episode: 5000
+test_episode: 1000
+
+# train info
+epoch: 50
+test_epoch: 5
+resume: False
 
 save_part:
   - model_func
   - classifier
+
+
+# log info
+log_level: info
+log_interval: 100
+
+# gpu info
+device_ids: 0, 1
+n_gpu: 2
+parallel_part:
+  - model_func
+  - classifier
+  - distill_layer
+seed: 1
+deterministic: True
 
 # arch info
 backbone:
@@ -14,10 +49,10 @@ backbone:
 classifier:
   name: RFSModel
   kwargs:
-    inner_optim:
-      name: Adam
-      kwargs:
-        lr: 1e-2
-    inner_train_iter: 20
     feat_dim: 1600
     num_classes: 64
+    gamma: 0.5
+    alpha: 0.5
+    is_distill: True
+    model_func_path: ./results/RFSModel-Conv64F-5-5/checkpoints/model_func_best.pth
+    classifier_path: ./results/RFSModel-Conv64F-5-5/checkpoints/classifier_best.pth
