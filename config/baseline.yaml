@@ -20,7 +20,7 @@ epoch: 50
 
 # arch info
 backbone:
-  name: resnet18
+  name: resnet12
   kwargs:
 
 classifier:
@@ -32,7 +32,7 @@ classifier:
         lr: 1e-3
     inner_train_iter: 100
     inner_batch_size: 4
-    feat_dim: 512
+    feat_dim: 64000
     num_classes: 64
 
 # optimizer info
