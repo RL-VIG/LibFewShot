@@ -67,7 +67,7 @@ class Trainer(object):
 
         meter = self.train_meter
         meter.reset()
-        episode_size = self.config['episode_size']
+        episode_size = 1 if self.model_type == ModelType.PRETRAIN else self.config['episode_size']
 
         end = time()
         for batch_idx, batch in enumerate(self.train_loader):

@@ -20,8 +20,9 @@ def get_instance(module, name, config, *args):
 
 
 class Test(object):
-    def __init__(self, config):
+    def __init__(self, config, result_path=None):
         self.config = config
+        self.result_path = result_path
         self.device, self.list_ids = self._init_device(config)
         self.viz_path, self.state_dict_path = self._init_files(config)
         self.writer = TensorboardWriter(self.viz_path)
@@ -100,10 +101,13 @@ class Test(object):
         return meter.avg('prec1'), accuracies
 
     def _init_files(self, config):
-        result_dir = '{}-{}-{}-{}' \
-            .format(config['classifier']['name'], config['backbone']['name'],
-                    config['way_num'], config['shot_num'])
-        result_path = os.path.join(config['result_root'], result_dir)
+        if self.result_path is not None:
+            result_path = self.result_path
+        else:
+            result_dir = '{}-{}-{}-{}' \
+                .format(config['classifier']['name'], config['backbone']['name'],
+                        config['way_num'], config['shot_num'])
+            result_path = os.path.join(config['result_root'], result_dir)
 
         log_path = os.path.join(result_path, 'log_files')
         viz_path = os.path.join(log_path, 'tfboard_files')
