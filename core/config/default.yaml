@@ -27,7 +27,11 @@ optimizer:
   kwargs:
     lr: 0.001
   other:
-    model_func: 0.001
+    model_func: 0.001 # define lr OR
+#    another_part:    # define multi params
+#      lr: 0.1
+#      weight_decay: 0.5
+
 
 # lr_scheduler info
 lr_scheduler:

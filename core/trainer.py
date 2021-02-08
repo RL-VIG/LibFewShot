@@ -232,9 +232,14 @@ class Trainer(object):
                     for p in sub_model.parameters():
                         p.requires_grad = False
                 else:
-                    params_dict_list.append({
-                        'params': sub_model.parameters(), 'lr': value
-                    })
+                    param_dict = {'params': sub_model.parameters()}
+                    if isinstance(value,float): # 兼容只传了一个lr的config，在之后可以考虑规定config写法以统一
+                        param_dict.update({'lr':value})
+                    elif isinstance(value , dict): # 传了一系列参数, 用缩进传入字典
+                        param_dict.update(value)
+                    else:
+                        raise Exception('Wrong config in optimizer.other')
+                    params_dict_list.append(param_dict)
 
         params_dict_list.append({
             'params': filter(lambda p: id(p) not in params_idx, self.model.parameters())
@@ -242,6 +247,7 @@ class Trainer(object):
         optimizer = get_instance(torch.optim, 'optimizer', config, params_dict_list)
         scheduler = get_instance(torch.optim.lr_scheduler, 'lr_scheduler', config,
                                  optimizer)
+        print(optimizer)
         from_epoch = -1
         if self.config['resume']:
             resume_path = os.path.join(self.checkpoints_path, 'model_last.pth')
