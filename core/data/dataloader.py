@@ -28,6 +28,11 @@ def get_dataloader(config, mode, model_type):
         elif config['image_size'] == 84:
             trfms_list.append(transforms.Resize((96, 96)))
             trfms_list.append(transforms.RandomCrop((84, 84)))
+        elif config['image_size'] == 80:  # for MTL -> alternative solution: use avgpool(ks=11)
+            trfms_list.append(transforms.Resize((92, 92)))  # MTL use another MEAN and STD
+            trfms_list.append(transforms.RandomResizedCrop(88))
+            trfms_list.append(transforms.CenterCrop((80, 80)))
+            trfms_list.append(transforms.RandomHorizontalFlip())
         else:
             raise RuntimeError
 
@@ -40,6 +45,9 @@ def get_dataloader(config, mode, model_type):
         elif config['image_size'] == 84:
             trfms_list.append(transforms.Resize((96, 96)))
             trfms_list.append(transforms.CenterCrop((84, 84)))
+        elif config['image_size'] == 80:  # for MTL -> alternative solution: use avgpool(ks=11)
+            trfms_list.append(transforms.Resize((92, 92)))
+            trfms_list.append(transforms.CenterCrop((80, 80)))
         else:
             raise RuntimeError
 
