@@ -8,12 +8,12 @@ batch_size: 128
 episode_size: 1
 
 # data info
-data_root: /data/wzy/miniImageNet--ravi
+data_root: /data/dcq/DataSets/miniImageNet
 image_size: 84
 use_memory: False
 augment: True
 augment_times: 1
-train_episode: 10000
+train_episode: 5000
 test_episode: 1000
 
 # train info
@@ -27,18 +27,22 @@ optimizer:
   kwargs:
     lr: 0.001
   other:
-    model_func: 0.001 # define lr OR
-#    another_part:    # define multi params
-#      lr: 0.1
-#      weight_decay: 0.5
-
+    model_func: 0.001
 
 # lr_scheduler info
 lr_scheduler:
-  name: StepLR
+  name: MultiStepLR
   kwargs:
     gamma: 0.5
-    step_size: 10
+    milestones:
+      - 10
+      - 15
+      - 20
+      - 25
+      - 30
+      - 35
+      - 40
+      - 45
 
 
 # result info
@@ -46,17 +50,33 @@ result_root: ./results
 save_interval: 10
 save_part:
   - model_func
-pretrain_path: ~
+  - atl_layer
 
 # log info
 log_level: info
 log_interval: 100
 
 # gpu info
-device_ids: 1
+device_ids: 3
 n_gpu: 1
 parallel_part:
   - model_func
-seed: 0
+  - atl_layer
+seed: 1
 deterministic: True
 
+
+# arch info
+backbone:
+  name: Conv64FLeakyReLU
+  kwargs:
+    is_flatten: False
+
+classifier:
+  name: ATLNet
+  kwargs:
+    inplanes: 64
+    scale_value: 30
+    atten_scale_value: 50
+    from_value: 0.4
+    value_interval: 0.5

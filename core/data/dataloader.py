@@ -2,7 +2,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 
 from core.data.dataset import GeneralDataset
-from .collates import get_collate_fn,get_augment_method
+from .collates import get_collate_fn, get_augment_method
 from .samplers import CategoriesSampler
 from ..utils import ModelType
 
@@ -26,7 +26,7 @@ def get_dataloader(config, mode, model_type):
             trfms_list.append(transforms.Resize((256, 256)))
             trfms_list.append(transforms.RandomCrop((224, 224)))
         elif config['image_size'] == 84:
-            trfms_list.append(transforms.Resize((92, 92)))
+            trfms_list.append(transforms.Resize((96, 96)))
             trfms_list.append(transforms.RandomCrop((84, 84)))
         else:
             raise RuntimeError
@@ -35,9 +35,11 @@ def get_dataloader(config, mode, model_type):
         trfms_list += aug_method
     else:
         if config['image_size'] == 224:
-            trfms_list.append(transforms.Resize((224, 224)))
+            trfms_list.append(transforms.Resize((256, 256)))
+            trfms_list.append(transforms.CenterCrop((224, 224)))
         elif config['image_size'] == 84:
-            trfms_list.append(transforms.Resize((84, 84)))
+            trfms_list.append(transforms.Resize((96, 96)))
+            trfms_list.append(transforms.CenterCrop((84, 84)))
         else:
             raise RuntimeError
 
