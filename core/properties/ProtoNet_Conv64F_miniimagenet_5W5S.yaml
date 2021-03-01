@@ -1,0 +1,62 @@
+# config refers to https://github.com/orobix/Prototypical-Networks-for-Few-shot-Learning-PyTorch
+train_episode: 10000
+test_episode: 600
+episode_size: 1
+
+save_part:
+  - model_func
+
+device_ids: 0,1,2,3
+n_gpu: 4
+parallel_part:
+  - model_func
+  - proto_layer
+
+# arch info
+backbone:
+  name: Conv64F
+  kwargs:
+    is_flatten: True
+
+classifier:
+  name: ProtoNet
+  kwargs: ~
+
+data_name: miniImageNet
+
+# base info
+way_num: 5
+shot_num: 5
+query_num: 10
+
+# data info
+data_root: /data/wzy/miniImageNet--ravi
+image_size: 84
+use_memory: False
+augment: True
+augment_times: 1
+
+# train info
+epoch: 100
+test_epoch: 5
+resume: False
+
+# optimizer info
+optimizer:
+  name: Adam
+  kwargs:
+    lr: 0.001
+  other:
+    model_func: 0.001
+
+# lr_scheduler info
+lr_scheduler:
+  name: StepLR
+  kwargs:
+    gamma: 0.5
+    step_size: 20
+
+
+
+
+
