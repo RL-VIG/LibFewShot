@@ -159,8 +159,8 @@ class Trainer(object):
         return meter.avg('prec1')
 
     def _init_files(self, config):
-        result_dir = '{}-{}-{}-{}' \
-            .format(config['classifier']['name'], config['backbone']['name'],
+        result_dir = '{}-{}-{}-{}-{}' \
+            .format(config['classifier']['name'], config['data_name'], config['backbone']['name'],
                     config['way_num'], config['shot_num'])
         result_path = os.path.join(config['result_root'], result_dir)
 
