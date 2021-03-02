@@ -45,67 +45,54 @@ class MAML(MetaModel):
         self.inner_train_iter = inner_train_iter
         self._init_network()
 
+    def forward_output(self, x):
+        out1 = self.model_func(x)
+        out2 = self.classifier(out1)
+        return out2
+
     def set_forward(self, batch, ):
-        self.model = nn.Sequential(
-            self.model_func,
-            self.classifier,
-        )
         images, _ = batch
         images = images.to(self.device)
         support_images, query_images, support_targets, query_targets = self.split_by_episode(images, mode=2)
         episode_size, _, c, h, w = support_images.size()
 
         output_list = []
-        loss_list = []
-        prec1_list = []
         for i in range(episode_size):
             episode_support_images = support_images[i].contiguous().reshape(-1, c, h, w)
             episode_query_images = query_images[i].contiguous().reshape(-1, c, h, w)
             episode_support_targets = support_targets[i].reshape(-1)
             # episode_query_targets = query_targets[i].reshape(-1)
             self.train_loop(episode_support_images, episode_support_targets)
-            output = self.model(episode_query_images)
-            loss = self.loss_func(output, query_targets)
-            prec1, _ = accuracy(output, query_targets, topk=(1, 3))
+
+            output = self.forward_output(episode_query_images)
 
             output_list.append(output)
-            loss_list.append(loss)
-            prec1_list.append(prec1)
 
         output = torch.cat(output_list, dim=0)
-        prec1 = torch.mean(torch.tensor(prec1_list))
+        prec1, _ = accuracy(output, query_targets.contiguous().view(-1), topk=(1, 3))
         return output, prec1
 
     def set_forward_loss(self, batch, ):
-        self.model = nn.Sequential(
-            self.model_func,
-            self.classifier,
-        )
         images, _ = batch
         images = images.to(self.device)
         support_images, query_images, support_targets, query_targets = self.split_by_episode(images, mode=2)
         episode_size, _, c, h, w = support_images.size()
 
         output_list = []
-        loss_list = []
-        prec1_list = []
         for i in range(episode_size):
             episode_support_images = support_images[i].contiguous().reshape(-1, c, h, w)
             episode_query_images = query_images[i].contiguous().reshape(-1, c, h, w)
             episode_support_targets = support_targets[i].reshape(-1)
             # episode_query_targets = query_targets[i].reshape(-1)
             self.train_loop(episode_support_images, episode_support_targets)
-            output = self.model(episode_query_images)
-            loss = self.loss_func(output, query_targets)
-            prec1, _ = accuracy(output, query_targets, topk=(1, 3))
+
+            output = self.forward_output(episode_query_images)
 
             output_list.append(output)
-            loss_list.append(loss)
-            prec1_list.append(prec1)
 
         output = torch.cat(output_list, dim=0)
-        loss = torch.mean(torch.stack(loss_list))
-        prec1 = torch.mean(torch.tensor(prec1_list))
+        loss = self.loss_func(output, query_targets.contiguous().view(-1))
+        prec1, _ = accuracy(output, query_targets.contiguous().view(-1), topk=(1, 3))
         return output, prec1, loss
 
     def train_loop(self, support_set, support_targets):
@@ -114,9 +101,10 @@ class MAML(MetaModel):
         for parameter in self.parameters():
             parameter.fast = None
 
-        self.model.train()
+        self.model_func.train()
+        self.classifier.train()
         for i in range(self.inner_train_iter):
-            output = self.model(support_set)
+            output = self.forward_output(support_set)
             loss = self.loss_func(output, support_targets)
             grad = torch.autograd.grad(loss, fast_parameters, create_graph=True)
             fast_parameters = []

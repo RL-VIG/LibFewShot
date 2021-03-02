@@ -122,7 +122,7 @@ class R2D2(MetaModel):
         # output = self.alpha * output + self.beta
 
         output = output.contiguous().view(-1, self.way_num)
-        prec1, _ = accuracy(output.squeeze(), query_targets, topk=(1, 3))
+        prec1, _ = accuracy(output.squeeze(), query_targets.contiguous().reshape(-1), topk=(1, 3))
         return output, prec1
 
     def set_forward_loss(self, batch, ):
@@ -137,8 +137,8 @@ class R2D2(MetaModel):
         # output = self.alpha * output + self.beta
 
         output = output.contiguous().view(-1, self.way_num)
-        loss = self.loss_func(output, query_targets)
-        prec1, _ = accuracy(output.squeeze(), query_targets, topk=(1, 3))
+        loss = self.loss_func(output, query_targets.contiguous().reshape(-1))
+        prec1, _ = accuracy(output.squeeze(), query_targets.contiguous().reshape(-1), topk=(1, 3))
         return output, prec1, loss
 
     def train_loop(self, emb_support, support_targets, W):
