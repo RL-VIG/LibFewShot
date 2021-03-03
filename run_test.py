@@ -3,13 +3,13 @@ import os
 from core.config import Config
 from core.test import Test
 
-PATH = './results/ATLNet-Conv64FLeakyReLU-5-1'
+PATH = './results/RelationNet-miniImageNet-resnet18-5-5'
 VAR_DICT = {
     'test_epoch': 5,
-    'device_ids': '2,3',
-    'n_gpu': 2,
+    'device_ids': '4',
+    'n_gpu': 1,
     'test_episode': 600,
-    'episode_size': 4
+    'episode_size': 1
 }
 
 if __name__ == '__main__':

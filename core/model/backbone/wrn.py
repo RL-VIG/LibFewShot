@@ -88,6 +88,7 @@ class WideResNet(nn.Module):
         out = self.block3(out)
         out = self.relu(self.bn1(out))
         out = F.adaptive_max_pool2d(out, 1)
+        out = out.reshape(out.size(0), -1)
         # out = out.view(-1, self.nChannels)
         # return self.fc(out)
         return out

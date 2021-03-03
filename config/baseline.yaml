@@ -20,8 +20,10 @@ epoch: 50
 
 # arch info
 backbone:
-  name: resnet12
+  name: WRN
   kwargs:
+    depth: 28
+    widen_factor: 10
 
 classifier:
   name: Baseline
@@ -30,9 +32,9 @@ classifier:
       name: Adam
       kwargs:
         lr: 1e-3
-    inner_train_iter: 100
-    inner_batch_size: 4
-    feat_dim: 64000
+    inner_train_iter: 5
+    inner_batch_size: 1024
+    feat_dim: 640
     num_classes: 64
 
 # optimizer info

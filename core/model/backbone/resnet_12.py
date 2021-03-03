@@ -20,7 +20,7 @@ class BasicBlock(nn.Module):
     expansion = 1
 
     def __init__(self, inplanes, planes, stride=1, downsample=None, drop_rate=0.0,
-                 drop_block=False, block_size=1):
+                 drop_block=False, block_size=1, use_pool=True):
         super(BasicBlock, self).__init__()
         self.conv1 = conv3x3(inplanes, planes)
         self.bn1 = nn.BatchNorm2d(planes)
@@ -37,6 +37,7 @@ class BasicBlock(nn.Module):
         self.drop_block = drop_block
         self.block_size = block_size
         self.DropBlock = DropBlock(block_size=self.block_size)
+        self.use_pool = use_pool
 
     def forward(self, x):
         self.num_batches_tracked += 1
@@ -58,7 +59,8 @@ class BasicBlock(nn.Module):
             residual = self.downsample(x)
         out += residual
         out = self.relu(out)
-        out = self.maxpool(out)
+        if self.use_pool:
+            out = self.maxpool(out)
 
         if self.drop_rate > 0:
             if self.drop_block == True:
@@ -86,9 +88,9 @@ class ResNet(nn.Module):
         self.layer1 = self._make_layer(block, 64, stride=2, drop_rate=drop_rate)
         self.layer2 = self._make_layer(block, 160, stride=2, drop_rate=drop_rate)
         self.layer3 = self._make_layer(block, 320, stride=2, drop_rate=drop_rate,
-                                       drop_block=True, block_size=dropblock_size)
+                                       drop_block=True, block_size=dropblock_size, use_pool=True)
         self.layer4 = self._make_layer(block, 640, stride=2, drop_rate=drop_rate,
-                                       drop_block=True, block_size=dropblock_size)
+                                       drop_block=True, block_size=dropblock_size, use_pool=True)
         if avg_pool:
             self.avgpool = nn.AvgPool2d(5, stride=1)
         self.keep_prob = keep_prob
@@ -105,7 +107,7 @@ class ResNet(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
     def _make_layer(self, block, planes, stride=1, drop_rate=0.0, drop_block=False,
-                    block_size=1):
+                    block_size=1, use_pool=True):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
             downsample = nn.Sequential(
@@ -117,7 +119,7 @@ class ResNet(nn.Module):
         layers = []
         layers.append(
             block(self.inplanes, planes, stride, downsample, drop_rate, drop_block,
-                  block_size))
+                  block_size, use_pool=use_pool))
         self.inplanes = planes * block.expansion
 
         return nn.Sequential(*layers)
@@ -141,7 +143,7 @@ def resnet12(keep_prob=1.0, avg_pool=True, **kwargs):
 
 
 if __name__ == '__main__':
-    model = resnet12().cuda()
+    model = resnet12(avg_pool=True).cuda()
     data = torch.rand(10, 3, 84, 84).cuda()
     output = model(data)
     print(output.size())

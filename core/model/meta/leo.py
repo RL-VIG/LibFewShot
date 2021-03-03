@@ -180,7 +180,7 @@ class LEO(MetaModel):
         prec1, _ = accuracy(output, query_targets, topk=(1, 3))
         return output, prec1, total_loss
 
-    def train_loop(self, emb_support, suppot_targets, episode_size):
+    def train_loop(self, emb_support, support_targets, episode_size):
         latents, kl_div = self.encoder(emb_support)
         latents_init = latents
         for i in range(self.inner_train_iter):
@@ -189,7 +189,9 @@ class LEO(MetaModel):
             classifier_weight = sample(classifier_weight, self.feat_dim)
             classifier_weight = classifier_weight.permute([0, 2, 1])
             output = torch.bmm(emb_support, classifier_weight)
-            loss = self.loss_func(output, suppot_targets)
+            output = output.contiguous().reshape(-1, self.way_num)
+            targets = support_targets.contiguous().reshape(-1)
+            loss = self.loss_func(output, targets)
 
             loss.backward(retain_graph=True)
 
@@ -207,7 +209,9 @@ class LEO(MetaModel):
     def finetune(self, classifier_weights, emb_support, support_targets):
         classifier_weights.retain_grad()
         output = torch.bmm(emb_support, classifier_weights)
-        pred_loss = self.loss_func(output, support_targets)
+        output = output.contiguous().reshape(-1, self.way_num)
+        targets = support_targets.contiguous().reshape(-1)
+        pred_loss = self.loss_func(output, targets)
 
         for j in range(self.finetune_iter):
             pred_loss.backward(retain_graph=True)
@@ -215,6 +219,8 @@ class LEO(MetaModel):
             classifier_weights.retain_grad()
 
             output = torch.bmm(emb_support, classifier_weights)
-            pred_loss = self.loss_func(output, support_targets)
+            output = output.contiguous().reshape(-1, self.way_num)
+            targets = support_targets.contiguous().reshape(-1)
+            pred_loss = self.loss_func(output, targets)
 
         return classifier_weights

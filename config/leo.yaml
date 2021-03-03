@@ -1,4 +1,5 @@
 data_name: miniImageNet
+#data_name: tieredImageNet
 
 # base info
 way_num: 5
@@ -9,20 +10,28 @@ episode_size: 1
 
 # data info
 data_root: /data/yxs/miniImageNet--ravi
+#data_root: /data/student/tiered_imagenet
 image_size: 84
 augment: True
 augment_times: 1
-train_episode: 10000
+train_episode: 1000
 test_episode: 1000
 
 # train info
-epoch: 50
+epoch: 60
 
 # arch info
+pretrain_path: /home/yxs/Codes/LibFewShot/results/Baseline-resnet12-5-5/checkpoints/model_func_best.pth
+
+#backbone:
+#  name: WRN
+#  kwargs:
+#    depth: 28
+#    widen_factor: 10
 backbone:
-  name: WRN
+  name: resnet12
   kwargs:
-    depth: 28
+    avg_pool: True
 
 classifier:
   name: LEO
@@ -32,8 +41,8 @@ classifier:
         finetune_lr: 1e-2
     inner_train_iter: 5
     finetune_iter: 5
-    feat_dim: 64
-    hid_dim: 32
+    feat_dim: 640
+    hid_dim: 320
 
 # optimizer info
 optimizer:
@@ -62,7 +71,7 @@ log_level: info
 log_interval: 100
 
 # gpu info
-device_ids: 0
+device_ids: 1
 n_gpu: 1
 parallel_part:
   - model_func

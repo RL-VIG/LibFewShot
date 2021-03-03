@@ -97,7 +97,7 @@ class ResNet(nn.Module):
         self.layer1 = self._make_layer(block, 64, layers[0])
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
         self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
-        self.layer4 = self._make_layer(block, 512, layers[3], stride=2)
+        self.layer4 = self._make_layer(block, 512, layers[3], stride=1)
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
 
         for m in self.modules():
@@ -143,8 +143,8 @@ class ResNet(nn.Module):
         out3 = self.layer3(out2)
         out4 = self.layer4(out3)
 
-        out4 = self.avgpool(out4)
-        out4 = out4.view(out4.size(0), -1)
+        # out4 = self.avgpool(out4)
+        # out4 = out4.view(out4.size(0), -1)
 
         if self.is_feature:
             return out1, out2, out3, out4
@@ -157,3 +157,11 @@ def resnet18(**kwargs):
     """
     model = ResNet(BasicBlock, [2, 2, 2, 2], **kwargs)
     return model
+
+
+if __name__ == '__main__':
+    import torch
+    model = resnet18().cuda()
+    data = torch.rand(10, 3, 84, 84).cuda()
+    output = model(data)
+    print(output.size())
