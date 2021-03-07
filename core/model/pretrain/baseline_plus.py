@@ -108,13 +108,20 @@ class BaselinePlus(PretrainModel):
         classifier = classifier.to(self.device)
 
         classifier.train()
-        for i in range(self.inner_train_iter):
-            output = classifier(support_feat)
+        support_size = support_feat.size(0)
+        for epoch in range(self.inner_train_iter):
+            rand_id = torch.randperm(support_size)
+            for i in range(0, support_size, self.inner_batch_size):
+                select_id = rand_id[i:min(i + self.inner_batch_size, support_size)]
+                batch = support_feat[select_id]
+                target = support_targets[select_id]
 
-            loss = self.loss_func(output, support_targets)
+                output = classifier(batch)
 
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+                loss = self.loss_func(output, target)
+
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
 
         return classifier
