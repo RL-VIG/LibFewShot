@@ -123,12 +123,13 @@ class SKDModel(PretrainModel):
 
         if self.is_distill:
             gamma_loss = self.kl_loss_func(cls_output[:batch_size], distill_output)
-            alpha_loss = self.mse_loss_func(rot_output[batch_size:], rot_output[:batch_size])
+            alpha_loss = self.mse_loss_func(rot_output[batch_size:],
+                                            rot_output[:batch_size]) / 3
         else:
             gamma_loss = self.ce_loss_func(cls_output, generated_targets)
             alpha_loss = self.ce_loss_func(rot_output, rot_targets)
 
-        loss = gamma_loss * self.gamma + alpha_loss * self.alpha / 3
+        loss = gamma_loss * self.gamma + alpha_loss * self.alpha
 
         prec1, _ = accuracy(cls_output, generated_targets, topk=(1, 3))
 
@@ -178,7 +179,8 @@ class SKDModel(PretrainModel):
 
     def train(self, mode=True):
         self.model_func.train(mode)
-        self.classifier.train(mode)
+        self.rot_classifier.train(mode)
+        self.cls_classifier.train(mode)
         self.distill_layer.train(False)
 
     def eval(self):
