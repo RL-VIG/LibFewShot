@@ -53,12 +53,14 @@ class ADMLayer(nn.Module):
 
         # Calculate the trace
         matrix_prod = torch.matmul(cov1.unsqueeze(2), cov2_inverse.unsqueeze(1))  # e * 75 * 5 * 64 * 64
-        trace_dist = [[torch.trace(matrix_prod[e][j][i]).unsqueeze(0) # modified for multi-task
-                       for j in range(matrix_prod.size(1))
-                       for i in range(matrix_prod.size(2))]
-                      for e in range(matrix_prod.size(0))] # list of trace_dist
-        trace_dist = torch.stack([torch.cat(trace_dist_list, 0) for trace_dist_list in trace_dist]) #
-        trace_dist = trace_dist.view(matrix_prod.size(0),matrix_prod.size(1), matrix_prod.size(2))  # e * 75 * 5
+        # trace_dist = [[torch.trace(matrix_prod[e][j][i]).unsqueeze(0) # modified for multi-task, stack for 64*64 tensors
+        #                for j in range(matrix_prod.size(1))
+        #                for i in range(matrix_prod.size(2))]
+        #               for e in range(matrix_prod.size(0))] # list of trace_dist
+        # trace_dist = torch.stack([torch.cat(trace_dist_list, 0) for trace_dist_list in trace_dist]) #
+        trace_dist = torch.diagonal(matrix_prod,offset=0,dim1=-2,dim2=-1)  # e * 75 * 5 * 64
+        trace_dist = torch.sum(trace_dist,dim=-1) # e * 75 * 5
+        # trace_dist = trace_dist.view(matrix_prod.size(0),matrix_prod.size(1), matrix_prod.size(2))  # e * 75 * 5
 
         # Calcualte the Mahalanobis Distance
         maha_prod = torch.matmul(mean_diff.unsqueeze(3), cov2_inverse.unsqueeze(1))  # e * 75 * 5 * 1 * 64
