@@ -1,0 +1,68 @@
+data_name: miniImageNet
+
+# base info
+way_num: 5
+shot_num: 1
+query_num: 15
+batch_size: 1
+episode_size: 1
+
+# data info
+data_root: /data/wzy/miniImageNet--ravi
+image_size: 80
+augment_method: MTLAugment
+augment: True
+augment_times: 1
+train_episode: 100
+test_episode: 100
+
+# train info
+epoch: 100
+
+# arch info
+backbone:
+  name: resnet12MTL
+  kwargs:
+    MTL: True
+
+classifier:
+   name: MTL
+   kwargs:
+     feat_dim: 640
+     num_classes: 64
+     inner_train_iter: 100
+
+# optimizer info
+optimizer:
+  name: Adam
+  kwargs:
+    lr: 0.0001
+  other:
+    model_func: 0.0001
+    base_learner: 0.001
+
+# lr_scheduler info
+lr_scheduler:
+  name: StepLR
+  kwargs:
+    gamma: 0.5
+    step_size: 10
+
+# result info
+result_root: ./results
+save_interval: 10
+save_part:
+  - model_func
+pretrain_path: /home/wzy/LibFewShot/results/MTLPretrain-resnet12MTL-5-1/checkpoints/model_func_best.pth
+
+# log info
+log_level: info
+log_interval: 10
+
+# gpu info
+device_ids: 2
+n_gpu: 1
+parallel_part:
+  - model_func
+seed: 0
+deterministic: True

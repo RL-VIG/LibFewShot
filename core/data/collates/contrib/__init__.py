@@ -14,5 +14,8 @@ def get_augment_method(config,):
         trfms = [Cutout()]
     elif config['augment_method'] == 'RandAugment':
         trfms = [RandAugment()]
+    elif config['augment_method'] == 'MTLAugment':
+        trfms = [transforms.CenterCrop(80),
+                 transforms.RandomHorizontalFlip(), ]
 
     return trfms
