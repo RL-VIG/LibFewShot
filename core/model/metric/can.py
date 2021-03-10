@@ -24,13 +24,6 @@ def one_hot(indices, depth, use_cuda=True):
     encoded_indicies = encoded_indicies.scatter_(1, index, 1)
     return encoded_indicies
 
-def one_hot_1(labels_train):
-    labels_train = labels_train.cpu()
-    nKnovel = 5
-    labels_train_1hot_size = list(labels_train.size()) + [nKnovel,]
-    labels_train_unsqueeze = labels_train.unsqueeze(dim=labels_train.dim())
-    labels_train_1hot = torch.zeros(labels_train_1hot_size).scatter_(len(labels_train_1hot_size) - 1, labels_train_unsqueeze, 1)
-    return labels_train_1hot
 
 def shuffle(images, targets, global_targets):
     """
@@ -69,10 +62,12 @@ class CAM(nn.Module):
     """
     Support & Query share one attention
     """
-    def __init__(self):
+    def __init__(self, mid_channels):
         super(CAM, self).__init__()
-        self.conv1 = ConvBlock(25, 5, 1)
-        self.conv2 = nn.Conv2d(5, 25, 1, stride=1, padding=0)
+        # self.conv1 = ConvBlock(25, 5, 1)
+        # self.conv2 = nn.Conv2d(5, 25, 1, stride=1, padding=0)
+        self.conv1 = ConvBlock(mid_channels * mid_channels, mid_channels, 1)
+        self.conv2 = nn.Conv2d(mid_channels, mid_channels * mid_channels, 1, stride=1, padding=0)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -120,10 +115,10 @@ class CAM(nn.Module):
 
 
 class CAMLayer(nn.Module):
-    def __init__(self, scale_cls, iter_num_prob=35.0/75, num_classes=64, nFeat=512):
+    def __init__(self, scale_cls, iter_num_prob=35.0/75, num_classes=64, nFeat=512, HW=5):
         super(CAMLayer, self).__init__()
         self.scale_cls = scale_cls
-        self.cam = CAM()
+        self.cam = CAM(HW)
         self.iter_num_prob = iter_num_prob
         self.nFeat = nFeat
         self.classifier = nn.Conv2d(self.nFeat, num_classes, kernel_size=1)
@@ -232,9 +227,9 @@ class CAMLayer(nn.Module):
 
 
 class CAN(MetricModel):
-    def __init__(self, way_num, shot_num, query_num, model_func, device, scale_cls, iter_num_prob=35.0/75, num_classes=64, nFeat=512):
+    def __init__(self, way_num, shot_num, query_num, model_func, device, scale_cls, iter_num_prob=35.0/75, num_classes=64, nFeat=512, HW=5):
         super(CAN, self).__init__(way_num, shot_num, query_num, model_func, device)
-        self.cam_layer = CAMLayer(scale_cls, iter_num_prob, num_classes, nFeat)
+        self.cam_layer = CAMLayer(scale_cls, iter_num_prob, num_classes, nFeat, HW)
         self.loss_func = CrossEntropyLoss()
         self._init_network()
 
@@ -254,8 +249,8 @@ class CAN(MetricModel):
         support_targets_one_hot = support_targets_one_hot.view(episode_size, self.way_num*self.shot_num, self.way_num)
         query_targets_one_hot = one_hot(query_targets.view(episode_size*self.way_num*self.query_num), self.way_num)
         query_targets_one_hot = query_targets_one_hot.view(episode_size, self.way_num*self.query_num, self.way_num)
-        # cls_scores = self.cam_layer(support_feat, query_feat, support_targets_one_hot, query_targets_one_hot)
-        cls_scores = self.cam_layer.val_transductive(support_feat, query_feat, support_targets_one_hot, query_targets_one_hot)
+        cls_scores = self.cam_layer(support_feat, query_feat, support_targets_one_hot, query_targets_one_hot)
+        # cls_scores = self.cam_layer.val_transductive(support_feat, query_feat, support_targets_one_hot, query_targets_one_hot)
 
         cls_scores = cls_scores.view(episode_size * self.way_num*self.query_num, -1)
         prec1, _ = accuracy(cls_scores, query_targets, topk=(1, 3))
@@ -272,9 +267,10 @@ class CAN(MetricModel):
         emb = self.model_func(images)  # [80, 640]
         support_feat, query_feat, support_targets, query_targets = self.split_by_episode(emb, mode=2)  # [4,5,512,6,6] [4, 75, 512,6,6] [4, 5] [300]
         support_global_targets, query_global_targets = global_targets[:, :, :self.shot_num], global_targets[:, :, self.shot_num:]
-        # TODO: Shuffle label index
-        support_feat, support_targets, support_global_targets = shuffle(support_feat, support_targets, support_global_targets.reshape(*support_targets.size()))
-        query_feat, query_targets, query_global_targets = shuffle(query_feat, query_targets.reshape(*query_feat.size()[:2]), query_global_targets.reshape(*query_feat.size()[:2]))
+        # # TODO: Shuffle label index
+        # support_feat, support_targets, support_global_targets = shuffle(support_feat, support_targets, support_global_targets.reshape(*support_targets.size()))
+        # query_feat, query_targets, query_global_targets = shuffle(query_feat, query_targets.reshape(*query_feat.size()[:2]), query_global_targets.reshape(*query_feat.size()[:2]))
+
         # convert to one-hot
         support_targets_one_hot = one_hot(support_targets.view(episode_size*self.way_num*self.shot_num), self.way_num)
         support_targets_one_hot = support_targets_one_hot.view(episode_size, self.way_num*self.shot_num, self.way_num)

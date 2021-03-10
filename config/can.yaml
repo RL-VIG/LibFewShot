@@ -1,8 +1,10 @@
+data_name: tieredImageNet
+data_root: /data/yxs/tiered_imagenet
+result_root: ./results/tieredImageNet/
+
 train_episode: 1200
 test_episode: 1000
-episode_size: 4
-
-data_root: /data/tiexin/DataSets/miniImageNet
+episode_size: 1
 
 save_part:
   - model_func
@@ -10,20 +12,13 @@ save_part:
 
 epoch: 90
 way_num: 5
-shot_num: 1
+shot_num: 5
 query_num: 15
 
-augment_method: RandomFlip
-
-device_ids: 6,7
-n_gpu: 2
-parallel_part:
-  - model_func
-  - cam_layer
 
 # arch info
 backbone:
-  name: resnet12
+  name: resnet18
   kwargs:
     avg_pool: False
     is_flatten: False
@@ -32,26 +27,33 @@ classifier:
   name: CAN
   kwargs:
     scale_cls: 7 # default
-    nFeat: 640
+    num_classes: 351
+    nFeat: 512
+    HW: 11
 
 # optimizer info
 optimizer:
   name: SGD
   kwargs:
-    lr: 0.1
+    lr: 0.01
     momentum: 0.9
     weight_decay: 5e-4
     nesterov: True
   other:
-    model_func: 0.1
-    cam_layer: 0.1
+    model_func: 0.01
+    cam_layer: 0.01
 
 # lr_scheduler info
 lr_scheduler:
-  name: MultiStepLR
+  name: CosineAnnealingLR
   kwargs:
-    milestones: [60,80]
-    gamma: 0.05
+    T_max: 90
+    eta_min: 0
 
-seed: 1
+device_ids: 7
+n_gpu: 1
+parallel_part:
+  - model_func
+  - cam_layer
+seed: 0
 deterministic: True
