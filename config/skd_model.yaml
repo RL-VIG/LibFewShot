@@ -2,9 +2,9 @@ data_name: miniImageNet
 
 # base info
 way_num: 5
-shot_num: 5
+shot_num: 1
 query_num: 15
-batch_size: 128
+batch_size: 64
 episode_size: 5
 
 # data info
@@ -17,7 +17,7 @@ train_episode: 5000
 test_episode: 1000
 
 # train info
-epoch: 50
+epoch: 65
 test_epoch: 5
 resume: False
 
@@ -32,8 +32,8 @@ log_level: info
 log_interval: 100
 
 # gpu info
-device_ids: 2,3
-n_gpu: 2
+device_ids: 2
+n_gpu: 1
 parallel_part:
   - model_func
   - cls_classifier
@@ -42,20 +42,39 @@ parallel_part:
 seed: 1
 deterministic: True
 
+# optimizer info
+optimizer:
+  name: SGD
+  kwargs:
+    lr: 0.05
+    weight_decay: 5e-4
+    momentum: 0.9
+  other: ~
+#    another_part:    # define multi params
+#      lr: 0.1
+#      weight_decay: 0.5
+
+# lr_scheduler info
+lr_scheduler:
+  name: MultiStepLR
+  kwargs:
+    gamma: 0.1
+    milestones:
+      - 60
+
 # arch info
 backbone:
-  name: Conv64F
+  name: resnet12
   kwargs:
-    is_flatten: True
+    keep_prob: 0.9
 
 classifier:
   name: SKDModel
   kwargs:
-    feat_dim: 1600
+    feat_dim: 640
     num_classes: 64
-    gamma: 1.
-    alpha: 1.
+    gamma: 1.0
+    alpha: 0.1
     is_distill: True
-    model_func_path: ./results/SKDModel-Conv64F-5-5/checkpoints/model_func_best.pth
-    cls_classifier_path: ./results/SKDModel-Conv64F-5-5/checkpoints/cls_classifier_best.pth
-    rot_classifier_path: ./results/SKDModel-Conv64F-5-5/checkpoints/rot_classifier_best.pth
+    model_func_path: ./results/SKDModel-miniImageNet-resnet12-5-1-1615448697/checkpoints/model_func_best.pth
+    cls_classifier_path: ./results/SKDModel-miniImageNet-resnet12-5-1-1615448697/checkpoints/cls_classifier_best.pth
