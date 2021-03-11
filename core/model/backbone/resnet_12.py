@@ -79,7 +79,7 @@ class BasicBlock(nn.Module):
 class ResNet(nn.Module):
 
     def __init__(self, block=BasicBlock, keep_prob=1.0, avg_pool=True, drop_rate=0.1,
-                 dropblock_size=5):
+                 dropblock_size=5,is_flatten=True):
         self.inplanes = 3
         super(ResNet, self).__init__()
 
@@ -95,7 +95,7 @@ class ResNet(nn.Module):
         self.keep_avg_pool = avg_pool
         self.dropout = nn.Dropout(p=1 - self.keep_prob, inplace=False)
         self.drop_rate = drop_rate
-
+        self.is_flatten=is_flatten
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out',
@@ -129,14 +129,15 @@ class ResNet(nn.Module):
         x = self.layer4(x)
         if self.keep_avg_pool:
             x = self.avgpool(x)
-        x = x.view(x.size(0), -1)
+        if self.is_flatten:
+            x = x.view(x.size(0), -1)
         return x
 
 
-def resnet12(keep_prob=1.0, avg_pool=True, **kwargs):
+def resnet12(keep_prob=1.0, avg_pool=True, is_flatten=True, **kwargs):
     """Constructs a ResNet-12 model.
     """
-    model = ResNet(BasicBlock, keep_prob=keep_prob, avg_pool=avg_pool, **kwargs)
+    model = ResNet(BasicBlock, keep_prob=keep_prob, avg_pool=avg_pool,is_flatten=is_flatten, **kwargs)
     return model
 
 
