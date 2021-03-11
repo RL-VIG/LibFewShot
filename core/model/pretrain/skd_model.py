@@ -12,20 +12,31 @@ from .pretrain_model import PretrainModel
 from .. import DistillKLLoss
 
 
+class L2DistLoss(nn.Module):
+    def __init__(self):
+        super(L2DistLoss, self).__init__()
+
+    def forward(self, feat1, feat2):
+        loss = torch.mean(torch.sqrt(torch.sum((feat1 - feat2) ** 2, dim=1)))
+        if torch.isnan(loss).any():
+            loss = 0.0
+        return loss
+
+
 class DistillLayer(nn.Module):
-    def __init__(self, model_func, cls_classifier, rot_classifier, is_distill,
-                 model_func_path=None, cls_classifier_path=None, rot_classifier_path=None):
+    def __init__(self, model_func, cls_classifier, is_distill,
+                 model_func_path=None, cls_classifier_path=None, ):
         super(DistillLayer, self).__init__()
         self.model_func = self._load_state_dict(model_func, model_func_path, is_distill)
-        self.cls_classifier = self._load_state_dict(cls_classifier, cls_classifier_path, is_distill)
-        self._load_state_dict(rot_classifier, rot_classifier_path, is_distill)
+        self.cls_classifier = self._load_state_dict(cls_classifier, cls_classifier_path,
+                                                    is_distill)
 
     def _load_state_dict(self, model, state_dict_path, is_distill):
         new_model = None
         if is_distill and state_dict_path is not None:
-            new_model = copy.deepcopy(model)
             model_state_dict = torch.load(state_dict_path, map_location='cpu')
-            new_model.load_state_dict(model_state_dict)
+            model.load_state_dict(model_state_dict)
+            new_model = copy.deepcopy(model)
         return new_model
 
     @torch.no_grad()
@@ -41,8 +52,8 @@ class DistillLayer(nn.Module):
 class SKDModel(PretrainModel):
     def __init__(self, way_num, shot_num, query_num, model_func, device, feat_dim,
                  num_classes, gamma=1, alpha=1, is_distill=False, kd_T=4,
-                 model_func_path=None, cls_classifier_path=None, rot_classifier_path=None):
-        super(SKDModel, self).__init__(way_num, shot_num, query_num, model_func, device)
+                 model_func_path=None, cls_classifier_path=None, ):
+        super(SKDModel, self).__init__(way_num, shot_num, query_num, model_func, device, )
 
         self.feat_dim = feat_dim
         self.num_classes = num_classes
@@ -55,15 +66,14 @@ class SKDModel(PretrainModel):
         self.cls_classifier = nn.Linear(self.feat_dim, self.num_classes)
         self.rot_classifier = nn.Linear(self.feat_dim, 4)
         self.ce_loss_func = nn.CrossEntropyLoss()
-        self.mse_loss_func = nn.MSELoss()
+        self.l2_loss_func = L2DistLoss()
         self.kl_loss_func = DistillKLLoss(T=kd_T)
 
         self._init_network()
 
         self.distill_layer = DistillLayer(self.model_func, self.cls_classifier,
-                                          self.rot_classifier, self.is_distill,
-                                          model_func_path, cls_classifier_path,
-                                          rot_classifier_path)
+                                          self.is_distill, model_func_path,
+                                          cls_classifier_path, )
 
     def set_forward(self, batch, ):
         """
@@ -76,7 +86,8 @@ class SKDModel(PretrainModel):
         images = images.to(self.device)
         with torch.no_grad():
             feat = self.model_func(images)
-        support_feats, query_feats, support_targets, query_targets = self.split_by_episode(feat, mode=1)
+        support_feats, query_feats, support_targets, query_targets \
+            = self.split_by_episode(feat, mode=1)
 
         outputs = []
         prec1s = []
@@ -123,8 +134,8 @@ class SKDModel(PretrainModel):
 
         if self.is_distill:
             gamma_loss = self.kl_loss_func(cls_output[:batch_size], distill_output)
-            alpha_loss = self.mse_loss_func(rot_output[batch_size:],
-                                            rot_output[:batch_size]) / 3
+            alpha_loss = self.l2_loss_func(rot_output[batch_size:],
+                                           rot_output[:batch_size]) / 3
         else:
             gamma_loss = self.ce_loss_func(cls_output, generated_targets)
             alpha_loss = self.ce_loss_func(rot_output, rot_targets)
@@ -166,7 +177,8 @@ class SKDModel(PretrainModel):
             rot_targets[batch_size:] += 1
             rot_targets = rot_targets.long().to(self.device)
         else:
-            generated_images = torch.cat((images, images_90, images_180, images_270), dim=0)
+            generated_images = torch.cat((images, images_90, images_180, images_270),
+                                         dim=0)
             generated_targets = targets.repeat(4)
 
             rot_targets = torch.zeros(batch_size * 4)
