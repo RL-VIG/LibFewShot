@@ -28,8 +28,10 @@ def get_dataloader(config, mode, model_type):
         elif config['image_size'] == 84:
             trfms_list.append(transforms.Resize((96, 96)))
             trfms_list.append(transforms.RandomCrop((84, 84)))
-        elif config['image_size'] == 80:  # for MTL -> alternative solution: use avgpool(ks=11)
-            trfms_list.append(transforms.Resize((92, 92)))  # MTL use another MEAN and STD
+        # for MTL -> alternative solution: use avgpool(ks=11)
+        elif config['image_size'] == 80:
+            # MTL use another MEAN and STD
+            trfms_list.append(transforms.Resize((92, 92)))
             trfms_list.append(transforms.RandomResizedCrop(88))
             trfms_list.append(transforms.CenterCrop((80, 80)))
             trfms_list.append(transforms.RandomHorizontalFlip())
@@ -45,12 +47,12 @@ def get_dataloader(config, mode, model_type):
         elif config['image_size'] == 84:
             trfms_list.append(transforms.Resize((96, 96)))
             trfms_list.append(transforms.CenterCrop((84, 84)))
-        elif config['image_size'] == 80:  # for MTL -> alternative solution: use avgpool(ks=11)
+        # for MTL -> alternative solution: use avgpool(ks=11)
+        elif config['image_size'] == 80:
             trfms_list.append(transforms.Resize((92, 92)))
             trfms_list.append(transforms.CenterCrop((80, 80)))
         else:
             raise RuntimeError
-
 
     trfms_list.append(transforms.ToTensor())
     trfms_list.append(transforms.Normalize(mean=MEAN, std=STD))
@@ -59,7 +61,7 @@ def get_dataloader(config, mode, model_type):
     dataset = GeneralDataset(data_root=config['data_root'], mode=mode,
                              use_memory=config['use_memory'], )
 
-    collate_fn = get_collate_fn(config, trfms, mode, model_type,)
+    collate_fn = get_collate_fn(config, trfms, mode, model_type, )
 
     if mode == 'train' and model_type == ModelType.PRETRAIN:
         dataloader = DataLoader(dataset, batch_size=config['batch_size'], shuffle=True,
@@ -71,9 +73,13 @@ def get_dataloader(config, mode, model_type):
                                     episode_size=config['episode_size'],
                                     episode_num=config['train_episode']
                                     if mode == 'train' else config['test_episode'],
-                                    way_num=config['way_num'],
-                                    image_num=config['shot_num'] + config['query_num'])
+                                    way_num=config['way_num']
+                                    if mode == 'train' else config['test_way'],
+                                    image_num=config['shot_num'] + config['query_num']
+                                    if mode == 'train'
+                                    else config['test_shot'] + config['test_query'])
         dataloader = DataLoader(dataset, batch_sampler=sampler,
-                                num_workers=config['n_gpu'] * 4, pin_memory=True, collate_fn=collate_fn)
+                                num_workers=config['n_gpu'] * 4, pin_memory=True,
+                                collate_fn=collate_fn)
 
     return dataloader
