@@ -1,25 +1,13 @@
-import torch
 import torch.nn as nn
+import torch
 import torch.nn.functional as F
-
-from core.model.backbone.dropblock import DropBlock
-
-# this file is a bit diferent from resnet_12_mtl:
-# resnet_12_mtl is the origin backbone which is used in MTL's official implementation.
-# resnet_12_ori_mtl is adapted from resnet12.py, use the same channels([64,160,320,640]) or other settings in the
-# origin resnet12. this backbone is used in table.2, tabel.3 and tabel.4 for equal comparisons.
-
-# resnet_12 backbone for 'Meta-Transfer Learning for Few-Shot Learning' with learnable scale and shift
-
 import math
 from torch.nn.parameter import Parameter
 from torch.nn.modules.module import Module
 from torch.nn.modules.utils import _pair
 
-
 class _ConvNdMtl(Module):
     """The class for meta-transfer convolution"""
-
     def __init__(self, in_channels, out_channels, kernel_size, stride,
                  padding, dilation, transposed, output_padding, groups, bias, MTL):
         super(_ConvNdMtl, self).__init__()
@@ -90,10 +78,8 @@ class _ConvNdMtl(Module):
             s += ', MTL={MTL}'
         return s.format(**self.__dict__)
 
-
 class Conv2dMtl(_ConvNdMtl):
     """The class for meta-transfer convolution"""
-
     def __init__(self, in_channels, out_channels, kernel_size, stride=1,
                  padding=0, dilation=1, groups=1, bias=True, MTL=False):
         kernel_size = _pair(kernel_size)
@@ -103,9 +89,9 @@ class Conv2dMtl(_ConvNdMtl):
         self.MTL = MTL
         super(Conv2dMtl, self).__init__(
                 in_channels, out_channels, kernel_size, stride, padding, dilation,
-                False, _pair(0), groups, bias, MTL)
+                False, _pair(0), groups, bias,MTL)
 
-    def forward(self, inp):  # override conv2d forward
+    def forward(self, inp): # override conv2d forward
         if self.MTL:
             new_mtl_weight = self.mtl_weight.expand(self.weight.shape)
             new_weight = self.weight.mul(new_mtl_weight)
@@ -120,37 +106,32 @@ class Conv2dMtl(_ConvNdMtl):
                         self.padding, self.dilation, self.groups)
 
 
-def conv3x3MTL(in_planes, out_planes, stride=1, MTL=False):
+def conv3x3MTL(in_planes, out_planes, stride=1,MTL=False):
     """3x3 convolution with padding"""
     return Conv2dMtl(in_planes, out_planes, kernel_size=3, stride=stride,
-                     padding=1, bias=False, MTL=MTL)
+                     padding=1, bias=False,MTL=MTL)
+
+
+def conv1x1MTL(in_planes, out_planes, stride=1,MTL=False):
+    """1x1 convolution"""
+    return Conv2dMtl(in_planes, out_planes, kernel_size=1, stride=stride, bias=False,MTL=MTL)
+
 
 
 class BasicBlockMTL(nn.Module):
     expansion = 1
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None, drop_rate=0.0,
-                 drop_block=False, block_size=1, MTL=False):
+    def __init__(self, inplanes, planes, stride=1, downsample=None,MTL=False):
         super(BasicBlockMTL, self).__init__()
-        self.conv1 = conv3x3MTL(inplanes, planes,MTL=MTL)
+        self.conv1 = conv3x3MTL(inplanes, planes, stride,MTL=MTL)
         self.bn1 = nn.BatchNorm2d(planes)
-        self.relu = nn.LeakyReLU(0.1)
-        self.conv2 = conv3x3MTL(planes, planes, MTL=MTL)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = conv3x3MTL(planes, planes,MTL=MTL)
         self.bn2 = nn.BatchNorm2d(planes)
-        self.conv3 = conv3x3MTL(planes, planes, MTL=MTL)
-        self.bn3 = nn.BatchNorm2d(planes)
-        self.maxpool = nn.MaxPool2d(stride)
         self.downsample = downsample
         self.stride = stride
-        self.drop_rate = drop_rate
-        self.num_batches_tracked = 0
-        self.drop_block = drop_block
-        self.block_size = block_size
-        self.DropBlock = DropBlock(block_size=self.block_size)
 
     def forward(self, x):
-        self.num_batches_tracked += 1
-
         residual = x
 
         out = self.conv1(x)
@@ -159,92 +140,84 @@ class BasicBlockMTL(nn.Module):
 
         out = self.conv2(out)
         out = self.bn2(out)
-        out = self.relu(out)
-
-        out = self.conv3(out)
-        out = self.bn3(out)
 
         if self.downsample is not None:
             residual = self.downsample(x)
+
         out += residual
         out = self.relu(out)
-        out = self.maxpool(out)
-
-        if self.drop_rate > 0:
-            if self.drop_block == True:
-                feat_size = out.size()[2]
-                keep_rate = max(
-                        1.0 - self.drop_rate / (20 * 2000) * (self.num_batches_tracked),
-                        1.0 - self.drop_rate)
-                gamma = (1 - keep_rate) / self.block_size ** 2 * feat_size ** 2 / (
-                        feat_size - self.block_size + 1) ** 2
-                out = self.DropBlock(out, gamma=gamma)
-            else:
-                out = F.dropout(out, p=self.drop_rate, training=self.training,
-                                inplace=True)
 
         return out
 
 
-class ResNet12MTLORI(nn.Module):
 
-    def __init__(self, block=BasicBlockMTL, keep_prob=1.0, avg_pool=True, drop_rate=0.1,
-                 dropblock_size=5, is_flatten=True, MTL=False):
-        self.inplanes = 3
-        super(ResNet12MTLORI, self).__init__()
+
+class ResNetMTL(nn.Module):
+
+    def __init__(self, block=BasicBlockMTL, layers=[2, 2, 2, 2], zero_init_residual=False,
+                 is_feature=False,MTL=False):
+        super(ResNetMTL, self).__init__()
+
+        self.is_feature = is_feature
+        self.inplanes = 64
         self.Conv2d = Conv2dMtl
-        self.layer1 = self._make_layer(block, 64, stride=2, drop_rate=drop_rate, MTL=MTL)
-        self.layer2 = self._make_layer(block, 160, stride=2, drop_rate=drop_rate, MTL=MTL)
-        self.layer3 = self._make_layer(block, 320, stride=2, drop_rate=drop_rate,
-                                       drop_block=True, block_size=dropblock_size, MTL=MTL)
-        self.layer4 = self._make_layer(block, 640, stride=2, drop_rate=drop_rate,
-                                       drop_block=True, block_size=dropblock_size, MTL=MTL)
-        if avg_pool:
-            self.avgpool = nn.AvgPool2d(5, stride=1)
-        self.keep_prob = keep_prob
-        self.keep_avg_pool = avg_pool
-        self.dropout = nn.Dropout(p=1 - self.keep_prob, inplace=False)
-        self.drop_rate = drop_rate
-        self.is_flatten = is_flatten
+        block = BasicBlockMTL
+        self.conv1 = self.Conv2d(3, 64, kernel_size=3, stride=1, padding=1,
+                               bias=False,MTL=MTL)
+        self.bn1 = nn.BatchNorm2d(64)
+        self.relu = nn.ReLU(inplace=True)
+        self.layer1 = self._make_layer(block, 64, layers[0],MTL=MTL)
+        self.layer2 = self._make_layer(block, 128, layers[1], stride=2,MTL=MTL)
+        self.layer3 = self._make_layer(block, 256, layers[2], stride=2,MTL=MTL)
+        self.layer4 = self._make_layer(block, 512, layers[3], stride=2,MTL=MTL)
+        self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out',
-                                        nonlinearity='leaky_relu')
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
             elif isinstance(m, nn.BatchNorm2d):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
 
-    def _make_layer(self, block, planes, stride=1, drop_rate=0.0, drop_block=False,
-                    block_size=1, MTL=False):
+
+    def _make_layer(self, block, planes, blocks, stride=1,MTL=False):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
             downsample = nn.Sequential(
-                    self.Conv2d(self.inplanes, planes * block.expansion,
-                                kernel_size=1, stride=1, bias=False,MTL=MTL),
-                    nn.BatchNorm2d(planes * block.expansion),
+                conv1x1MTL(self.inplanes, planes * block.expansion, stride,MTL=MTL),
+                nn.BatchNorm2d(planes * block.expansion),
             )
 
         layers = []
-        layers.append(
-                block(self.inplanes, planes, stride, downsample,MTL=MTL))
+        layers.append(block(self.inplanes, planes, stride, downsample))
         self.inplanes = planes * block.expansion
+        for _ in range(1, blocks):
+            layers.append(block(self.inplanes, planes,MTL=MTL))
 
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        x = self.layer1(x)
-        x = self.layer2(x)
-        x = self.layer3(x)
-        x = self.layer4(x)
-        if self.keep_avg_pool:
-            x = self.avgpool(x)
-        if self.is_flatten:
-            x = x.view(x.size(0), -1)
-        return x
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+
+        out1 = self.layer1(x)
+        out2 = self.layer2(out1)
+        out3 = self.layer3(out2)
+        out4 = self.layer4(out3)
+
+        out4 = self.avgpool(out4)
+        # print(out4.shape)
+        out4 = out4.view(out4.size(0), -1)
+
+        if self.is_feature:
+            return out1, out2, out3, out4
+
+        return out4
 
 
-def resnet12mtlori(keep_prob=1.0, avg_pool=True, is_flatten=True,MTL=False, **kwargs):
-    """Constructs a ResNet-12 model.
+def resnet18mtlori(**kwargs):
+    """Constructs a ResNet-18 model.
     """
-    model = ResNet12MTLORI(BasicBlockMTL, keep_prob=keep_prob, avg_pool=avg_pool, is_flatten=is_flatten, MTL=MTL, **kwargs)
+    model = ResNetMTL(BasicBlockMTL, [2, 2, 2, 2], **kwargs)
     return model
