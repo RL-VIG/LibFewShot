@@ -1,16 +1,14 @@
 data_name: miniImageNet
-#data_name: tieredImageNet
 
 # base info
 way_num: 5
-shot_num: 5
+shot_num: 1
 query_num: 15
 batch_size: 128
 episode_size: 1
 
 # data info
 data_root: /data/yxs/miniImageNet--ravi
-#data_root: /data/student/tiered_imagenet
 image_size: 84
 use_memory: False
 augment: True
@@ -19,25 +17,20 @@ train_episode: 10000
 test_episode: 1000
 
 # train info
-epoch: 60
+epoch: 50
 test_epoch: 5
 resume: False
 
-# arch info
-#backbone:
-#  name: Conv64FReLU
-#  kwargs:
-#    is_flatten: False
 
 backbone:
-  name: resnet18
+  name: Conv64FLeakyReLU
   kwargs:
-#    avg_pool: False
+    is_flatten: False
 
 classifier:
   name: RelationNet
   kwargs:
-    feat_dim: 512
+    feat_dim: 64
     feat_height: 3
     feat_width: 3
 
@@ -52,7 +45,7 @@ optimizer:
 lr_scheduler:
   name: CosineAnnealingLR
   kwargs:
-    T_max: 100
+    T_max: 50
     eta_min: 0
 
 # result info
@@ -67,7 +60,7 @@ log_level: info
 log_interval: 100
 
 # gpu info
-device_ids: 4
+device_ids: 2
 n_gpu: 1
 parallel_part:
   - model_func

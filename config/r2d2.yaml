@@ -56,7 +56,7 @@ log_level: info
 log_interval: 100
 
 # gpu info
-device_ids: 7
+device_ids: 3
 n_gpu: 1
 parallel_part:
   - model_func
