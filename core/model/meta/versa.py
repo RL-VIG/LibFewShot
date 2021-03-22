@@ -62,8 +62,8 @@ class VERSA(MetaModel):
         self.feat_dim = feat_dim
         self.hid_dim = hid_dim
         self.sample_num = sample_num
-        self.weight_means = Predictor(self.feat_dim, self.hid_dim, self.hid_dim)
-        self.weight_logvars = Predictor(self.feat_dim, self.hid_dim, self.hid_dim)
+        self.weight_means = Predictor(self.feat_dim, self.hid_dim, self.feat_dim)
+        self.weight_logvars = Predictor(self.feat_dim, self.hid_dim, self.feat_dim)
         self.bias_means = Predictor(self.feat_dim, self.hid_dim, 1)
         self.bias_logvars = Predictor(self.feat_dim, self.hid_dim, 1)
 

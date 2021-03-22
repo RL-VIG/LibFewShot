@@ -129,8 +129,8 @@ class ANIL(MetaModel):
 
     def train_loop(self, support_feat, support_targets):
         lr = self.inner_optim['lr']
-        fast_parameters = list(self.parameters())
-        for parameter in self.parameters():
+        fast_parameters = list(self.classifier.parameters())
+        for parameter in self.classifier.parameters():
             parameter.fast = None
 
         self.model_func.train()
@@ -142,7 +142,7 @@ class ANIL(MetaModel):
             grad = torch.autograd.grad(loss, fast_parameters, create_graph=True)
             fast_parameters = []
 
-            for k, weight in enumerate(self.parameters()):
+            for k, weight in enumerate(self.classifier.parameters()):
                 if weight.fast is None:
                     weight.fast = weight - lr * grad[k]
                 else:

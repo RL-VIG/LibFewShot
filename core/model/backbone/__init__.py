@@ -26,6 +26,8 @@ def get_backbone(config):
         model_func = resnet12MTL()(**kwargs)
     elif config['backbone']['name'] == 'Conv64F_fw':
         model_func = Conv64F_fw(**kwargs)
+    elif config['backbone']['name'] == 'Conv32F_fw':
+        model_func = Conv32F_fw(**kwargs)
     elif config['backbone']['name'] == 'Conv64Five':
         model_func = Conv64Five(**kwargs)
     elif config['backbone']['name'] == 'WRN':
