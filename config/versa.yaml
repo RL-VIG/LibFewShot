@@ -1,14 +1,16 @@
 data_name: miniImageNet
+#data_name: tieredImageNet
 
 # base info
 way_num: 5
 shot_num: 1
 query_num: 15
 batch_size: 128
-episode_size: 8
+episode_size: 1
 
 # data info
 data_root: /data/yxs/miniImageNet--ravi
+#data_root: /data/student/tiered_imagenet
 image_size: 84
 use_memory: False
 augment: True
@@ -17,38 +19,42 @@ train_episode: 10000
 test_episode: 1000
 
 # train info
-epoch: 100
+epoch: 60
 test_epoch: 5
 resume: False
 
 # arch info
+#backbone:
+#  name: Conv64F
+#  kwargs:
+#    is_flatten: True
+
 backbone:
-  name: Conv64Five
-  kwargs:
-    is_flatten: True
-    drop_prob: 0.5
+  name: resnet12
+  kwargs: ~
+
 
 classifier:
   name: VERSA
   kwargs:
-    feat_dim: 256
-    hid_dim: 256
+    feat_dim: 640
+    hid_dim: 640
     sample_num: 10
 
 # optimizer info
 optimizer:
-  name: Adam
+  name: SGD
   kwargs:
-    lr: 0.00025
+    lr: 0.0005
+    weight_decay: 0.0005
   other:
 
 # lr_scheduler info
 lr_scheduler:
-  name: StepLR
+  name: CosineAnnealingLR
   kwargs:
-    gamma: 0.5
-    step_size: 20
-
+    T_max: 100
+    eta_min: 0
 
 # result info
 result_root: ./results
@@ -65,7 +71,7 @@ log_level: info
 log_interval: 100
 
 # gpu info
-device_ids: 0
+device_ids: 2
 n_gpu: 1
 parallel_part:
   - model_func

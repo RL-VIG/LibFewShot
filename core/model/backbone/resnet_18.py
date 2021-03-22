@@ -157,3 +157,11 @@ def resnet18(**kwargs):
     """
     model = ResNet(BasicBlock, [2, 2, 2, 2], **kwargs)
     return model
+
+
+if __name__ == '__main__':
+    import torch
+    model = resnet18().cuda()
+    data = torch.rand(10, 3, 84, 84).cuda()
+    output = model(data)
+    print(output.size())

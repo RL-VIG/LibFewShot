@@ -10,6 +10,7 @@ episode_size: 1
 # data info
 data_root: /data/yxs/miniImageNet--ravi
 image_size: 84
+use_memory: False
 augment: True
 augment_times: 1
 train_episode: 10000
@@ -17,8 +18,10 @@ test_episode: 1000
 
 # train info
 epoch: 50
+test_epoch: 5
+resume: False
 
-# arch info
+
 backbone:
   name: Conv64FLeakyReLU
   kwargs:
@@ -30,6 +33,20 @@ classifier:
     feat_dim: 64
     feat_height: 3
     feat_width: 3
+
+# optimizer info
+optimizer:
+  name: SGD
+  kwargs:
+    lr: 0.01
+  other:
+
+# lr_scheduler info
+lr_scheduler:
+  name: CosineAnnealingLR
+  kwargs:
+    T_max: 50
+    eta_min: 0
 
 # result info
 result_root: ./results
@@ -49,4 +66,5 @@ parallel_part:
   - model_func
   - relation_layer
 seed: 0
-deterministic: True
+deterministic: False
+

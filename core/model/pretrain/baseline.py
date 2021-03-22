@@ -29,7 +29,7 @@ class Baseline(PretrainModel):
         images = images.to(self.device)
         with torch.no_grad():
             emb = self.model_func(images)
-        support_feat, query_feat, support_targets, query_targets = self.split_by_episode(emb,mode=4)
+        support_feat, query_feat, support_targets, query_targets = self.split_by_episode(emb, mode=4)
 
         classifier = self.test_loop(support_feat, support_targets)
 

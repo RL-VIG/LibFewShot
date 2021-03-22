@@ -28,12 +28,9 @@ classifier:
   name: ANIL
   kwargs:
     inner_optim:
-      name: Adam
-      kwargs:
-        lr: 1e-3
+      lr: 1e-3
     inner_train_iter: 10
     feat_dim: 800
-    hid_dim: 800
 
 optimizer:
   name: Adam

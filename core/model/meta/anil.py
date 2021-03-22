@@ -2,18 +2,31 @@ import copy
 
 import torch
 from torch import nn
+import torch.nn.functional as F
 
 from core.utils import accuracy
 from .meta_model import MetaModel
 
+class Linear_fw(nn.Linear):  # used in MAML to forward input with fast weight
+    def __init__(self, in_features, out_features):
+        super(Linear_fw, self).__init__(in_features, out_features)
+        self.weight.fast = None  # Lazy hack to add fast weight link
+        self.bias.fast = None
+
+    def forward(self, x):
+        if self.weight.fast is not None and self.bias.fast is not None:
+            out = F.linear(x, self.weight.fast,
+                           self.bias.fast)  # weight.fast (fast weight) is the temporaily adapted weight
+        else:
+            out = super(Linear_fw, self).forward(x)
+        return out
 
 class MLP(nn.Module):
     def __init__(self, feat_dim, hid_dim, way_num):
         super(MLP, self).__init__()
         self.layers = nn.Sequential(
-            nn.Linear(feat_dim, hid_dim),
-            nn.ReLU(),
-            nn.Linear(hid_dim, way_num)
+            # nn.Linear(feat_dim, hid_dim)
+            Linear_fw(feat_dim, way_num)
         )
 
     def forward(self, x):
@@ -87,8 +100,8 @@ class ANIL(MetaModel):
 
         output_list = []
         for i in range(episode_size):
-            classifier_copy = self.train_loop(emb_support[i], support_targets[i])
-            output = classifier_copy(emb_query[i])
+            self.train_loop(emb_support[i], support_targets[i])
+            output = self.classifier(emb_query[i])
             output_list.append(output)
 
         output = torch.cat(output_list, dim=0)
@@ -105,8 +118,8 @@ class ANIL(MetaModel):
 
         output_list = []
         for i in range(episode_size):
-            classifier_copy = self.train_loop(emb_support[i], support_targets[i])
-            output = classifier_copy(emb_query[i])
+            self.train_loop(emb_support[i], support_targets[i])
+            output = self.classifier(emb_query[i])
             output_list.append(output)
 
         output = torch.cat(output_list, dim=0)
@@ -115,21 +128,26 @@ class ANIL(MetaModel):
         return output, prec1, loss
 
     def train_loop(self, support_feat, support_targets):
-        support_targets = support_targets.detach()
-        classifier = copy.deepcopy(self.classifier)
-        optimizer = self.sub_optimizer(classifier.parameters(), self.inner_optim)
+        lr = self.inner_optim['lr']
+        fast_parameters = list(self.classifier.parameters())
+        for parameter in self.classifier.parameters():
+            parameter.fast = None
 
-        classifier.train()
+        self.model_func.train()
+        self.classifier.train()
+
         for i in range(self.inner_train_iter):
-            output = classifier(support_feat)
-
+            output = self.classifier(support_feat)
             loss = self.loss_func(output, support_targets)
+            grad = torch.autograd.grad(loss, fast_parameters, create_graph=True)
+            fast_parameters = []
 
-            optimizer.zero_grad()
-            loss.backward(retain_graph=True)
-            optimizer.step()
-
-        return classifier
+            for k, weight in enumerate(self.classifier.parameters()):
+                if weight.fast is None:
+                    weight.fast = weight - lr * grad[k]
+                else:
+                    weight.fast = weight.fast - self.inner_optim['lr'] * grad[k]
+                fast_parameters.append(weight.fast)
 
     def test_loop(self, *args, **kwargs):
         raise NotImplementedError
