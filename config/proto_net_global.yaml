@@ -1,0 +1,69 @@
+# config refers to https://github.com/orobix/Prototypical-Networks-for-Few-shot-Learning-PyTorch
+train_episode: 1000
+test_episode: 1000
+episode_size: 1
+
+save_part:
+  - model_func
+save_interval: 5
+
+device_ids: 3
+n_gpu: 1
+parallel_part:
+  - model_func
+  - proto_layer
+
+# arch info
+backbone:
+  name: resnet12
+  kwargs: ~
+
+classifier:
+  name: ProtoNetGlobal
+  kwargs:
+    feat_dim: 640
+    num_classes: 351
+    gamma: 1.0
+    test_way: 5
+    test_shot: 1
+    test_query: 15
+
+data_name: miniImageNet
+
+# base info
+way_num: 64
+shot_num: 1
+query_num: 2
+
+test_way: 5
+test_shot: 1
+test_query: 15
+
+
+# data info
+data_root: /data/dcq/DataSets/miniImageNet
+image_size: 84
+use_memory: False
+augment: True
+augment_times: 1
+
+# train info
+epoch: 100
+test_epoch: 5
+resume: False
+
+# optimizer info
+optimizer:
+  name: SGD
+  kwargs:
+    lr: 0.01
+    weight_decay: 5e-4
+    momentum: 0.9
+  other: ~
+
+# lr_scheduler info
+lr_scheduler:
+  name: CosineAnnealingLR
+  kwargs:
+    T_max: 100
+    eta_min: 0

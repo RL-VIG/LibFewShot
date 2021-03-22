@@ -51,5 +51,13 @@ class Config(object):
         config_dict.update(self.default_dict)
         config_dict.update(self.file_dict)
         config_dict.update(self.variable_dict)
+
+        if 'test_way' not in config_dict:
+            config_dict['test_way'] = config_dict['way_num']
+        if 'test_shot' not in config_dict:
+            config_dict['test_shot'] = config_dict['shot_num']
+        if 'test_query' not in config_dict:
+            config_dict['test_query'] = config_dict['query_num']
+
         config_dict['resume'] = self.is_resume
         return config_dict

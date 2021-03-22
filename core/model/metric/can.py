@@ -9,11 +9,7 @@ from torch import nn
 from torch.nn import functional as F
 
 from core.utils import accuracy
-# from .metric_model import MetricModel
-# from ..loss import CrossEntropyLoss
 from core.model.metric.metric_model import MetricModel
-from core.model.loss import CrossEntropyLoss
-import pdb
 
 def one_hot(indices, depth, use_cuda=True):
     if use_cuda:
@@ -230,7 +226,7 @@ class CAN(MetricModel):
     def __init__(self, way_num, shot_num, query_num, model_func, device, scale_cls, iter_num_prob=35.0/75, num_classes=64, nFeat=512, HW=5):
         super(CAN, self).__init__(way_num, shot_num, query_num, model_func, device)
         self.cam_layer = CAMLayer(scale_cls, iter_num_prob, num_classes, nFeat, HW)
-        self.loss_func = CrossEntropyLoss()
+        self.loss_func = nn.CrossEntropyLoss()
         self._init_network()
 
     def set_forward(self, batch, ):

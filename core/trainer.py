@@ -67,7 +67,8 @@ class Trainer(object):
 
         meter = self.train_meter
         meter.reset()
-        episode_size = 1 if self.model_type == ModelType.PRETRAIN else self.config['episode_size']
+        episode_size = 1 if self.model_type == ModelType.PRETRAIN \
+            else self.config['episode_size']
 
         end = time()
         for batch_idx, batch in enumerate(self.train_loader):
@@ -159,9 +160,10 @@ class Trainer(object):
         return meter.avg('prec1')
 
     def _init_files(self, config):
-        result_dir = '{}-{}-{}-{}-{}' \
-            .format(config['classifier']['name'], config['data_name'], config['backbone']['name'],
-                    config['way_num'], config['shot_num'])
+        result_dir = '{}-{}-{}-{}-{}-{}' \
+            .format(config['classifier']['name'], config['data_name'],
+                    config['backbone']['name'],
+                    config['way_num'], config['shot_num'], int(time()))
         result_path = os.path.join(config['result_root'], result_dir)
 
         checkpoints_path = os.path.join(result_path, 'checkpoints')
@@ -204,7 +206,7 @@ class Trainer(object):
 
         if self.config['resume']:
             resume_path = os.path.join(self.checkpoints_path, 'model_last.pth')
-            self.logger.info('load the resume model state dict from {}.'
+            self.logger.info('load the resume model checkpoints dict from {}.'
                              .format(resume_path))
             state_dict = torch.load(resume_path, map_location='cpu')['model']
             model.load_state_dict(state_dict)
@@ -233,9 +235,11 @@ class Trainer(object):
                         p.requires_grad = False
                 else:
                     param_dict = {'params': sub_model.parameters()}
-                    if isinstance(value,float): # 兼容只传了一个lr的config，在之后可以考虑规定config写法以统一
-                        param_dict.update({'lr':value})
-                    elif isinstance(value , dict): # 传了一系列参数, 用缩进传入字典
+                    # 兼容只传了一个lr的config，在之后可以考虑规定config写法以统一
+                    if isinstance(value, float):
+                        param_dict.update({'lr': value})
+                    # 传了一系列参数, 用缩进传入字典
+                    elif isinstance(value, dict):
                         param_dict.update(value)
                     else:
                         raise Exception('Wrong config in optimizer.other')
@@ -251,8 +255,9 @@ class Trainer(object):
         from_epoch = -1
         if self.config['resume']:
             resume_path = os.path.join(self.checkpoints_path, 'model_last.pth')
-            self.logger.info('load the optimizer, lr_scheduler and epoch state dict from {}.'
-                             .format(resume_path))
+            self.logger.info(
+                'load the optimizer, lr_scheduler and epoch checkpoints dict from {}.'
+                    .format(resume_path))
             all_state_dict = torch.load(resume_path, map_location='cpu')
             state_dict = all_state_dict['optimizer']
             optimizer.load_state_dict(state_dict)
@@ -269,17 +274,17 @@ class Trainer(object):
         return device, list_ids
 
     def _save_model(self, epoch, save_type=SaveType.NORMAL):
-        save_model(self.model, self.optimizer, self.scheduler, self.checkpoints_path, 'model', epoch,
-                   save_type, len(self.list_ids) > 1)
+        save_model(self.model, self.optimizer, self.scheduler, self.checkpoints_path,
+                   'model', epoch, save_type, len(self.list_ids) > 1)
 
         if save_type != SaveType.LAST:
             save_list = self.config['save_part']
             if save_list is not None:
                 for save_part in save_list:
                     if hasattr(self.model, save_part):
-                        save_model(getattr(self.model, save_part), self.optimizer, self.scheduler,
-                                   self.checkpoints_path, save_part, epoch, save_type,
-                                   len(self.list_ids) > 1)
+                        save_model(getattr(self.model, save_part), self.optimizer,
+                                   self.scheduler, self.checkpoints_path, save_part,
+                                   epoch, save_type, len(self.list_ids) > 1)
                     else:
                         self.logger.warning('')
 
