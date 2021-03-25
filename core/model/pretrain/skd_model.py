@@ -64,7 +64,7 @@ class SKDModel(PretrainModel):
         self.is_distill = is_distill
 
         self.cls_classifier = nn.Linear(self.feat_dim, self.num_classes)
-        self.rot_classifier = nn.Linear(self.feat_dim, 4)
+        self.rot_classifier = nn.Linear(self.num_classes, 4)
         self.ce_loss_func = nn.CrossEntropyLoss()
         self.l2_loss_func = L2DistLoss()
         self.kl_loss_func = DistillKLLoss(T=kd_T)
@@ -129,16 +129,17 @@ class SKDModel(PretrainModel):
 
         feat = self.model_func(generated_images)
         cls_output = self.cls_classifier(feat)
-        rot_output = self.rot_classifier(feat)
         distill_output = self.distill_layer(images)
 
         if self.is_distill:
             gamma_loss = self.kl_loss_func(cls_output[:batch_size], distill_output)
-            alpha_loss = self.l2_loss_func(rot_output[batch_size:],
-                                           rot_output[:batch_size]) / 3
+            alpha_loss = self.l2_loss_func(cls_output[batch_size:],
+                                           cls_output[:batch_size]) / 3
         else:
+            rot_output = self.rot_classifier(cls_output)
             gamma_loss = self.ce_loss_func(cls_output, generated_targets)
-            alpha_loss = self.ce_loss_func(rot_output, rot_targets)
+            alpha_loss = torch.sum(
+                F.binary_cross_entropy_with_logits(rot_output, rot_targets))
 
         loss = gamma_loss * self.gamma + alpha_loss * self.alpha
 
@@ -185,7 +186,8 @@ class SKDModel(PretrainModel):
             rot_targets[batch_size:] += 1
             rot_targets[batch_size * 2:] += 1
             rot_targets[batch_size * 3:] += 1
-            rot_targets = rot_targets.long().to(self.device)
+            rot_targets = F.one_hot(rot_targets.to(torch.int64), 4) \
+                .float().to(self.device)
 
         return generated_images, generated_targets, rot_targets
 
