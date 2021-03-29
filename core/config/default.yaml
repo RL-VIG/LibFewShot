@@ -7,6 +7,10 @@ query_num: 15
 batch_size: 128
 episode_size: 1
 
+test_way: ~
+test_shot: ~
+test_query: ~
+
 # data info
 data_root: /data/wzy/miniImageNet--ravi
 image_size: 84
