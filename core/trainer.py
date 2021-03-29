@@ -169,7 +169,7 @@ class Trainer(object):
         result_dir = '{}-{}-{}-{}-{}-{}' \
             .format(config['classifier']['name'], config['data_name'],
                     config['backbone']['name'],
-                    config['way_num'], config['shot_num'], int(time()))
+                    config['way_num'], config['shot_num'], get_local_time())
         result_path = os.path.join(config['result_root'], result_dir)
 
         checkpoints_path = os.path.join(result_path, 'checkpoints')
