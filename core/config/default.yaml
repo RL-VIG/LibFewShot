@@ -1,4 +1,4 @@
-data_name: miniImageNet
+log_name: miniImageNet
 
 # base info
 way_num: 5

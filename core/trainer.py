@@ -167,7 +167,9 @@ class Trainer(object):
 
     def _init_files(self, config):
         result_dir = '{}-{}-{}-{}-{}-{}' \
-            .format(config['classifier']['name'], config['data_name'],
+            .format(config['classifier']['name'],
+                    # you should ensure that data_root name contains its true name
+                    config['data_root'].split('/')[-1],
                     config['backbone']['name'],
                     config['way_num'], config['shot_num'], get_local_time())
         result_path = os.path.join(config['result_root'], result_dir)
