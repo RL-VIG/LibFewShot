@@ -160,16 +160,21 @@ class Trainer(object):
         return meter.avg('prec1')
 
     def _init_files(self, config):
-        result_dir = '{}-{}-{}-{}-{}-{}' \
-            .format(config['classifier']['name'], config['data_name'],
+        data_name = config['classifier']['name'].split('/')[-1]
+        symlink_dir = '{}-{}-{}-{}-{}' \
+            .format(config['classifier']['name'], data_name,
                     config['backbone']['name'],
-                    config['way_num'], config['shot_num'], int(time()))
+                    config['way_num'], config['shot_num'])
+        result_dir = os.path.join(symlink_dir, "-{}".format(int(time())))
+        symlink_path = os.path.join(config['result_root'], symlink_dir)
         result_path = os.path.join(config['result_root'], result_dir)
 
         checkpoints_path = os.path.join(result_path, 'checkpoints')
         log_path = os.path.join(result_path, 'log_files')
         viz_path = os.path.join(log_path, 'tfboard_files')
         create_dirs([result_path, log_path, checkpoints_path, viz_path])
+
+        os.symlink(result_path, symlink_path)
 
         with open(os.path.join(result_path, 'config.yaml'), 'w',
                   encoding='utf-8') as fout:
