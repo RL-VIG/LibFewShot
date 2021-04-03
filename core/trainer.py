@@ -165,7 +165,7 @@ class Trainer(object):
             .format(config['classifier']['name'], data_name,
                     config['backbone']['name'],
                     config['way_num'], config['shot_num'])
-        result_dir = os.path.join(symlink_dir, "-{}".format(int(time())))
+        result_dir = symlink_dir + "-{}".format(int(time()))
         symlink_path = os.path.join(config['result_root'], symlink_dir)
         result_path = os.path.join(config['result_root'], result_dir)
 
