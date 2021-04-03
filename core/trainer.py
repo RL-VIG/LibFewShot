@@ -125,10 +125,7 @@ class Trainer(object):
         episode_size = self.config['episode_size']
 
         end = time()
-        if self.model_type == ModelType.METRIC:
-            enable_grad = False
-        else:
-            enable_grad = True
+        enable_grad = (self.model_type != ModelType.METRIC)
         with torch.set_grad_enabled(enable_grad):
             for batch_idx, batch in enumerate(
                     self.test_loader if is_test else self.val_loader):
