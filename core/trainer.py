@@ -166,9 +166,10 @@ class Trainer(object):
         return meter.avg('prec1')
 
     def _init_files(self, config):
-        data_name = config['classifier']['name'].split('/')[-1]
+        # you should ensure that data_root name contains its true name
+        # FIXME 改成如果不包含data_name就自动切会不会好点
         symlink_dir = '{}-{}-{}-{}-{}' \
-            .format(config['classifier']['name'], data_name,
+            .format(config['classifier']['name'], config['data_root'].split('/')[-1],
                     config['backbone']['name'],
                     config['way_num'], config['shot_num'])
         result_dir = symlink_dir + "-{}".format(get_local_time())
