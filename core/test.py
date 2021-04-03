@@ -38,10 +38,12 @@ class Test(object):
         total_accuracy_vector = []
 
         for epoch_idx in range(self.config['test_epoch']):
-            self.logger.info('============ Testing on the test set ============')
+            self.logger.info(
+                '============ Testing on the test set ============')
             _, accuracies = self._validate(epoch_idx)
             test_accuracy, h = mean_confidence_interval(accuracies)
-            self.logger.info('Test Accuracy: {:.3f}\t h: {:.3f}'.format(test_accuracy, h))
+            self.logger.info(
+                'Test Accuracy: {:.3f}\t h: {:.3f}'.format(test_accuracy, h))
             total_accuracy += test_accuracy
             total_accuracy_vector.extend(accuracies)
             total_h[epoch_idx] = h
@@ -104,9 +106,12 @@ class Test(object):
         if self.result_path is not None:
             result_path = self.result_path
         else:
-            result_dir = '{}-{}-{}-{}-{}' \
-                .format(config['classifier']['name'], config['data_name'], config['backbone']['name'],
-                        config['way_num'], config['shot_num'])
+            result_dir = '{}-{}-{}-{}-{}-{}' \
+                .format(config['classifier']['name'],
+                        # you should ensure that data_root name contains its true name
+                        config['data_root'].split('/')[-1],
+                        config['backbone']['name'],
+                        config['way_num'], config['shot_num'], get_local_time())
             result_path = os.path.join(config['result_root'], result_dir)
 
         log_path = os.path.join(result_path, 'log_files')
@@ -116,7 +121,8 @@ class Test(object):
                     config['classifier']['name'], config['backbone']['name'],
                     is_train=False)
 
-        state_dict_path = os.path.join(result_path, 'checkpoints', 'model_best.pth')
+        state_dict_path = os.path.join(
+            result_path, 'checkpoints', 'model_best.pth')
 
         return viz_path, state_dict_path
 
@@ -136,7 +142,8 @@ class Test(object):
         self.logger.info(model)
         self.logger.info(count_parameters(model))
 
-        self.logger.info('load the state dict from {}.'.format(self.state_dict_path))
+        self.logger.info(
+            'load the state dict from {}.'.format(self.state_dict_path))
         state_dict = torch.load(self.state_dict_path, map_location='cpu')
         model.load_state_dict(state_dict)
 
@@ -154,7 +161,8 @@ class Test(object):
 
     def _init_device(self, config):
         init_seed(config['seed'], config['deterministic'])
-        device, list_ids = prepare_device(config['device_ids'], config['n_gpu'])
+        device, list_ids = prepare_device(
+            config['device_ids'], config['n_gpu'])
         return device, list_ids
 
     def _init_meter(self):
