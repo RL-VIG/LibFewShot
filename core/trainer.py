@@ -8,7 +8,7 @@ from torch import nn
 
 import core.model as arch
 from core.data import get_dataloader
-from core.utils import init_logger, logger, prepare_device, init_seed, AverageMeter, \
+from core.utils import init_logger, prepare_device, init_seed, AverageMeter, \
     count_parameters, save_model, create_dirs, get_local_time, ModelType, TensorboardWriter, SaveType
 
 

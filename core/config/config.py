@@ -2,6 +2,7 @@ import os
 import re
 
 import yaml
+import argparse
 
 
 def get_cur_path():
@@ -45,6 +46,32 @@ class Config(object):
         config_dict = dict()
         config_dict.update(variable_dict if variable_dict is not None else {})
         return config_dict
+
+    def _load_console_dict(self):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-w', '--way_num', help='way num')
+        parser.add_argument('-s', '--shot_num', help='shot num')
+        parser.add_argument('-q', '--query_num', help='query num')
+        parser.add_argument('-bs', '--batch_size', help='batch_size')
+        parser.add_argument('-es', '--episode_size', help='episode_size')
+
+        parser.add_argument('-data', '--data_root', help='dataset path')
+        parser.add_argument('-image_size', help='image size')
+        parser.add_argument('-aug', '--augment', action='store_true')
+        parser.add_argument('-aug_times', '--augment_times', help='augment times')
+        parser.add_argument('-train_episode', help='train episode num')
+        parser.add_argument('-test_episode', help='test episode num')
+        parser.add_argument('-epochs', help='epoch num')
+        parser.add_argument('-result', '--result_root', help='result path')
+        parser.add_argument('-save_interval', help='checkpoint save interval')
+        parser.add_argument('-log_level', help='log level in: debug, info, warning, error, critical')
+        parser.add_argument('-log_interval', help='log interval')
+        parser.add_argument('-gpus', '--device_ids', help='device ids')
+        parser.add_argument('-n_gpu', help='gpu num')
+        parser.add_argument('-seed', help='seed')
+        parser.add_argument('-deterministic', action='store_true', help='deterministic or not')
+        args = parser.parse_args()
+        return args
 
     def _merge_config_dict(self):
         config_dict = dict()

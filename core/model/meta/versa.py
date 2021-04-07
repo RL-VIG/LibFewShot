@@ -39,7 +39,7 @@ class VERSA_HEAD(nn.Module):
 
         query_label_tiled = query_targets.repeat(self.sample_num)
         loss = -self.loss_func(logits_sample_query, query_label_tiled)
-        # FIXME
+        # FIXME nan
         loss = loss.contiguous().reshape(episode_size, self.sample_num, -1).permute([1, 0, 2]).contiguous().reshape(
             self.sample_num, -1)
         task_score = torch.logsumexp(loss, dim=0) - torch.log(
