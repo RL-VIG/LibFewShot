@@ -15,6 +15,7 @@ DEFAULT_FILE = os.path.join(get_cur_path(), 'default.yaml')
 class Config(object):
     def __init__(self, config_file=None, variable_dict=None, is_resume=False):
         self.is_resume = is_resume
+        self.console_dict=self._load_console_dict()
         self.default_dict = self._load_config_files(DEFAULT_FILE)
         self.file_dict = self._load_config_files(config_file)
         self.variable_dict = self._load_variable_dict(variable_dict)
@@ -56,6 +57,7 @@ class Config(object):
         parser.add_argument('-es', '--episode_size', help='episode_size')
 
         parser.add_argument('-data', '--data_root', help='dataset path')
+        parser.add_argument('-log_name', '--log_name', help='specific log dir name if necessary')
         parser.add_argument('-image_size', help='image size')
         parser.add_argument('-aug', '--augment', action='store_true')
         parser.add_argument('-aug_times', '--augment_times', help='augment times')
@@ -67,17 +69,18 @@ class Config(object):
         parser.add_argument('-log_level', help='log level in: debug, info, warning, error, critical')
         parser.add_argument('-log_interval', help='log interval')
         parser.add_argument('-gpus', '--device_ids', help='device ids')
-        parser.add_argument('-n_gpu', help='gpu num')
+        parser.add_argument('-n_gpu', help='gpu num') # TODO: n_gpu should be len(gpus)?
         parser.add_argument('-seed', help='seed')
         parser.add_argument('-deterministic', action='store_true', help='deterministic or not')
         args = parser.parse_args()
-        return args
+        return vars(args)
 
     def _merge_config_dict(self):
         config_dict = dict()
         config_dict.update(self.default_dict)
         config_dict.update(self.file_dict)
         config_dict.update(self.variable_dict)
+        config_dict.update(self.console_dict)
 
         if config_dict['test_way'] is None:
             config_dict['test_way'] = config_dict['way_num']
