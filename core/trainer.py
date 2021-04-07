@@ -1,3 +1,4 @@
+import datetime
 import os
 from logging import getLogger
 from time import time
@@ -38,6 +39,7 @@ class Trainer(object):
     def train_loop(self):
         best_val_prec1 = float('-inf')
         best_test_prec1 = float('-inf')
+        experiment_begin = time()
         for epoch_idx in range(self.from_epoch + 1, self.config['epoch']):
             self.logger.info(
                     '============ Train on the train set ============')
@@ -65,6 +67,9 @@ class Trainer(object):
             self._save_model(epoch_idx, SaveType.LAST)
 
             self.scheduler.step()
+        self.logger.info("End of experiment, took {}".format(
+                str(datetime.timedelta(seconds=int(time() - experiment_begin))))
+        )
 
     def _train(self, epoch_idx):
         self.model.train()
@@ -82,12 +87,14 @@ class Trainer(object):
             meter.update('data_time', time() - end)
 
             # calculate the output
+            calc_begin = time()
             output, prec1, loss = self.model.set_forward_loss(batch)
 
             # compute gradients
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
+            meter.update('calc_time', time() - calc_begin)
 
             # measure accuracy and record loss
             meter.update('loss', loss.item())
@@ -95,24 +102,29 @@ class Trainer(object):
 
             # measure elapsed time
             meter.update('batch_time', time() - end)
-            end = time()
 
             # print the intermediate results
             if batch_idx != 0 and batch_idx % self.config['log_interval'] == 0:
                 info_str = ('Epoch-({}): [{}/{}]\t'
                             'Time {:.3f} ({:.3f})\t'
+                            'Calc {:.3f} ({:.3f})\t'
                             'Data {:.3f} ({:.3f})\t'
                             'Loss {:.3f} ({:.3f})\t'
                             'Prec@1 {:.3f} ({:.3f})'
                             .format(epoch_idx, batch_idx * episode_size,
                                     len(self.train_loader),
-                                    meter.last('batch_time'), meter.avg(
-                            'batch_time'),
-                                    meter.last('data_time'), meter.avg(
-                            'data_time'),
-                                    meter.last('loss'), meter.avg('loss'),
-                                    meter.last('prec1'), meter.avg('prec1'), ))
+                                    meter.last('batch_time'),
+                                    meter.avg('batch_time'),
+                                    meter.last('calc_time'),
+                                    meter.avg('calc_time'),
+                                    meter.last('data_time'),
+                                    meter.avg('data_time'),
+                                    meter.last('loss'),
+                                    meter.avg('loss'),
+                                    meter.last('prec1'),
+                                    meter.avg('prec1'), ))
                 self.logger.info(info_str)
+            end = time()
 
         return meter.avg('prec1')
 
@@ -135,30 +147,35 @@ class Trainer(object):
                 meter.update('data_time', time() - end)
 
                 # calculate the output
+                calc_begin = time()
                 output, prec1 = self.model.set_forward(batch)
+                meter.update('calc_time', time() - calc_begin)
 
                 # measure accuracy and record loss
                 meter.update('prec1', prec1)
 
                 # measure elapsed time
                 meter.update('batch_time', time() - end)
-                end = time()
 
                 if batch_idx != 0 and \
                         batch_idx % self.config['log_interval'] == 0:
                     info_str = ('Epoch-({}): [{}/{}]\t'
                                 'Time {:.3f} ({:.3f})\t'
+                                'Calc {:.3f} ({:.3f})\t'
                                 'Data {:.3f} ({:.3f})\t'
                                 'Prec@1 {:.3f} ({:.3f})'
                                 .format(epoch_idx, batch_idx * episode_size,
                                         len(self.val_loader),
                                         meter.last('batch_time'),
                                         meter.avg('batch_time'),
+                                        meter.last('calc_time'),
+                                        meter.avg('calc_time'),
                                         meter.last('data_time'),
                                         meter.avg('data_time'),
                                         meter.last('prec1'),
                                         meter.avg('prec1'), ))
                     self.logger.info(info_str)
+                end = time()
 
         return meter.avg('prec1')
 
@@ -201,7 +218,7 @@ class Trainer(object):
         model = get_instance(arch, 'classifier', config,
                              config['way_num'],
                              config['shot_num'] * config['augment_times'],
-                             config['query_num']* config['augment_times_query'],
+                             config['query_num'] * config['augment_times_query'],
                              model_func, self.device)
 
         self.logger.info(model)
@@ -302,11 +319,11 @@ class Trainer(object):
                         self.logger.warning('')
 
     def _init_meter(self):
-        train_meter = AverageMeter('train', ['batch_time', 'data_time', 'loss', 'prec1'],
+        train_meter = AverageMeter('train', ['batch_time', 'data_time', 'calc_time', 'loss', 'prec1'],
                                    self.writer)
         val_meter = AverageMeter(
-                'val', ['batch_time', 'data_time', 'prec1'], self.writer)
-        test_meter = AverageMeter('test', ['batch_time', 'data_time', 'prec1'],
+                'val', ['batch_time', 'data_time', 'calc_time', 'prec1'], self.writer)
+        test_meter = AverageMeter('test', ['batch_time', 'data_time', 'calc_time', 'prec1'],
                                   self.writer)
 
         return train_meter, val_meter, test_meter

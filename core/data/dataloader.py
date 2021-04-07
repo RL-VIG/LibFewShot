@@ -21,6 +21,8 @@ def get_dataloader(config, mode, model_type):
     assert model_type != ModelType.ABSTRACT
 
     trfms_list = []
+
+    # Add user's trfms here (or in get_augment_method())
     if mode == 'train' and config['augment']:
         if config['image_size'] == 224:
             trfms_list.append(transforms.Resize((256, 256)))
