@@ -8,7 +8,7 @@ def get_collate_fn(config, trfms, mode, model_type, ):
     if mode == 'train' and model_type == ModelType.PRETRAIN:
         collate_fn = GeneralCollateFn(trfms, config['augment_times'])
     else:
-        collate_fn = FewShotAugCollateFn(trfms, config['augment_times'],
+        collate_fn = FewShotAugCollateFn(trfms, config['augment_times'],config['augment_times_query'],
                                          config['way_num'] if mode == 'train'
                                          else config['test_way'],
                                          config['shot_num'] if mode == 'train'
