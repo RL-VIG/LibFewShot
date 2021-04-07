@@ -1,3 +1,4 @@
+import errno
 import os
 import random
 from collections import OrderedDict
@@ -104,6 +105,13 @@ def mean_confidence_interval(data, confidence=0.95):
     h = se * sp.stats.t._ppf((1 + confidence) / 2., n - 1)
     return m, h
 
+def force_symlink(file1, file2):
+    try:
+        os.symlink(file1, file2)
+    except OSError as e:
+        if e.errno == errno.EEXIST:
+            os.remove(file2)
+            os.symlink(file1, file2)
 
 def create_dirs(dir_paths):
     """

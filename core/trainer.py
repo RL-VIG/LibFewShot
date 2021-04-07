@@ -9,7 +9,7 @@ from torch import nn
 import core.model as arch
 from core.data import get_dataloader
 from core.utils import (AverageMeter, ModelType, SaveType, TensorboardWriter, count_parameters, create_dirs,
-                        get_local_time, init_logger, init_seed, prepare_device, save_model)
+                        force_symlink, get_local_time, init_logger, init_seed, prepare_device, save_model)
 
 
 def get_instance(module, name, config, *args):
@@ -178,7 +178,7 @@ class Trainer(object):
         viz_path = os.path.join(log_path, 'tfboard_files')
         create_dirs([result_path, log_path, checkpoints_path, viz_path])
 
-        os.symlink(result_path, symlink_path)
+        force_symlink(result_path, symlink_path)
 
         with open(os.path.join(result_path, 'config.yaml'), 'w',
                   encoding='utf-8') as fout:
@@ -201,7 +201,7 @@ class Trainer(object):
         model = get_instance(arch, 'classifier', config,
                              config['way_num'],
                              config['shot_num'] * config['augment_times'],
-                             config['query_num'],
+                             config['query_num']* config['augment_times_query'],
                              model_func, self.device)
 
         self.logger.info(model)
