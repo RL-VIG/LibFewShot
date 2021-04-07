@@ -8,7 +8,7 @@ from torch import nn
 
 import core.model as arch
 from core.data import get_dataloader
-from core.utils import init_logger, logger, prepare_device, init_seed, AverageMeter, \
+from core.utils import init_logger, prepare_device, init_seed, AverageMeter, \
     count_parameters, save_model, create_dirs, get_local_time, ModelType, TensorboardWriter, SaveType
 
 
@@ -125,10 +125,7 @@ class Trainer(object):
         episode_size = self.config['episode_size']
 
         end = time()
-        if self.model_type == ModelType.METRIC:
-            enable_grad = False
-        else:
-            enable_grad = True
+        enable_grad = (self.model_type != ModelType.METRIC)
         with torch.set_grad_enabled(enable_grad):
             for batch_idx, batch in enumerate(
                     self.test_loader if is_test else self.val_loader):
@@ -166,18 +163,22 @@ class Trainer(object):
         return meter.avg('prec1')
 
     def _init_files(self, config):
-        result_dir = '{}-{}-{}-{}-{}-{}' \
-            .format(config['classifier']['name'],
-                    # you should ensure that data_root name contains its true name
-                    config['data_root'].split('/')[-1],
+        # you should ensure that data_root name contains its true name
+        # FIXME 改成如果不包含data_name就自动切会不会好点
+        symlink_dir = '{}-{}-{}-{}-{}' \
+            .format(config['classifier']['name'], config['data_root'].split('/')[-1],
                     config['backbone']['name'],
-                    config['way_num'], config['shot_num'], get_local_time())
+                    config['way_num'], config['shot_num'])
+        result_dir = symlink_dir + "-{}".format(get_local_time())
+        symlink_path = os.path.join(config['result_root'], symlink_dir)
         result_path = os.path.join(config['result_root'], result_dir)
 
         checkpoints_path = os.path.join(result_path, 'checkpoints')
         log_path = os.path.join(result_path, 'log_files')
         viz_path = os.path.join(log_path, 'tfboard_files')
         create_dirs([result_path, log_path, checkpoints_path, viz_path])
+
+        os.symlink(result_path, symlink_path)
 
         with open(os.path.join(result_path, 'config.yaml'), 'w',
                   encoding='utf-8') as fout:
