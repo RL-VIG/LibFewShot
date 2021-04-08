@@ -91,5 +91,8 @@ class Config(object):
         if config_dict['test_query'] is None:
             config_dict['test_query'] = config_dict['query_num']
 
+        # modify or add some configs
         config_dict['resume'] = self.is_resume
+        config_dict['tb_scale'] = float(config_dict['train_episode'])/config_dict['test_episode']
+
         return config_dict

@@ -141,8 +141,8 @@ class Trainer(object):
         with torch.set_grad_enabled(enable_grad):
             for batch_idx, batch in enumerate(
                     self.test_loader if is_test else self.val_loader):
-                self.writer.set_step(epoch_idx * len(self.test_loader)
-                                     + batch_idx * episode_size)
+                self.writer.set_step(int((epoch_idx * len(self.test_loader)
+                                          + batch_idx * episode_size) * self.config['tb_scale']))
 
                 meter.update('data_time', time() - end)
 
@@ -183,10 +183,13 @@ class Trainer(object):
         # you should ensure that data_root name contains its true name
         # FIXME 改成如果不包含data_name就自动切会不会好点
         symlink_dir = '{}-{}-{}-{}-{}' \
-            .format(config['classifier']['name'], config['data_root'].split('/')[-1],
+            .format(config['classifier']['name'],
+                    config['data_root'].split('/')[-1],
                     config['backbone']['name'],
                     config['way_num'], config['shot_num'])
-        result_dir = symlink_dir + "-{}".format(get_local_time()) if config['log_name'] is None else config['log_name']
+        result_dir = symlink_dir + "-{}".format(get_local_time()) \
+            if config['log_name'] is None \
+            else config['log_name']
         symlink_path = os.path.join(config['result_root'], symlink_dir)
         result_path = os.path.join(config['result_root'], result_dir)
 
