@@ -37,11 +37,13 @@ class Config(object):
             |[-+]?\\.(?:inf|Inf|INF)
             |\\.(?:nan|NaN|NAN))$''', re.X),
                 list(u'-+0123456789.'))
+
         if config_file is not None:
             with open(config_file, 'r', encoding='utf-8') as fin:
                 config_dict.update(yaml.load(fin.read(), Loader=loader))
-        for include in config_dict.get("includes", []):
-            with open(include, 'r', encoding='utf-8') as fin:
+
+        for include in config_dict.get("includes", []):  # TODO: move included yaml files to a specific dir
+            with open(os.path.join('./config/', include), 'r', encoding='utf-8') as fin:
                 config_dict.update(yaml.load(fin.read(), Loader=loader))
         return config_dict
 
@@ -55,7 +57,7 @@ class Config(object):
             dic1 = dict()
         for k in dic2.keys():
             if isinstance(dic2[k], dict):
-                dic1[k] = self._recur_update(dic1[k], dic2[k])
+                dic1[k] = self._recur_update(dic1[k] if k in dic1.keys() else None, dic2[k])
             else:
                 dic1[k] = dic2[k]
         return dic1
@@ -100,10 +102,10 @@ class Config(object):
 
     def _merge_config_dict(self):
         config_dict = dict()
-        config_dict = self._recur_update(config_dict,self.default_dict)
-        config_dict = self._recur_update(config_dict,self.file_dict)
-        config_dict = self._recur_update(config_dict,self.variable_dict)
-        config_dict = self._recur_update(config_dict,self.console_dict)
+        config_dict = self._recur_update(config_dict, self.default_dict)
+        config_dict = self._recur_update(config_dict, self.file_dict)
+        config_dict = self._recur_update(config_dict, self.variable_dict)
+        config_dict = self._recur_update(config_dict, self.console_dict)
 
         # config_dict.update(self.default_dict)
         # config_dict.update(self.file_dict)
