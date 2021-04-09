@@ -28,15 +28,15 @@ class Config(object):
         config_dict = dict()
         loader = yaml.SafeLoader
         loader.add_implicit_resolver(
-            u'tag:yaml.org,2002:float',
-            re.compile(u'''^(?:
+                u'tag:yaml.org,2002:float',
+                re.compile(u'''^(?:
              [-+]?(?:[0-9][0-9_]*)\\.[0-9_]*(?:[eE][-+]?[0-9]+)?
             |[-+]?(?:[0-9][0-9_]*)(?:[eE][-+]?[0-9]+)
             |\\.[0-9_]+(?:[eE][-+][0-9]+)?
             |[-+]?[0-9][0-9_]*(?::[0-5]?[0-9])+\\.[0-9_]*
             |[-+]?\\.(?:inf|Inf|INF)
             |\\.(?:nan|NaN|NAN))$''', re.X),
-            list(u'-+0123456789.'))
+                list(u'-+0123456789.'))
         if config_file is not None:
             with open(config_file, 'r', encoding='utf-8') as fin:
                 config_dict.update(yaml.load(fin.read(), Loader=loader))
@@ -49,6 +49,16 @@ class Config(object):
         config_dict = dict()
         config_dict.update(variable_dict if variable_dict is not None else {})
         return config_dict
+
+    def _recur_update(self, dic1, dic2):
+        if dic1 is None:
+            dic1 = dict()
+        for k in dic2.keys():
+            if isinstance(dic2[k], dict):
+                dic1[k] = self._recur_update(dic1[k], dic2[k])
+            else:
+                dic1[k] = dic2[k]
+        return dic1
 
     def _load_console_dict(self):
         parser = argparse.ArgumentParser()
@@ -76,24 +86,29 @@ class Config(object):
         parser.add_argument('-save_interval', type=int,
                             help='checkpoint save interval')
         parser.add_argument(
-            '-log_level', help='log level in: debug, info, warning, error, critical')
+                '-log_level', help='log level in: debug, info, warning, error, critical')
         parser.add_argument('-log_interval', type=int, help='log interval')
         parser.add_argument('-gpus', '--device_ids', help='device ids')
         # TODO: n_gpu should be len(gpus)?
         parser.add_argument('-n_gpu', type=int, help='gpu num')
         parser.add_argument('-seed', type=int, help='seed')
         parser.add_argument(
-            '-deterministic', action='store_true', help='deterministic or not')
+                '-deterministic', action='store_true', help='deterministic or not')
         args = parser.parse_args()
         # remove key-None pairs
         return {k: v for k, v in vars(args).items() if v is not None}
 
     def _merge_config_dict(self):
         config_dict = dict()
-        config_dict.update(self.default_dict)
-        config_dict.update(self.file_dict)
-        config_dict.update(self.variable_dict)
-        config_dict.update(self.console_dict)
+        config_dict = self._recur_update(config_dict,self.default_dict)
+        config_dict = self._recur_update(config_dict,self.file_dict)
+        config_dict = self._recur_update(config_dict,self.variable_dict)
+        config_dict = self._recur_update(config_dict,self.console_dict)
+
+        # config_dict.update(self.default_dict)
+        # config_dict.update(self.file_dict)
+        # config_dict.update(self.variable_dict)
+        # config_dict.update(self.console_dict)
 
         if config_dict['test_way'] is None:
             config_dict['test_way'] = config_dict['way_num']
@@ -105,6 +120,6 @@ class Config(object):
         # modify or add some configs
         config_dict['resume'] = self.is_resume
         config_dict['tb_scale'] = float(
-            config_dict['train_episode'])/config_dict['test_episode']
+                config_dict['train_episode']) / config_dict['test_episode']
 
         return config_dict
