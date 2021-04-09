@@ -82,7 +82,8 @@ class Trainer(object):
             # visualize the weight
             for i, (name, param) in enumerate(self.model.named_parameters()):
                 if 'bn' not in name:
-                    self.writer.add_histogram(name, param)
+                    save_name = name.replace('.', '/')
+                    self.writer.add_histogram(save_name, param)
 
             meter.update('data_time', time() - end)
 
