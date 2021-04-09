@@ -12,7 +12,7 @@ test_shot: ~
 test_query: ~
 
 # data info
-data_root: /data/wzy/miniImageNet--ravi
+data_root: /data/student/miniImageNet--ravi
 image_size: 84
 use_memory: False
 augment: True

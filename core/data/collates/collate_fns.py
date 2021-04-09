@@ -91,11 +91,11 @@ class FewShotAugCollateFn(object):
             global_labels = torch.tensor(labels, dtype=torch.int64).reshape(self.episode_size, self.way_num,
                                                                             self.shot_num + self.query_num)
             global_labels = global_labels[..., 0].unsqueeze(-1).repeat(1, 1,
-                                                                       self.shot_num * self.times + self.query_num)
+                                                                       self.shot_num * self.times + self.query_num* self.times_q)
 
             return images, global_labels  # images.shape = [e*(q+s) x c x h x w],  global_labels.shape = [e x w x (q+s)]
         except TypeError:
             raise TypeError('不应该在dataset传入transform，在collate_fn传入transform')
 
     def __call__(self, batch):
-        return self.method(batch)
+        return self.method(batch) 

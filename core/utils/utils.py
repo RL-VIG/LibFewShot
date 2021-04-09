@@ -81,6 +81,11 @@ def accuracy(output, target, topk=(1,)):
         maxk = max(topk)
         batch_size = target.size(0)
 
+        print(output.topk(maxk, 1, True, True))
+        print(topk_(output.cpu().numpy(), maxk, 1))
+        print(topk_(output, maxk, 1))
+        exit()
+        
         _, pred = output.topk(maxk, 1, True, True)
         pred = pred.t()
         correct = pred.eq(target.view(1, -1).expand_as(pred))
@@ -90,6 +95,24 @@ def accuracy(output, target, topk=(1,)):
             correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
             res.append(correct_k.mul_(100.0 / batch_size).item())
         return res
+
+
+def topk_(matrix, K, axis=1):
+    if axis == 0:
+        row_index = np.arange(matrix.shape[1 - axis])
+        topk_index = np.argpartition(-matrix, K, axis=axis)[0:K, :]
+        topk_data = matrix[topk_index, row_index]
+        topk_index_sort = np.argsort(-topk_data, axis=axis)
+        topk_data_sort = topk_data[topk_index_sort, row_index]
+        topk_index_sort = topk_index[0:K, :][topk_index_sort, row_index]
+    else:
+        column_index = np.arange(matrix.shape[1 - axis])[:, None]
+        topk_index = np.argpartition(-matrix, K, axis=axis)[:, 0:K]
+        topk_data = matrix[column_index, topk_index]
+        topk_index_sort = np.argsort(-topk_data, axis=axis)
+        topk_data_sort = topk_data[column_index, topk_index_sort]
+        topk_index_sort = topk_index[:, 0:K][column_index, topk_index_sort]
+    return topk_data_sort, topk_index_sort
 
 
 def mean_confidence_interval(data, confidence=0.95):

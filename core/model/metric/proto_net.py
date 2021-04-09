@@ -68,7 +68,7 @@ class ProtoNet(MetricModel):
 
         output = self.proto_layer(query_feat, support_feat) \
             .view(episode_size * self.way_num * self.query_num, self.way_num)
-        loss = self.loss_func(output, query_targets)
-        prec1, _ = accuracy(output, query_targets, topk=(1, 3))
+        loss = self.loss_func(output, query_targets.view(-1))
+        prec1, _ = accuracy(output, query_targets.view(-1), topk=(1, 3))
 
         return output, prec1, loss
