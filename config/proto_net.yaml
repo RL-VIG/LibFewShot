@@ -2,6 +2,10 @@ train_episode: 10000
 test_episode: 600
 episode_size: 32
 
+includes:
+  - yaml_import_test.yaml
+
+
 save_part:
   - model_func
 
