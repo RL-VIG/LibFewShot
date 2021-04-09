@@ -5,17 +5,18 @@ shot_num: 1
 query_num: 10
 batch_size: 1
 episode_size: 1
-
+augment_times: 3
+augment_times_query: 6
 
 image_size: 84
 augment: True
-augment_times: 1
 
 # train info
 epoch: 50
 
 includes:
-  - yaml_import_test.yaml
+  - headers/yaml_import_test.yaml
+  - headers/base_info.yaml
 
 
 save_part:

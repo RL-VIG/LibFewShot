@@ -22,6 +22,10 @@ augment_times_query: 1
 train_episode: 10000
 test_episode: 1000
 
+includes:
+  - headers/yaml_import_test.yaml
+  - headers/base_info.yaml
+
 # train info
 epoch: 50
 test_epoch: 5
