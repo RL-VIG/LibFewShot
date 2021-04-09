@@ -81,12 +81,11 @@ def accuracy(output, target, topk=(1,)):
         maxk = max(topk)
         batch_size = target.size(0)
 
-        print(output.topk(maxk, 1, True, True))
-        print(topk_(output.cpu().numpy(), maxk, 1))
-        print(topk_(output, maxk, 1))
-        exit()
-        
-        _, pred = output.topk(maxk, 1, True, True)
+        _, pred = {
+            'Tensor' : torch.topk,
+            'ndarray': lambda output, maxk, axis: (None, torch.from_numpy(topk_(output, maxk, axis)[1]).to(target.device)),
+        }[output.__class__.__name__](output, maxk, 1)
+
         pred = pred.t()
         correct = pred.eq(target.view(1, -1).expand_as(pred))
 
@@ -97,7 +96,7 @@ def accuracy(output, target, topk=(1,)):
         return res
 
 
-def topk_(matrix, K, axis=1):
+def topk_(matrix, K, axis):
     if axis == 0:
         row_index = np.arange(matrix.shape[1 - axis])
         topk_index = np.argpartition(-matrix, K, axis=axis)[0:K, :]
@@ -128,6 +127,7 @@ def mean_confidence_interval(data, confidence=0.95):
     h = se * sp.stats.t._ppf((1 + confidence) / 2., n - 1)
     return m, h
 
+
 def force_symlink(file1, file2):
     try:
         os.symlink(file1, file2)
@@ -135,6 +135,7 @@ def force_symlink(file1, file2):
         if e.errno == errno.EEXIST:
             os.remove(file2)
             os.symlink(file1, file2)
+
 
 def create_dirs(dir_paths):
     """
@@ -211,8 +212,8 @@ def save_model(model, optimizer, lr_Scheduler, save_path, name, epoch, save_type
     if save_type == SaveType.NORMAL or save_type == SaveType.BEST:
         torch.save(model_state_dict, save_name)
     else:
-        torch.save({'epoch': epoch, 'model': model_state_dict,
-                    'optimizer': optimizer.state_dict(),
+        torch.save({'epoch'       : epoch, 'model': model_state_dict,
+                    'optimizer'   : optimizer.state_dict(),
                     'lr_scheduler': lr_Scheduler.state_dict()}, save_name)
 
     return save_name
