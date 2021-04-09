@@ -34,7 +34,7 @@ class Trainer(object):
         self.train_loader, self.val_loader, self.test_loader \
             = self._init_dataloader(config)
         self.optimizer, self.scheduler, self.from_epoch = self._init_optim(
-                config)
+            config)
 
     def train_loop(self):
         best_val_prec1 = float('-inf')
@@ -42,16 +42,16 @@ class Trainer(object):
         experiment_begin = time()
         for epoch_idx in range(self.from_epoch + 1, self.config['epoch']):
             self.logger.info(
-                    '============ Train on the train set ============')
+                '============ Train on the train set ============')
             train_prec1 = self._train(epoch_idx)
             self.logger.info(' * Prec@1 {:.3f} '.format(train_prec1))
             self.logger.info(
-                    '============ Validation on the val set ============')
+                '============ Validation on the val set ============')
             val_prec1 = self._validate(epoch_idx, is_test=False)
             self.logger.info(' * Prec@1 {:.3f} Best Prec1 {:.3f}'
                              .format(val_prec1, best_val_prec1))
             self.logger.info(
-                    '============ Testing on the test set ============')
+                '============ Testing on the test set ============')
             test_prec1 = self._validate(epoch_idx, is_test=True)
             self.logger.info(' * Prec@1 {:.3f} Best Prec1 {:.3f}'
                              .format(test_prec1, best_test_prec1))
@@ -68,7 +68,7 @@ class Trainer(object):
 
             self.scheduler.step()
         self.logger.info("End of experiment, took {}".format(
-                str(datetime.timedelta(seconds=int(time() - experiment_begin))))
+            str(datetime.timedelta(seconds=int(time() - experiment_begin))))
         )
 
     def _train(self, epoch_idx):
@@ -104,7 +104,8 @@ class Trainer(object):
             meter.update('batch_time', time() - end)
 
             # print the intermediate results
-            if batch_idx != 0 and batch_idx % self.config['log_interval'] == 0:
+            if (batch_idx != 0 and batch_idx % self.config['log_interval'] == 0)\
+                    or batch_idx * episode_size > len(self.train_loader):
                 info_str = ('Epoch-({}): [{}/{}]\t'
                             'Time {:.3f} ({:.3f})\t'
                             'Calc {:.3f} ({:.3f})\t'
@@ -157,8 +158,9 @@ class Trainer(object):
                 # measure elapsed time
                 meter.update('batch_time', time() - end)
 
-                if batch_idx != 0 and \
-                        batch_idx % self.config['log_interval'] == 0:
+                if (batch_idx != 0 and
+                        batch_idx % self.config['log_interval'] == 0)\
+                        or batch_idx * episode_size > len(self.val_loader):
                     info_str = ('Epoch-({}): [{}/{}]\t'
                                 'Time {:.3f} ({:.3f})\t'
                                 'Calc {:.3f} ({:.3f})\t'
@@ -221,7 +223,8 @@ class Trainer(object):
         model = get_instance(arch, 'classifier', config,
                              config['way_num'],
                              config['shot_num'] * config['augment_times'],
-                             config['query_num'] * config['augment_times_query'],
+                             config['query_num'] *
+                             config['augment_times_query'],
                              model_func, self.device)
 
         self.logger.info(model)
@@ -231,7 +234,7 @@ class Trainer(object):
             self.logger.info('load pretrain model_func from {}'
                              .format(self.config['pretrain_path']))
             state_dict = torch.load(
-                    self.config['pretrain_path'], map_location='cpu')
+                self.config['pretrain_path'], map_location='cpu')
             model.model_func.load_state_dict(state_dict)
 
         if self.config['resume']:
@@ -279,7 +282,7 @@ class Trainer(object):
             'params': filter(lambda p: id(p) not in params_idx, self.model.parameters())
         })
         optimizer = get_instance(
-                torch.optim, 'optimizer', config, params_dict_list)
+            torch.optim, 'optimizer', config, params_dict_list)
         scheduler = get_instance(torch.optim.lr_scheduler, 'lr_scheduler', config,
                                  optimizer)
         self.logger.info(optimizer)
@@ -287,8 +290,8 @@ class Trainer(object):
         if self.config['resume']:
             resume_path = os.path.join(self.checkpoints_path, 'model_last.pth')
             self.logger.info(
-                    'load the optimizer, lr_scheduler and epoch checkpoints dict from {}.'
-                        .format(resume_path))
+                'load the optimizer, lr_scheduler and epoch checkpoints dict from {}.'
+                .format(resume_path))
             all_state_dict = torch.load(resume_path, map_location='cpu')
             state_dict = all_state_dict['optimizer']
             optimizer.load_state_dict(state_dict)
@@ -296,14 +299,14 @@ class Trainer(object):
             scheduler.load_state_dict(state_dict)
             from_epoch = all_state_dict['epoch']
             self.logger.info(
-                    'model resume from the epoch {}'.format(from_epoch))
+                'model resume from the epoch {}'.format(from_epoch))
 
         return optimizer, scheduler, from_epoch
 
     def _init_device(self, config):
         init_seed(config['seed'], config['deterministic'])
         device, list_ids = prepare_device(
-                config['device_ids'], config['n_gpu'])
+            config['device_ids'], config['n_gpu'])
         return device, list_ids
 
     def _save_model(self, epoch, save_type=SaveType.NORMAL):
@@ -325,7 +328,7 @@ class Trainer(object):
         train_meter = AverageMeter('train', ['batch_time', 'data_time', 'calc_time', 'loss', 'prec1'],
                                    self.writer)
         val_meter = AverageMeter(
-                'val', ['batch_time', 'data_time', 'calc_time', 'prec1'], self.writer)
+            'val', ['batch_time', 'data_time', 'calc_time', 'prec1'], self.writer)
         test_meter = AverageMeter('test', ['batch_time', 'data_time', 'calc_time', 'prec1'],
                                   self.writer)
 
