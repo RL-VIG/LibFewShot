@@ -2,14 +2,21 @@ from torch.utils import tensorboard
 
 
 class TensorboardWriter(object):
-    def __init__(self, log_dir, ):
+    def __init__(self, log_dir):
         self.step = 0
 
         self.writer = tensorboard.SummaryWriter(log_dir)
 
         self.tb_writer_funcs = {
-            'add_scalar', 'add_scalars', 'add_image', 'add_images', 'add_audio',
-            'add_text', 'add_histogram', 'add_pr_curve', 'add_embedding'
+            "add_scalar",
+            "add_scalars",
+            "add_image",
+            "add_images",
+            "add_audio",
+            "add_text",
+            "add_histogram",
+            "add_pr_curve",
+            "add_embedding",
         }
 
     def set_step(self, step):

@@ -1,12 +1,15 @@
 import torch.nn as nn
-'''
+
+"""
 from torchvision.models.resnet
-'''
+"""
+
 
 def conv3x3(in_planes, out_planes, stride=1):
     """3x3 convolution with padding"""
-    return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
-                     padding=1, bias=False)
+    return nn.Conv2d(
+        in_planes, out_planes, kernel_size=3, stride=stride, padding=1, bias=False
+    )
 
 
 def conv1x1(in_planes, out_planes, stride=1):
@@ -85,15 +88,18 @@ class Bottleneck(nn.Module):
 
 
 class ResNet(nn.Module):
-
-    def __init__(self, block=BasicBlock, layers=[2, 2, 2, 2], zero_init_residual=False,
-                 is_feature=False):
+    def __init__(
+        self,
+        block=BasicBlock,
+        layers=[2, 2, 2, 2],
+        zero_init_residual=False,
+        is_feature=False,
+    ):
         super(ResNet, self).__init__()
 
         self.is_feature = is_feature
         self.inplanes = 64
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1,
-                               bias=False)
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
         self.layer1 = self._make_layer(block, 64, layers[0])
@@ -104,7 +110,7 @@ class ResNet(nn.Module):
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
             elif isinstance(m, nn.BatchNorm2d):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
@@ -161,8 +167,9 @@ def resnet18(**kwargs):
     return model
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import torch
+
     model = resnet18().cuda()
     data = torch.rand(10, 3, 84, 84).cuda()
     output = model(data)

@@ -22,8 +22,9 @@ class AverageMeter(object):
 
     def __init__(self, name, keys, writer=None):
         self.name = name
-        self._data = pd.DataFrame(index=keys,
-                                  columns=['last_value', 'total', 'counts', 'average', ])
+        self._data = pd.DataFrame(
+            index=keys, columns=["last_value", "total", "counts", "average"]
+        )
         self.writer = writer
         self.reset()
 
@@ -33,7 +34,7 @@ class AverageMeter(object):
 
     def update(self, key, value, n=1):
         if self.writer is not None:
-            tag = '{}/{}'.format(self.name, key)
+            tag = "{}/{}".format(self.name, key)
             self.writer.add_scalar(tag, value)
         self._data.last_value[key] = value
         self._data.total[key] += value * n
@@ -55,7 +56,7 @@ def get_local_time():
 
     :return:
     """
-    cur_time = datetime.now().strftime('%b-%d-%Y_%H-%M-%S')
+    cur_time = datetime.now().strftime("%b-%d-%Y_%H-%M-%S")
 
     return cur_time
 
@@ -81,13 +82,15 @@ def accuracy(output, target, topk=1):
         batch_size = target.size(0)
 
         _, pred = {
-            'Tensor' : torch.topk,
-            'ndarray': lambda output, maxk, axis: (None, torch.from_numpy(topk_(output, maxk, axis)[1]).to(target.device)),
+            "Tensor": torch.topk,
+            "ndarray": lambda output, maxk, axis: (
+                None,
+                torch.from_numpy(topk_(output, maxk, axis)[1]).to(target.device),
+            ),
         }[output.__class__.__name__](output, topk, 1)
 
         pred = pred.t()
         correct = pred.eq(target.view(1, -1).expand_as(pred))
-
 
         correct_k = correct[:topk].view(-1).float().sum(0, keepdim=True)
         res = correct_k.mul_(100.0 / batch_size).item()
@@ -122,7 +125,7 @@ def mean_confidence_interval(data, confidence=0.95):
     a = [1.0 * np.array(data[i]) for i in range(len(data))]
     n = len(a)
     m, se = np.mean(a), scipy.stats.sem(a)
-    h = se * sp.stats.t._ppf((1 + confidence) / 2., n - 1)
+    h = se * sp.stats.t._ppf((1 + confidence) / 2.0, n - 1)
     return m, h
 
 
@@ -159,23 +162,32 @@ def prepare_device(device_ids, n_gpu_use):
 
     n_gpu = torch.cuda.device_count()
     if n_gpu_use > 0 and n_gpu == 0:
-        logger.warning('the model will be performed on CPU.')
+        logger.warning("the model will be performed on CPU.")
         n_gpu_use = 0
 
     if n_gpu_use > n_gpu:
-        logger.warning('only {} are available on this machine, '
-                       'but the number of the GPU in config is {}.'
-                       .format(n_gpu, n_gpu_use))
+        logger.warning(
+            "only {} are available on this machine, "
+            "but the number of the GPU in config is {}.".format(n_gpu, n_gpu_use)
+        )
         n_gpu_use = n_gpu
 
-    device = torch.device('cuda:0' if n_gpu_use > 0 else 'cpu')
+    device = torch.device("cuda:0" if n_gpu_use > 0 else "cpu")
     list_ids = list(range(n_gpu_use))
 
     return device, list_ids
 
 
-def save_model(model, optimizer, lr_Scheduler, save_path, name, epoch, save_type=SaveType.LAST,
-               is_parallel=False):
+def save_model(
+    model,
+    optimizer,
+    lr_Scheduler,
+    save_path,
+    name,
+    epoch,
+    save_type=SaveType.LAST,
+    is_parallel=False,
+):
     """
 
     :param model:
@@ -190,11 +202,11 @@ def save_model(model, optimizer, lr_Scheduler, save_path, name, epoch, save_type
     """
 
     if save_type == SaveType.NORMAL:
-        save_name = os.path.join(save_path, '{}_{:0>5d}.pth'.format(name, epoch))
+        save_name = os.path.join(save_path, "{}_{:0>5d}.pth".format(name, epoch))
     elif save_type == SaveType.BEST:
-        save_name = os.path.join(save_path, '{}_best.pth'.format(name))
+        save_name = os.path.join(save_path, "{}_best.pth".format(name))
     elif save_type == SaveType.LAST:
-        save_name = os.path.join(save_path, '{}_last.pth'.format(name))
+        save_name = os.path.join(save_path, "{}_last.pth".format(name))
 
     else:
         raise RuntimeError
@@ -202,7 +214,7 @@ def save_model(model, optimizer, lr_Scheduler, save_path, name, epoch, save_type
     if is_parallel:
         model_state_dict = OrderedDict()
         for k, v in model.state_dict().items():
-            name = '.'.join([name for name in k.split('.') if name != 'module'])
+            name = ".".join([name for name in k.split(".") if name != "module"])
             model_state_dict[name] = v
     else:
         model_state_dict = model.state_dict()
@@ -210,9 +222,15 @@ def save_model(model, optimizer, lr_Scheduler, save_path, name, epoch, save_type
     if save_type == SaveType.NORMAL or save_type == SaveType.BEST:
         torch.save(model_state_dict, save_name)
     else:
-        torch.save({'epoch'       : epoch, 'model': model_state_dict,
-                    'optimizer'   : optimizer.state_dict(),
-                    'lr_scheduler': lr_Scheduler.state_dict()}, save_name)
+        torch.save(
+            {
+                "epoch": epoch,
+                "model": model_state_dict,
+                "optimizer": optimizer.state_dict(),
+                "lr_scheduler": lr_Scheduler.state_dict(),
+            },
+            save_name,
+        )
 
     return save_name
 
@@ -224,7 +242,7 @@ def init_seed(seed=0, deterministic=False):
     :param deterministic:
     :return:
     """
-    os.environ['PYTHONHASHSEED'] = str(seed)
+    os.environ["PYTHONHASHSEED"] = str(seed)
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)

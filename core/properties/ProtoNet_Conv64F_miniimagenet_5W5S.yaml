@@ -55,8 +55,3 @@ lr_scheduler:
   kwargs:
     gamma: 0.5
     step_size: 20
-
-
-
-
-

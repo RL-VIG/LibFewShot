@@ -12,6 +12,7 @@ import torch.nn.functional as F
 # adapted from https://github.com/yaoyao-liu/meta-transfer-learning
 class MTLBaseLearner(nn.Module):
     """The class for inner loop."""
+
     def __init__(self, ways, z_dim):
         super().__init__()
         self.ways = ways
@@ -33,23 +34,35 @@ class MTLBaseLearner(nn.Module):
 
     def parameters(self):
         return self.vars
-        
 
-class MTLPretrain(PretrainModel): # use image-size=80 in repo
-    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim,
-                 num_class,inner_train_iter):
-        super(MTLPretrain, self).__init__(way_num, shot_num, query_num, emb_func, device)
+
+class MTLPretrain(PretrainModel):  # use image-size=80 in repo
+    def __init__(
+        self,
+        way_num,
+        shot_num,
+        query_num,
+        emb_func,
+        device,
+        feat_dim,
+        num_class,
+        inner_train_iter,
+    ):
+        super(MTLPretrain, self).__init__(
+            way_num, shot_num, query_num, emb_func, device
+        )
         self.feat_dim = feat_dim
         self.num_class = num_class
 
-        self.pre_fc = nn.Sequential(nn.Linear(self.feat_dim, 1000), nn.ReLU(), nn.Linear(1000, self.num_class))
-        self.base_learner = MTLBaseLearner(way_num,z_dim=self.feat_dim)
-        self.inner_train_iter=inner_train_iter
+        self.pre_fc = nn.Sequential(
+            nn.Linear(self.feat_dim, 1000), nn.ReLU(), nn.Linear(1000, self.num_class)
+        )
+        self.base_learner = MTLBaseLearner(way_num, z_dim=self.feat_dim)
+        self.inner_train_iter = inner_train_iter
 
         self.loss_func = nn.CrossEntropyLoss()
 
-
-    def set_forward(self, batch, ):
+    def set_forward(self, batch):
         """
         meta-validation
         :param batch:
@@ -62,11 +75,13 @@ class MTLPretrain(PretrainModel): # use image-size=80 in repo
         with torch.no_grad():
             feat = self.emb_func(image)
 
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=4)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=4
+        )
 
         classifier, fast_weight = self.test_loop(support_feat, support_target)
 
-        output = classifier(query_feat,fast_weight)
+        output = classifier(query_feat, fast_weight)
 
         acc = accuracy(output, query_target)
 
@@ -98,14 +113,18 @@ class MTLPretrain(PretrainModel): # use image-size=80 in repo
         classifier = self.base_learner.to(self.device)
 
         logit = self.base_learner(support_feat)
-        loss = self.loss_func(logit,support_target)
+        loss = self.loss_func(logit, support_target)
         grad = torch.autograd.grad(loss, self.base_learner.parameters())
-        fast_parameters = list(map(lambda p: p[1] - 0.01 * p[0], zip(grad, self.base_learner.parameters())))
+        fast_parameters = list(
+            map(lambda p: p[1] - 0.01 * p[0], zip(grad, self.base_learner.parameters()))
+        )
 
         for _ in range(1, self.inner_train_iter):
             logit = self.base_learner(support_feat, fast_parameters)
             loss = F.cross_entropy(logit, support_target)
             grad = torch.autograd.grad(loss, fast_parameters)
-            fast_parameters = list(map(lambda p: p[1] - 0.01 * p[0], zip(grad, fast_parameters)))
+            fast_parameters = list(
+                map(lambda p: p[1] - 0.01 * p[0], zip(grad, fast_parameters))
+            )
 
         return classifier, fast_parameters

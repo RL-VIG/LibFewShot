@@ -11,19 +11,20 @@ from ..backbone.maml_backbone import Linear_fw
 
 # TODO, refer
 
+
 class MAMLLayer(nn.Module):
     def __init__(self, feat_dim=64, way_num=5) -> None:
         super(MAMLLayer, self).__init__()
-        self.layers = nn.Sequential(
-            Linear_fw(feat_dim, way_num)
-        )
+        self.layers = nn.Sequential(Linear_fw(feat_dim, way_num))
 
     def forward(self, x):
         return self.layers(x)
 
 
 class MAML(MetaModel):
-    def __init__(self, way_num, shot_num, query_num, feature, device, inner_para, feat_dim):
+    def __init__(
+        self, way_num, shot_num, query_num, feature, device, inner_para, feat_dim
+    ):
         super(MAML, self).__init__(way_num, shot_num, query_num, feature, device)
         self.feat_dim = feat_dim
         self.loss_func = nn.CrossEntropyLoss()
@@ -35,10 +36,12 @@ class MAML(MetaModel):
         out2 = self.classifier(out1)
         return out2
 
-    def set_forward(self, batch, ):
-        image, global_target = batch # unused global_target
+    def set_forward(self, batch):
+        image, global_target = batch  # unused global_target
         image = image.to(self.device)
-        support_image, query_image, support_target, query_target = self.split_by_episode(image, mode=2)
+        support_image, query_image, support_target, query_target = self.split_by_episode(
+            image, mode=2
+        )
         episode_size, _, c, h, w = support_image.size()
 
         output_list = []
@@ -57,10 +60,12 @@ class MAML(MetaModel):
         acc = accuracy(output, query_target.contiguous().view(-1))
         return output, acc
 
-    def set_forward_loss(self, batch, ):
-        image, global_target = batch # unused global_target
+    def set_forward_loss(self, batch):
+        image, global_target = batch  # unused global_target
         image = image.to(self.device)
-        support_image, query_image, support_target, query_target = self.split_by_episode(image, mode=2)
+        support_image, query_image, support_target, query_target = self.split_by_episode(
+            image, mode=2
+        )
         episode_size, _, c, h, w = support_image.size()
 
         output_list = []
@@ -87,14 +92,14 @@ class MAML(MetaModel):
         return self.set_forward_adaptation(support_set, support_target)
 
     def set_forward_adaptation(self, support_set, support_target):
-        lr = self.inner_para['lr']
+        lr = self.inner_para["lr"]
         fast_parameters = list(self.parameters())
         for parameter in self.parameters():
             parameter.fast = None
 
         self.emb_func.train()
         self.classifier.train()
-        for i in range(self.inner_para['iter']):
+        for i in range(self.inner_para["iter"]):
             output = self.forward_output(support_set)
             loss = self.loss_func(output, support_target)
             grad = torch.autograd.grad(loss, fast_parameters, create_graph=True)
@@ -104,5 +109,5 @@ class MAML(MetaModel):
                 if weight.fast is None:
                     weight.fast = weight - lr * grad[k]
                 else:
-                    weight.fast = weight.fast - self.inner_para['lr'] * grad[k]
+                    weight.fast = weight.fast - self.inner_para["lr"] * grad[k]
                 fast_parameters.append(weight.fast)

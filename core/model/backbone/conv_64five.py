@@ -23,31 +23,36 @@ class Conv64Five(nn.Module):
             nn.BatchNorm2d(64, eps=1e-5),
             nn.ReLU(),
             nn.Dropout(p=self.drop_prob),
-            nn.MaxPool2d(kernel_size=2, stride=2), )
+            nn.MaxPool2d(kernel_size=2, stride=2),
+        )
         self.layer2 = nn.Sequential(
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1, bias=False),
             nn.BatchNorm2d(64, eps=1e-5),
             nn.ReLU(),
             nn.Dropout(p=self.drop_prob),
-            nn.MaxPool2d(kernel_size=2, stride=2), )
+            nn.MaxPool2d(kernel_size=2, stride=2),
+        )
         self.layer3 = nn.Sequential(
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1, bias=False),
             nn.BatchNorm2d(64, eps=1e-5),
             nn.ReLU(),
             nn.Dropout(p=self.drop_prob),
-            nn.MaxPool2d(kernel_size=2, stride=2), )
+            nn.MaxPool2d(kernel_size=2, stride=2),
+        )
         self.layer4 = nn.Sequential(
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1, bias=False),
             nn.BatchNorm2d(64, eps=1e-5),
             nn.ReLU(),
             nn.Dropout(p=self.drop_prob),
-            nn.MaxPool2d(kernel_size=2, stride=2), )
+            nn.MaxPool2d(kernel_size=2, stride=2),
+        )
         self.layer5 = nn.Sequential(
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1, bias=False),
             nn.BatchNorm2d(64, eps=1e-5),
             nn.ReLU(),
             nn.Dropout(p=self.drop_prob),
-            nn.MaxPool2d(kernel_size=2, stride=2), )
+            nn.MaxPool2d(kernel_size=2, stride=2),
+        )
 
     def forward(self, x):
         out1 = self.layer1(x)

@@ -7,6 +7,7 @@ from .pretrain_model import PretrainModel
 
 # FIXME 加上多GPU
 
+
 class DistLinear(nn.Module):
     """
     Coming from "A Closer Look at Few-shot Classification. ICLR 2019."
@@ -20,7 +21,7 @@ class DistLinear(nn.Module):
         self.class_wise_learnable_norm = True
         # split the weight update component to direction and norm
         if self.class_wise_learnable_norm:
-            weight_norm(self.fc, 'weight', dim=0)
+            weight_norm(self.fc, "weight", dim=0)
 
         if out_channel <= 200:
             # a fixed scale factor to scale the output of cos value
@@ -35,8 +36,11 @@ class DistLinear(nn.Module):
         x_norm = torch.norm(x, p=2, dim=1).unsqueeze(1).expand_as(x)
         x_normalized = x.div(x_norm + 0.00001)
         if not self.class_wise_learnable_norm:
-            fc_norm = torch.norm(self.fc.weight.data, p=2, dim=1) \
-                .unsqueeze(1).expand_as(self.fc.weight.data)
+            fc_norm = (
+                torch.norm(self.fc.weight.data, p=2, dim=1)
+                .unsqueeze(1)
+                .expand_as(self.fc.weight.data)
+            )
             self.fc.weight.data = self.fc.weight.data.div(fc_norm + 0.00001)
         # matrix product by forward function, but when using WeightNorm,
         # this also multiply the cosine distance by a class-wise learnable norm
@@ -47,10 +51,21 @@ class DistLinear(nn.Module):
 
 
 class BaselinePlus(PretrainModel):
-    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim,
-                 num_class, inner_optim=None, inner_train_iter=20):
-        super(BaselinePlus, self).__init__(way_num, shot_num, query_num, emb_func,
-                                           device)
+    def __init__(
+        self,
+        way_num,
+        shot_num,
+        query_num,
+        emb_func,
+        device,
+        feat_dim,
+        num_class,
+        inner_optim=None,
+        inner_train_iter=20,
+    ):
+        super(BaselinePlus, self).__init__(
+            way_num, shot_num, query_num, emb_func, device
+        )
 
         self.feat_dim = feat_dim
         self.num_class = num_class
@@ -59,10 +74,9 @@ class BaselinePlus(PretrainModel):
 
         self.loss_func = nn.CrossEntropyLoss()
 
-
         self.classifier = DistLinear(self.feat_dim, self.num_class)
 
-    def set_forward(self, batch, ):
+    def set_forward(self, batch):
         """
 
         :param batch:
@@ -73,7 +87,9 @@ class BaselinePlus(PretrainModel):
         with torch.no_grad():
             feat = self.emb_func(image)
 
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat,mode=4)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=4
+        )
 
         classifier = self.test_loop(support_feat, support_target)
 
@@ -112,7 +128,7 @@ class BaselinePlus(PretrainModel):
         for epoch in range(self.inner_train_iter):
             rand_id = torch.randperm(support_size)
             for i in range(0, support_size, self.inner_batch_size):
-                select_id = rand_id[i:min(i + self.inner_batch_size, support_size)]
+                select_id = rand_id[i : min(i + self.inner_batch_size, support_size)]
                 batch = support_feat[select_id]
                 target = support_target[select_id]
 

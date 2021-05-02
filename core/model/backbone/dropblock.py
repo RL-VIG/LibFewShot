@@ -16,13 +16,23 @@ class DropBlock(nn.Module):
         if self.training:
             batch_size, channels, height, width = x.shape
             bernoulli = Bernoulli(gamma)
-            mask = bernoulli.sample((batch_size, channels, height - (self.block_size - 1),
-                                     width - (self.block_size - 1)))
+            mask = bernoulli.sample(
+                (
+                    batch_size,
+                    channels,
+                    height - (self.block_size - 1),
+                    width - (self.block_size - 1),
+                )
+            )
             if torch.cuda.is_available():
                 mask = mask.cuda()
             block_mask = self._compute_block_mask(mask)
-            countM = block_mask.size()[0] * block_mask.size()[1] * block_mask.size()[2] * \
-                     block_mask.size()[3]
+            countM = (
+                block_mask.size()[0]
+                * block_mask.size()[1]
+                * block_mask.size()[2]
+                * block_mask.size()[3]
+            )
             count_ones = block_mask.sum()
 
             return block_mask * x * (countM / count_ones)
@@ -39,14 +49,16 @@ class DropBlock(nn.Module):
 
         offsets = torch.stack(
             [
-                torch.arange(self.block_size).view(-1, 1).expand(self.block_size,
-                                                                 self.block_size).reshape(
-                    -1),  # - left_padding,
+                torch.arange(self.block_size)
+                .view(-1, 1)
+                .expand(self.block_size, self.block_size)
+                .reshape(-1),  # - left_padding,
                 torch.arange(self.block_size).repeat(self.block_size),  # - left_padding
             ]
         ).t()
-        offsets = torch.cat((torch.zeros(self.block_size ** 2, 2).long(), offsets.long()),
-                            1)
+        offsets = torch.cat(
+            (torch.zeros(self.block_size ** 2, 2).long(), offsets.long()), 1
+        )
         if torch.cuda.is_available():
             offsets = offsets.cuda()
 
@@ -57,14 +69,16 @@ class DropBlock(nn.Module):
 
             block_idxs = non_zero_idxs + offsets
             # block_idxs += left_padding
-            padded_mask = F.pad(mask, (
-            left_padding, right_padding, left_padding, right_padding))
+            padded_mask = F.pad(
+                mask, (left_padding, right_padding, left_padding, right_padding)
+            )
             padded_mask[
-                block_idxs[:, 0], block_idxs[:, 1], block_idxs[:, 2], block_idxs[:,
-                                                                      3]] = 1.
+                block_idxs[:, 0], block_idxs[:, 1], block_idxs[:, 2], block_idxs[:, 3]
+            ] = 1.0
         else:
-            padded_mask = F.pad(mask, (
-            left_padding, right_padding, left_padding, right_padding))
+            padded_mask = F.pad(
+                mask, (left_padding, right_padding, left_padding, right_padding)
+            )
 
         block_mask = 1 - padded_mask  # [:height, :width]
         return block_mask

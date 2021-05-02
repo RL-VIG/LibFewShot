@@ -3,15 +3,17 @@ from torch import nn
 
 from core.utils import accuracy
 from .metric_model import MetricModel
+
 # https://github.com/WenbinLee/ADM
 
-class KLLayer(nn.Module):
-    def __init__(self,way_num, shot_num, query_num,n_k,device,CMS = False):
-        super(KLLayer, self).__init__()
+
+class KL_Layer(nn.Module):
+    def __init__(self, way_num, shot_num, query_num, n_k, device, CMS=False):
+        super(KL_Layer, self).__init__()
         self.way_num = way_num
         self.shot_num = shot_num
         self.query_num = query_num
-        self.n_k= n_k
+        self.n_k = n_k
         self.device = device
         self.CMS = CMS
 
@@ -19,9 +21,11 @@ class KLLayer(nn.Module):
         e, _, n_local, c = feat.size()
         feature_mean = torch.mean(feat, 2, True)  # e * Batch * 1 * 64
         feat = feat - feature_mean
-        cov_matrix = torch.matmul(feat.permute(0, 1, 3, 2), feat) #  ebc1 * eb1c = ebcc
+        cov_matrix = torch.matmul(feat.permute(0, 1, 3, 2), feat)  #  ebc1 * eb1c = ebcc
         cov_matrix = torch.div(cov_matrix, n_local - 1)
-        cov_matrix = cov_matrix + 0.01 * torch.eye(c).to(self.device) # broadcast from the last dim
+        cov_matrix = cov_matrix + 0.01 * torch.eye(c).to(
+            self.device
+        )  # broadcast from the last dim
 
         return feature_mean, cov_matrix
 
@@ -50,19 +54,27 @@ class KLLayer(nn.Module):
         mean_diff = -(mean1 - mean2.squeeze(2).unsqueeze(1))  # e * 75 * 5 * 64
 
         # Calculate the trace
-        matrix_prod = torch.matmul(cov1.unsqueeze(2), cov2_inverse.unsqueeze(1))  # e * 75 * 5 * 64 * 64
+        matrix_prod = torch.matmul(
+            cov1.unsqueeze(2), cov2_inverse.unsqueeze(1)
+        )  # e * 75 * 5 * 64 * 64
         # trace_dist = [[torch.trace(matrix_prod[e][j][i]).unsqueeze(0) # modified for multi-task
         #                for j in range(matrix_prod.size(1))
         #                for i in range(matrix_prod.size(2))]
         #               for e in range(matrix_prod.size(0))] # list of trace_dist
         # trace_dist = torch.stack([torch.cat(trace_dist_list, 0) for trace_dist_list in trace_dist]) #
         # trace_dist = trace_dist.view(matrix_prod.size(0),matrix_prod.size(1), matrix_prod.size(2))  # e * 75 * 5
-        trace_dist = torch.diagonal(matrix_prod,offset=0,dim1=-2,dim2=-1)  # e * 75 * 5 * 64
-        trace_dist = torch.sum(trace_dist,dim=-1) # e * 75 * 5
+        trace_dist = torch.diagonal(
+            matrix_prod, offset=0, dim1=-2, dim2=-1
+        )  # e * 75 * 5 * 64
+        trace_dist = torch.sum(trace_dist, dim=-1)  # e * 75 * 5
 
         # Calcualte the Mahalanobis Distance
-        maha_prod = torch.matmul(mean_diff.unsqueeze(3), cov2_inverse.unsqueeze(1))  # e * 75 * 5 * 1 * 64
-        maha_prod = torch.matmul(maha_prod, mean_diff.unsqueeze(4))  # e * 75 * 5 * 1 * 1
+        maha_prod = torch.matmul(
+            mean_diff.unsqueeze(3), cov2_inverse.unsqueeze(1)
+        )  # e * 75 * 5 * 1 * 64
+        maha_prod = torch.matmul(
+            maha_prod, mean_diff.unsqueeze(4)
+        )  # e * 75 * 5 * 1 * 1
         maha_prod = maha_prod.squeeze(4)
         maha_prod = maha_prod.squeeze(3)  # e * 75 * 5
 
@@ -70,14 +82,15 @@ class KLLayer(nn.Module):
 
         kl_dist = trace_dist + maha_prod + matrix_det - mean1.size(3)
 
-        return kl_dist / 2.
+        return kl_dist / 2.0
 
-    def _cal_support_remaining(self, S):   # S: e * 5 * 441 * 64
-        e,w,d,c = S.shape
-        episode_indices = torch.tensor([j for i in range(
-                S.size(1)) for j in range(S.size(1)) if i != j]).to(self.device)
+    def _cal_support_remaining(self, S):  # S: e * 5 * 441 * 64
+        e, w, d, c = S.shape
+        episode_indices = torch.tensor(
+            [j for i in range(S.size(1)) for j in range(S.size(1)) if i != j]
+        ).to(self.device)
         S_new = torch.index_select(S, 1, episode_indices)
-        S_new = S_new.view([e,w,-1,c])
+        S_new = S_new.view([e, w, -1, c])
 
         # S_new = [] # 5 * 441 * 64 ADM source code
         # for ii in range(S.size(0)):
@@ -92,7 +105,7 @@ class KLLayer(nn.Module):
         #     S_new.append(S_remain.unsqueeze(0))
         #
         # S_new = torch.cat(S_new, 0)   # 5 * 1764 * 64
-        
+
         return S_new
 
     # Calculate KL divergence Distance
@@ -118,29 +131,37 @@ class KLLayer(nn.Module):
         s_mean, s_cov = self._cal_cov_matrix_batch(support_set)
 
         # Calculate the Wasserstein Distance
-        kl_dis = -self._calc_kl_dist_batch(query_mean, query_cov, s_mean, s_cov)  # e * 75 * 5
+        kl_dis = -self._calc_kl_dist_batch(
+            query_mean, query_cov, s_mean, s_cov
+        )  # e * 75 * 5
 
-        if self.CMS: # ADM_KL_CMS
+        if self.CMS:  # ADM_KL_CMS
             # Find the remaining support set
             support_set_remain = self._cal_support_remaining(support_set)
-            s_remain_mean, s_remain_cov = self._cal_cov_matrix_batch(support_set_remain) # s_remain_mean: e * 5 * 1 * 64  s_remain_cov: e * 5 * 64 * 64
-            kl_dis2 = self._calc_kl_dist_batch(query_mean, query_cov, s_remain_mean, s_remain_cov)  # e * 75 * 5
-            kl_dis = kl_dis+kl_dis2
+            s_remain_mean, s_remain_cov = self._cal_cov_matrix_batch(
+                support_set_remain
+            )  # s_remain_mean: e * 5 * 1 * 64  s_remain_cov: e * 5 * 64 * 64
+            kl_dis2 = self._calc_kl_dist_batch(
+                query_mean, query_cov, s_remain_mean, s_remain_cov
+            )  # e * 75 * 5
+            kl_dis = kl_dis + kl_dis2
 
         return kl_dis
 
     def forward(self, query_feat, support_feat):
-        return self._cal_adm_sim(query_feat,support_feat)
+        return self._cal_adm_sim(query_feat, support_feat)
 
 
 class ADM_KL(MetricModel):
-    def __init__(self, way_num, shot_num, query_num, emb_func, device, n_k=3, CMS=False):
+    def __init__(
+        self, way_num, shot_num, query_num, emb_func, device, n_k=3, CMS=False
+    ):
         super(ADM_KL, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.n_k = n_k
         self.klLayer = KLLayer(way_num, shot_num, query_num, n_k, device, CMS)
         self.loss_func = nn.CrossEntropyLoss()
 
-    def set_forward(self, batch, ):
+    def set_forward(self, batch):
         """
 
         :param batch:
@@ -148,11 +169,17 @@ class ADM_KL(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=2
+        )
 
-        output = self.klLayer(query_feat, support_feat).view(episode_size * self.way_num * self.query_num, -1)
+        output = self.kl_layer(query_feat, support_feat).view(
+            episode_size * self.way_num * self.query_num, -1
+        )
         acc = accuracy(output, query_target)
         return output, acc
 
@@ -164,11 +191,17 @@ class ADM_KL(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=2
+        )
         # assume here we will get n_dim=5
-        output = self.klLayer(query_feat, support_feat).view(episode_size * self.way_num * self.query_num, -1)
+        output = self.kl_layer(query_feat, support_feat).view(
+            episode_size * self.way_num * self.query_num, -1
+        )
         loss = self.loss_func(output, query_target)
         acc = accuracy(output, query_target)
         return output, acc, loss

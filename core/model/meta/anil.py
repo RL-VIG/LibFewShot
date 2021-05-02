@@ -24,20 +24,34 @@ class ANILLayer(nn.Module):
 
 
 class ANIL(MetaModel):
-    def __init__(self, way_num, shot_num, query_num, emb_func, device, inner_para, feat_dim, hid_dim):
+    def __init__(
+        self,
+        way_num,
+        shot_num,
+        query_num,
+        emb_func,
+        device,
+        inner_para,
+        feat_dim,
+        hid_dim,
+    ):
         super(ANIL, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.feat_dim = feat_dim
         self.loss_func = nn.CrossEntropyLoss()
-        self.classifier = ANILLayer(feat_dim=feat_dim, hid_dim=hid_dim, way_num=way_num)
+        self.classifier = ANILLayer(
+            feat_dim=feat_dim, hid_dim=hid_dim, way_num=way_num
+        )
         self.inner_para = inner_para
         self._init_network()
 
-    def set_forward(self, batch, ):
+    def set_forward(self, batch):
         image, global_target = batch
         image = image.to(self.device)
 
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=1
+        )
         episode_size = support_feat.size(0)
 
         output_list = []
@@ -50,12 +64,14 @@ class ANIL(MetaModel):
         acc = accuracy(output.squeeze(), query_target.contiguous().reshape(-1))
         return output, acc
 
-    def set_forward_loss(self, batch, ):
+    def set_forward_loss(self, batch):
         image, global_target = batch
         image = image.to(self.device)
 
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=1
+        )
         episode_size = support_feat.size(0)
 
         output_list = []
@@ -76,7 +92,7 @@ class ANIL(MetaModel):
         return self.set_forward_adaptation(support_feat, support_target)
 
     def set_forward_adaptation(self, support_feat, support_target):
-        lr = self.inner_para['lr']
+        lr = self.inner_para["lr"]
         fast_parameters = list(self.classifier.parameters())
         for parameter in self.classifier.parameters():
             parameter.fast = None
@@ -84,7 +100,7 @@ class ANIL(MetaModel):
         self.emb_func.train()
         self.classifier.train()
 
-        for i in range(self.inner_para['iter']):
+        for i in range(self.inner_para["iter"]):
             output = self.classifier(support_feat)
             loss = self.loss_func(output, support_target)
             grad = torch.autograd.grad(loss, fast_parameters, create_graph=True)
@@ -94,5 +110,5 @@ class ANIL(MetaModel):
                 if weight.fast is None:
                     weight.fast = weight - lr * grad[k]
                 else:
-                    weight.fast = weight.fast - self.inner_para['lr'] * grad[k]
+                    weight.fast = weight.fast - self.inner_para["lr"] * grad[k]
                 fast_parameters.append(weight.fast)

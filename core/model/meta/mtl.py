@@ -6,9 +6,11 @@ import copy
 from core.model.abstract_model import AbstractModel
 from core.utils import accuracy
 from .meta_model import MetaModel
+
 # adapted from https://github.com/yaoyao-liu/meta-transfer-learning
 class MTLBaseLearner(nn.Module):
     """The class for inner loop."""
+
     def __init__(self, ways, z_dim):
         super().__init__()
         self.ways = ways
@@ -31,9 +33,19 @@ class MTLBaseLearner(nn.Module):
     def parameters(self):
         return self.vars
 
+
 class MTL(MetaModel):
-    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim,
-                 num_classes, inner_para):
+    def __init__(
+        self,
+        way_num,
+        shot_num,
+        query_num,
+        emb_func,
+        device,
+        feat_dim,
+        num_classes,
+        inner_para,
+    ):
         super(MTL, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.feat_dim = feat_dim
         self.num_classes = num_classes
@@ -43,10 +55,10 @@ class MTL(MetaModel):
 
         self.loss_func = nn.CrossEntropyLoss()
 
-    def set_forward(self, batch, ):
-        '''
+    def set_forward(self, batch):
+        """
         meta-validation
-        '''
+        """
         image, global_target = batch
         image = image.to(self.device)
         global_target = global_target.to(self.device)
@@ -54,7 +66,9 @@ class MTL(MetaModel):
         with torch.no_grad():
             feat = self.emb_func(image)
 
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=4)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=4
+        )
 
         classifier, base_learner_weight = self.train_loop(support_feat, support_target)
 
@@ -64,22 +78,24 @@ class MTL(MetaModel):
 
         return output, acc
 
-    def set_forward_loss(self, batch, ):
-        '''
+    def set_forward_loss(self, batch):
+        """
         meta-train
-        '''
+        """
         image, global_target = batch
         image = image.to(self.device)
         global_target = global_target.to(self.device)
 
         feat = self.emb_func(image)
 
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=4)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=4
+        )
 
         classifier, base_learner_weight = self.train_loop(support_feat, support_target)
 
         output = classifier(query_feat, base_learner_weight)
-        loss = self.loss_func(output,query_target)
+        loss = self.loss_func(output, query_target)
         acc = accuracy(output, query_target)
 
         return output, acc, loss
@@ -95,12 +111,16 @@ class MTL(MetaModel):
         logit = self.base_learner(support_feat)
         loss = self.loss_func(logit, support_target)
         grad = torch.autograd.grad(loss, self.base_learner.parameters())
-        fast_parameters = list(map(lambda p: p[1] - 0.01 * p[0], zip(grad, self.base_learner.parameters())))
+        fast_parameters = list(
+            map(lambda p: p[1] - 0.01 * p[0], zip(grad, self.base_learner.parameters()))
+        )
 
-        for _ in range(1, self.inner_para['iter']):
+        for _ in range(1, self.inner_para["iter"]):
             logit = self.base_learner(support_feat, fast_parameters)
             loss = F.cross_entropy(logit, support_target)
             grad = torch.autograd.grad(loss, fast_parameters)
-            fast_parameters = list(map(lambda p: p[1] - 0.01 * p[0], zip(grad, fast_parameters)))
+            fast_parameters = list(
+                map(lambda p: p[1] - 0.01 * p[0], zip(grad, fast_parameters))
+            )
 
         return classifier, fast_parameters

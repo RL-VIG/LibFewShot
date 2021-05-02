@@ -22,17 +22,20 @@ class Conv32F(nn.Module):
             nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(32),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2), )
+            nn.MaxPool2d(kernel_size=2, stride=2),
+        )
         self.layer2 = nn.Sequential(
             nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(32),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2), )
+            nn.MaxPool2d(kernel_size=2, stride=2),
+        )
         self.layer3 = nn.Sequential(
             nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(32),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2), )
+            nn.MaxPool2d(kernel_size=2, stride=2),
+        )
         self.layer4 = nn.Sequential(
             nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(32),
@@ -75,20 +78,24 @@ class Conv32FLeakyReLU(nn.Module):
             nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(32),
             nn.LeakyReLU(0.2, True),
-            nn.MaxPool2d(kernel_size=2, stride=2), )
+            nn.MaxPool2d(kernel_size=2, stride=2),
+        )
         self.layer2 = nn.Sequential(
             nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(32),
             nn.LeakyReLU(0.2, True),
-            nn.MaxPool2d(kernel_size=2, stride=2), )
+            nn.MaxPool2d(kernel_size=2, stride=2),
+        )
         self.layer3 = nn.Sequential(
             nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(32),
-            nn.LeakyReLU(0.2, True), )
+            nn.LeakyReLU(0.2, True),
+        )
         self.layer4 = nn.Sequential(
             nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(32),
-            nn.LeakyReLU(0.2, True), )
+            nn.LeakyReLU(0.2, True),
+        )
 
     def forward(self, x):
         out1 = self.layer1(x)
@@ -120,20 +127,24 @@ class Conv32FReLU(nn.Module):
             nn.Conv2d(3, 32, kernel_size=3, padding=1),
             nn.BatchNorm2d(32, momentum=1, affine=True),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(2))
+            nn.MaxPool2d(2),
+        )
         self.layer2 = nn.Sequential(
             nn.Conv2d(32, 32, kernel_size=3, padding=1),
             nn.BatchNorm2d(32, momentum=1, affine=True),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(2))
+            nn.MaxPool2d(2),
+        )
         self.layer3 = nn.Sequential(
             nn.Conv2d(32, 32, kernel_size=3, padding=1),
             nn.BatchNorm2d(32, momentum=1, affine=True),
-            nn.ReLU(inplace=True))
+            nn.ReLU(inplace=True),
+        )
         self.layer4 = nn.Sequential(
             nn.Conv2d(32, 32, kernel_size=3, padding=1),
             nn.BatchNorm2d(32, momentum=1, affine=True),
-            nn.ReLU(inplace=True))
+            nn.ReLU(inplace=True),
+        )
 
     def forward(self, x):
         out1 = self.layer1(x)

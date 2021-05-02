@@ -10,12 +10,13 @@ from .resnet_12_mtl import resnet12mtlori
 from .resnet_18_mtl import resnet18mtlori
 from .conv_64f_mtl import Conv64FMTL
 
+
 def get_backbone(config):
     kwargs = dict()
-    kwargs.update(config['backbone']['kwargs'])
+    kwargs.update(config["backbone"]["kwargs"])
     try:
-        emb_func = eval(config['backbone']['name'])(**kwargs)
+        emb_func = eval(config["backbone"]["name"])(**kwargs)
     except NameError:
-        raise("{} is not implemented".format(config['backbone']['name']))
+        raise ("{} is not implemented".format(config["backbone"]["name"]))
 
     return emb_func

@@ -22,17 +22,20 @@ class Conv64F(nn.Module):
             nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2), )
+            nn.MaxPool2d(kernel_size=2, stride=2),
+        )
         self.layer2 = nn.Sequential(
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2), )
+            nn.MaxPool2d(kernel_size=2, stride=2),
+        )
         self.layer3 = nn.Sequential(
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2), )
+            nn.MaxPool2d(kernel_size=2, stride=2),
+        )
         self.layer4 = nn.Sequential(
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(64),
@@ -51,7 +54,6 @@ class Conv64F(nn.Module):
 
         if self.is_feature:
             return out1, out2, out3, out4
-
 
         return out4
 
@@ -76,20 +78,24 @@ class Conv64FLeakyReLU(nn.Module):
             nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(64),
             nn.LeakyReLU(0.2, True),
-            nn.MaxPool2d(kernel_size=2, stride=2), )
+            nn.MaxPool2d(kernel_size=2, stride=2),
+        )
         self.layer2 = nn.Sequential(
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(64),
             nn.LeakyReLU(0.2, True),
-            nn.MaxPool2d(kernel_size=2, stride=2), )
+            nn.MaxPool2d(kernel_size=2, stride=2),
+        )
         self.layer3 = nn.Sequential(
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(64),
-            nn.LeakyReLU(0.2, True), )
+            nn.LeakyReLU(0.2, True),
+        )
         self.layer4 = nn.Sequential(
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(64),
-            nn.LeakyReLU(0.2, True), )
+            nn.LeakyReLU(0.2, True),
+        )
 
     def forward(self, x):
         out1 = self.layer1(x)
@@ -121,20 +127,24 @@ class Conv64FReLU(nn.Module):
             nn.Conv2d(3, 64, kernel_size=3, padding=1),
             nn.BatchNorm2d(64, momentum=1, affine=True),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(2))
+            nn.MaxPool2d(2),
+        )
         self.layer2 = nn.Sequential(
             nn.Conv2d(64, 64, kernel_size=3, padding=1),
             nn.BatchNorm2d(64, momentum=1, affine=True),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(2))
+            nn.MaxPool2d(2),
+        )
         self.layer3 = nn.Sequential(
             nn.Conv2d(64, 64, kernel_size=3, padding=1),
             nn.BatchNorm2d(64, momentum=1, affine=True),
-            nn.ReLU(inplace=True))
+            nn.ReLU(inplace=True),
+        )
         self.layer4 = nn.Sequential(
             nn.Conv2d(64, 64, kernel_size=3, padding=1),
             nn.BatchNorm2d(64, momentum=1, affine=True),
-            nn.ReLU(inplace=True))
+            nn.ReLU(inplace=True),
+        )
 
     def forward(self, x):
         out1 = self.layer1(x)
@@ -151,11 +161,13 @@ class Conv64FReLU(nn.Module):
         return out4
 
 
-def R2D2_conv_block(in_channels, out_channels, retain_activation=True, keep_prob=1.0, pool_stride=2):
+def R2D2_conv_block(
+    in_channels, out_channels, retain_activation=True, keep_prob=1.0, pool_stride=2
+):
     block = nn.Sequential(
         nn.Conv2d(in_channels, out_channels, 3, padding=1),
         nn.BatchNorm2d(out_channels),
-        nn.MaxPool2d(2, stride=pool_stride)
+        nn.MaxPool2d(2, stride=pool_stride),
     )
     if retain_activation:
         block.add_module("LeakyReLU", nn.LeakyReLU(0.1))
@@ -167,11 +179,19 @@ def R2D2_conv_block(in_channels, out_channels, retain_activation=True, keep_prob
 
 
 class R2D2Embedding(nn.Module):
-    '''
+    """
     https://github.com/kjunelee/MetaOptNet/blob/master/models/R2D2_embedding.py
-    '''
-    def __init__(self, x_dim=3, h1_dim=96, h2_dim=192, h3_dim=384, z_dim=512,
-                 retain_last_activation=False):
+    """
+
+    def __init__(
+        self,
+        x_dim=3,
+        h1_dim=96,
+        h2_dim=192,
+        h3_dim=384,
+        z_dim=512,
+        retain_last_activation=False,
+    ):
         super(R2D2Embedding, self).__init__()
 
         self.block1 = R2D2_conv_block(x_dim, h1_dim)
@@ -182,8 +202,13 @@ class R2D2Embedding(nn.Module):
         # With this trick, the accuracy goes up from 50% to 51%.
         # Although the authors of R2D2 did not mention this trick in the paper,
         # we were unable to reproduce the result of Bertinetto et al. without resorting to this trick.
-        self.block4 = R2D2_conv_block(h3_dim, z_dim, retain_activation=retain_last_activation, keep_prob=0.9,
-                                      pool_stride=1)
+        self.block4 = R2D2_conv_block(
+            h3_dim,
+            z_dim,
+            retain_activation=retain_last_activation,
+            keep_prob=0.9,
+            pool_stride=1,
+        )
 
     def forward(self, x):
         b1 = self.block1(x)

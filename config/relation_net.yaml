@@ -67,4 +67,3 @@ parallel_part:
   - relation_layer
 seed: 0
 deterministic: False
-
