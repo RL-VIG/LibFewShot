@@ -46,7 +46,7 @@ classifier:
     hid_dim: 64
     kl_weight: 1e-3
     encoder_penalty_weight: 1e-9
-    orthogonality_penalty_weight: 1e-3https://github.com/kjunelee/MetaOptNet/blob/master/models/R2D2_embedding.py
+    orthogonality_penalty_weight: 1e-3
 
 # optimizer info
 optimizer:
