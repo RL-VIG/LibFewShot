@@ -50,17 +50,16 @@ class RelationNet(MetricModel):
         :param batch:
         :return:
         """
-        images, global_targets = batch
-        images = images.to(self.device)
+        image, global_target = batch
+        image = image.to(self.device)
 
-        feat = self.emb_func(images)
-        support_feat, query_feat, support_targets, query_targets \
-            = self.split_by_episode(feat, mode=2)
+        feat = self.emb_func(image)
+        support_feat, query_feat, support_target, query_target  = self.split_by_episode(feat, mode=2)
 
         relation_pairs = self._calc_pairs(query_feat, support_feat)
         output = self.relation_layer(relation_pairs).view(-1, self.way_num)
 
-        prec1, _ = accuracy(output, query_targets, topk=(1, 3))
+        prec1, _ = accuracy(output, query_target, topk=(1, 3))
         return output, prec1
 
     def set_forward_loss(self, batch):
@@ -69,18 +68,17 @@ class RelationNet(MetricModel):
         :param batch:
         :return:
         """
-        images, global_targets = batch
-        images = images.to(self.device)
+        image, global_target = batch
+        image = image.to(self.device)
 
-        feat = self.emb_func(images)
-        support_feat, query_feat, support_targets, query_targets \
-            = self.split_by_episode(feat, mode=2)
+        feat = self.emb_func(image)
+        support_feat, query_feat, support_target, query_target   = self.split_by_episode(feat, mode=2)
 
         relation_pairs = self._calc_pairs(query_feat, support_feat)
         output = self.relation_layer(relation_pairs).view(-1, self.way_num)
 
-        loss = self.loss_func(output, query_targets)
-        prec1, _ = accuracy(output, query_targets, topk=(1, 3))
+        loss = self.loss_func(output, query_target)
+        prec1, _ = accuracy(output, query_target, topk=(1, 3))
         return output, prec1, loss
 
     def _calc_pairs(self, query_feat, support_feat):

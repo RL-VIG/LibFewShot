@@ -28,8 +28,8 @@ class VERSA_HEAD(nn.Module):
         self.sample_num = sample_num
         self.loss_func = nn.CrossEntropyLoss(reduction='none')
 
-    def forward(self, query_feat, query_targets, weight_mean, weight_logvar, bias_mean, bias_logvar):
-        query_targets = query_targets.contiguous().reshape(-1)
+    def forward(self, query_feat, query_target, weight_mean, weight_logvar, bias_mean, bias_logvar):
+        query_target = query_target.contiguous().reshape(-1)
         episode_size = query_feat.size(0)
         logits_mean_query = torch.matmul(query_feat, weight_mean) + bias_mean
         logits_log_var_query = torch.log(
@@ -37,7 +37,7 @@ class VERSA_HEAD(nn.Module):
         logits_sample_query = self.sample_normal(logits_mean_query, logits_log_var_query,
                                                  self.sample_num).contiguous().reshape(-1, self.way_num)
 
-        query_label_tiled = query_targets.repeat(self.sample_num)
+        query_label_tiled = query_target.repeat(self.sample_num)
         loss = -self.loss_func(logits_sample_query, query_label_tiled)
         # FIXME nan
         loss = loss.contiguous().reshape(episode_size, self.sample_num, -1).permute([1, 0, 2]).contiguous().reshape(
@@ -70,13 +70,13 @@ class VERSA(MetaModel):
         self.head = VERSA_HEAD(way_num, sample_num)
 
     def set_forward(self, batch, ):
-        images, global_targets = batch
-        images = images.to(self.device)
+        image, global_target = batch
+        image = image.to(self.device)
 
-        feat = self.emb_func(images)
-        support_feat, query_feat, support_targets, query_targets = self.split_by_episode(feat, mode=1)
-        episode_size = support_targets.size(0)
-        query_targets = query_targets.contiguous().reshape(episode_size, -1)
+        feat = self.emb_func(image)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        episode_size = support_target.size(0)
+        query_target = query_target.contiguous().reshape(episode_size, -1)
 
         class_feat = torch.mean(support_feat.contiguous().reshape(episode_size, self.way_num, self.shot_num, -1),
                                 dim=2, keepdim=False)
@@ -86,19 +86,19 @@ class VERSA(MetaModel):
         bias_means = self.bias_means(class_feat).permute((0, 2, 1))
         bias_logvars = self.bias_logvars(class_feat).permute((0, 2, 1))
 
-        averaged_predictions, _ = self.head(query_feat, query_targets, weight_means, weight_logvars,
+        averaged_predictions, _ = self.head(query_feat, query_target, weight_means, weight_logvars,
                                             bias_means, bias_logvars)
-        prec1, _ = accuracy(averaged_predictions, query_targets.reshape(-1), topk=(1, 3))
+        prec1, _ = accuracy(averaged_predictions, query_target.reshape(-1), topk=(1, 3))
         return averaged_predictions, prec1
 
     def set_forward_loss(self, batch, ):
-        images, global_targets= batch
-        images = images.to(self.device)
+        image, global_target= batch
+        image = image.to(self.device)
 
-        feat = self.emb_func(images)
-        support_feat, query_feat, support_targets, query_targets = self.split_by_episode(feat, mode=1)
-        episode_size = support_targets.size(0)
-        query_targets = query_targets.contiguous().reshape(episode_size, -1)
+        feat = self.emb_func(image)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        episode_size = support_target.size(0)
+        query_target = query_target.contiguous().reshape(episode_size, -1)
 
         class_feat = torch.mean(support_feat.contiguous().reshape(episode_size, self.way_num, self.shot_num, -1),
                                 dim=2, keepdim=False)
@@ -108,9 +108,9 @@ class VERSA(MetaModel):
         bias_means = self.bias_means(class_feat).permute((0, 2, 1))
         bias_logvars = self.bias_logvars(class_feat).permute((0, 2, 1))
 
-        averaged_predictions, task_score = self.head(query_feat, query_targets, weight_means, weight_logvars,
+        averaged_predictions, task_score = self.head(query_feat, query_target, weight_means, weight_logvars,
                                                      bias_means, bias_logvars)
-        prec1, _ = accuracy(averaged_predictions, query_targets.reshape(-1), topk=(1, 3))
+        prec1, _ = accuracy(averaged_predictions, query_target.reshape(-1), topk=(1, 3))
         loss = -torch.mean(task_score, dim=0)
         return averaged_predictions, prec1, loss
 

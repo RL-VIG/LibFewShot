@@ -67,17 +67,17 @@ class BaselinePlus(PretrainModel):
         :param batch:
         :return:
         """
-        images, global_targets = batch
-        images = images.to(self.device)
+        image, global_target = batch
+        image = image.to(self.device)
         with torch.no_grad():
-            emb = self.emb_func(images)
+            feat = self.emb_func(image)
 
-        support_feat, query_feat, support_targets, query_targets = self.split_by_episode(emb,mode=4)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat,mode=4)
 
-        classifier = self.test_loop(support_feat, support_targets)
+        classifier = self.test_loop(support_feat, support_target)
 
         output = classifier(query_feat)
-        prec1, _ = accuracy(output, query_targets, topk=(1, 3))
+        prec1, _ = accuracy(output, query_target, topk=(1, 3))
 
         return output, prec1
 
@@ -87,20 +87,20 @@ class BaselinePlus(PretrainModel):
         :param batch:
         :return:
         """
-        images, targets = batch
-        images = images.to(self.device)
-        targets = targets.to(self.device)
+        image, target = batch
+        image = image.to(self.device)
+        target = target.to(self.device)
 
-        feat = self.emb_func(images)
+        feat = self.emb_func(image)
         output = self.classifier(feat)
-        loss = self.loss_func(output, targets)
-        prec1, _ = accuracy(output, targets, topk=(1, 3))
+        loss = self.loss_func(output, target)
+        prec1, _ = accuracy(output, target, topk=(1, 3))
         return output, prec1, loss
 
-    def test_loop(self, support_feat, support_targets):
-        return self.set_forward_adaptation(support_feat, support_targets)
+    def test_loop(self, support_feat, support_target):
+        return self.set_forward_adaptation(support_feat, support_target)
 
-    def set_forward_adaptation(self, support_feat, support_targets):
+    def set_forward_adaptation(self, support_feat, support_target):
         classifier = DistLinear(self.feat_dim, self.way_num)
         optimizer = self.sub_optimizer(classifier, self.inner_optim)
 
@@ -113,7 +113,7 @@ class BaselinePlus(PretrainModel):
             for i in range(0, support_size, self.inner_batch_size):
                 select_id = rand_id[i:min(i + self.inner_batch_size, support_size)]
                 batch = support_feat[select_id]
-                target = support_targets[select_id]
+                target = support_target[select_id]
 
                 output = classifier(batch)
 

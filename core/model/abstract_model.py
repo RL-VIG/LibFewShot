@@ -62,8 +62,8 @@ class AbstractModel(nn.Module):
                                                                                    self.way_num * self.shot_num, -1)
             query_features = features[:, :, self.shot_num:, :].contiguous().view(episode_size,
                                                                                  self.way_num * self.query_num, -1)
-            support_targets = local_labels[:, :, :self.shot_num].contiguous().view(episode_size, -1)
-            query_targets = local_labels[:, :, self.shot_num:].contiguous().view(episode_size, -1)
+            support_target = local_labels[:, :, :self.shot_num].contiguous().view(episode_size, -1)
+            query_target = local_labels[:, :, self.shot_num:].contiguous().view(episode_size, -1)
         elif mode == 2:  # input 4D, return 5D(with episode) E.g.DN4
             b, c, h, w = features.shape
             features = features.contiguous().view(episode_size, self.way_num, self.shot_num + self.query_num, c, h, w)
@@ -73,8 +73,8 @@ class AbstractModel(nn.Module):
             query_features = features[:, :, self.shot_num:, :, ...].contiguous().view(episode_size,
                                                                                       self.way_num * self.query_num, c,
                                                                                       h, w)
-            support_targets = local_labels[:, :, :self.shot_num].contiguous().view(episode_size, -1)
-            query_targets = local_labels[:, :, self.shot_num:].contiguous().view(-1)
+            support_target = local_labels[:, :, :self.shot_num].contiguous().view(episode_size, -1)
+            query_target = local_labels[:, :, self.shot_num:].contiguous().view(-1)
         elif mode == 3:  # input 4D, return 4D(w/o episode) E.g.realationnet FIXME: 暂时用来处理还没有实现multi-task的方法
             b, c, h, w = features.shape
             features = features.contiguous().view(self.way_num, self.shot_num + self.query_num, c, h, w)
@@ -82,18 +82,18 @@ class AbstractModel(nn.Module):
                                                                                      h, w)
             query_features = features[:, self.shot_num:, :, ...].contiguous().view(self.way_num * self.query_num, c,
                                                                                    h, w)
-            support_targets = local_labels[:, :, :self.shot_num].contiguous().view(-1)
-            query_targets = local_labels[:, :, self.shot_num:].contiguous().view(-1)
+            support_target = local_labels[:, :, :self.shot_num].contiguous().view(-1)
+            query_target = local_labels[:, :, self.shot_num:].contiguous().view(-1)
         elif mode == 4:  # pretrain baseline input 2D, return 2D(w/o episode) E.g.baseline set_forward FIXME: 暂时用来处理还没有实现multi-task的方法
             features = features.view(self.way_num, self.shot_num + self.query_num, -1)
             support_features = features[:, :self.shot_num, :].contiguous().view(self.way_num * self.shot_num, -1)
             query_features = features[:, self.shot_num:, :].contiguous().view(self.way_num * self.query_num, -1)
-            support_targets = local_labels[:, :, :self.shot_num].contiguous().view(-1)
-            query_targets = local_labels[:, :, self.shot_num:].contiguous().view(-1)
+            support_target = local_labels[:, :, :self.shot_num].contiguous().view(-1)
+            query_target = local_labels[:, :, self.shot_num:].contiguous().view(-1)
         else:
             raise Exception("mode should in [1,2,3,4], not {}".format(mode))
 
-        return support_features, query_features, support_targets, query_targets
+        return support_features, query_features, support_target, query_target
 
     # def progress_batch(self, batch, ):
     #     images, _ = batch
@@ -110,14 +110,14 @@ class AbstractModel(nn.Module):
     #
     #     support_images = images[:, :self.shot_num, :, :, :].contiguous() \
     #         .view(self.way_num * self.shot_num, c, h, w).to(self.device)
-    #     support_targets = local_targets[:, :self.shot_num].contiguous() \
+    #     support_target = local_targets[:, :self.shot_num].contiguous() \
     #         .view(self.way_num * self.shot_num).to(self.device)
     #     query_images = images[:, self.shot_num:, :, :, :].contiguous() \
     #         .view(self.way_num * self.query_num, c, h, w).to(self.device)
-    #     query_targets = local_targets[:, self.shot_num:].contiguous() \
+    #     query_target = local_targets[:, self.shot_num:].contiguous() \
     #         .view(self.way_num * self.query_num).to(self.device)
     #
-    #     return support_images, support_targets, query_images, query_targets
+    #     return support_images, support_target, query_images, query_target
     #
     # def progress_batch2(self, batch, ):
     #     images, _ = batch

@@ -110,42 +110,42 @@ class R2D2(MetaModel):
         # self.inner_train_iter = inner_train_iter
 
     def set_forward(self, batch, ):
-        images, global_targets = batch
-        images = images.to(self.device)
+        image, global_target = batch
+        image = image.to(self.device)
 
-        emb = self.emb_func(images)
-        emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb, mode=1)
-        output, W = self.classifier(emb_query, emb_support, support_targets)
+        feat = self.emb_func(image)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        output, W = self.classifier(query_feat, support_feat, support_target)
 
-        # self.train_loop(emb_support, support_targets, W)
+        # self.train_loop(support_feat, support_target, W)
         # output = self.alpha * output + self.beta
 
         output = output.contiguous().view(-1, self.way_num)
-        prec1, _ = accuracy(output.squeeze(), query_targets.contiguous().reshape(-1), topk=(1, 3))
+        prec1, _ = accuracy(output.squeeze(), query_target.contiguous().reshape(-1), topk=(1, 3))
         return output, prec1
 
     def set_forward_loss(self, batch, ):
-        images, global_targets = batch
-        images = images.to(self.device)
+        image, global_target = batch
+        image = image.to(self.device)
 
-        emb = self.emb_func(images)
-        emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb, mode=1)
-        output, W = self.classifier(emb_query, emb_support, support_targets)
+        feat = self.emb_func(image)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        output, W = self.classifier(query_feat, support_feat, support_target)
 
-        # self.train_loop(emb_support, support_targets, W)
+        # self.train_loop(support_feat, support_target, W)
         # output = self.alpha * output + self.beta
 
         output = output.contiguous().view(-1, self.way_num)
-        loss = self.loss_func(output, query_targets.contiguous().reshape(-1))
-        prec1, _ = accuracy(output.squeeze(), query_targets.contiguous().reshape(-1), topk=(1, 3))
+        loss = self.loss_func(output, query_target.contiguous().reshape(-1))
+        prec1, _ = accuracy(output.squeeze(), query_target.contiguous().reshape(-1), topk=(1, 3))
         return output, prec1, loss
 
-    def train_loop(self, emb_support, support_targets, W):
+    def train_loop(self, emb_support, support_target, W):
         # optimizer = self.sub_optimizer([{"params": self.alpha}, {"params": self.beta}], self.inner_optim)
         # for i in range(self.inner_train_iter):
         #     predict = torch.bmm(emb_support, W).contiguous().view(-1, self.way_num).detach()
         #     predict = self.alpha * predict + self.beta
-        #     loss = self.loss_func(predict, support_targets.contiguous().view(-1))
+        #     loss = self.loss_func(predict, support_target.contiguous().view(-1))
         #
         #     optimizer.zero_grad()
         #     loss.backward()

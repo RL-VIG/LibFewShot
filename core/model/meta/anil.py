@@ -48,7 +48,7 @@ class Classifier(nn.Module):
     def set_loss(self, loss_func):
         self.loss_func = loss_func
 
-    def forward(self, query_feat, support_feat, support_targets):
+    def forward(self, query_feat, support_feat, support_target):
         assert (query_feat.size(0) == support_feat.size(0))
         episode_size = query_feat.size(0)
         output_list = []
@@ -58,11 +58,11 @@ class Classifier(nn.Module):
             net.train()
             episode_support_feat = support_feat[episode, :].detach()
             episode_query_feat = query_feat[episode, :]
-            episode_support_targets = support_targets[episode, :]
+            episode_support_target = support_target[episode, :]
             for i in range(self.inner_train_iter):
                 output = net(episode_support_feat)
 
-                loss = self.loss_func(output, episode_support_targets)
+                loss = self.loss_func(output, episode_support_target)
 
                 optimizer.zero_grad()
                 loss.backward()
@@ -90,43 +90,43 @@ class ANIL(MetaModel):
         # self.classifier.set_loss(self.loss_func)
 
     def set_forward(self, batch, ):
-        images, global_targets = batch
-        images = images.to(self.device)
+        image, global_target = batch
+        image = image.to(self.device)
 
-        emb = self.emb_func(images)
-        emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb, mode=1)
-        episode_size = emb_support.size(0)
+        feat = self.emb_func(image)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        episode_size = support_feat.size(0)
 
         output_list = []
         for i in range(episode_size):
-            self.train_loop(emb_support[i], support_targets[i])
-            output = self.classifier(emb_query[i])
+            self.train_loop(support_feat[i], support_target[i])
+            output = self.classifier(query_feat[i])
             output_list.append(output)
 
         output = torch.cat(output_list, dim=0)
-        prec1, _ = accuracy(output.squeeze(), query_targets.contiguous().reshape(-1), topk=(1, 3))
+        prec1, _ = accuracy(output.squeeze(), query_target.contiguous().reshape(-1), topk=(1, 3))
         return output, prec1
 
     def set_forward_loss(self, batch, ):
-        images, global_targets = batch
-        images = images.to(self.device)
+        image, global_target = batch
+        image = image.to(self.device)
 
-        emb = self.emb_func(images)
-        emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb, mode=1)
-        episode_size = emb_support.size(0)
+        feat = self.emb_func(image)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        episode_size = support_feat.size(0)
 
         output_list = []
         for i in range(episode_size):
-            self.train_loop(emb_support[i], support_targets[i])
-            output = self.classifier(emb_query[i])
+            self.train_loop(support_feat[i], support_target[i])
+            output = self.classifier(query_feat[i])
             output_list.append(output)
 
         output = torch.cat(output_list, dim=0)
-        loss = self.loss_func(output, query_targets.contiguous().reshape(-1))
-        prec1, _ = accuracy(output.squeeze(), query_targets.contiguous().reshape(-1), topk=(1, 3))
+        loss = self.loss_func(output, query_target.contiguous().reshape(-1))
+        prec1, _ = accuracy(output.squeeze(), query_target.contiguous().reshape(-1), topk=(1, 3))
         return output, prec1, loss
 
-    def train_loop(self, support_feat, support_targets):
+    def train_loop(self, support_feat, support_target):
         lr = self.inner_optim['lr']
         fast_parameters = list(self.classifier.parameters())
         for parameter in self.classifier.parameters():
@@ -137,7 +137,7 @@ class ANIL(MetaModel):
 
         for i in range(self.inner_train_iter):
             output = self.classifier(support_feat)
-            loss = self.loss_func(output, support_targets)
+            loss = self.loss_func(output, support_target)
             grad = torch.autograd.grad(loss, fast_parameters, create_graph=True)
             fast_parameters = []
 

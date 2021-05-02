@@ -51,20 +51,20 @@ class MTLPretrain(PretrainModel): # use image-size=80 in repo
         :param batch:
         :return:
         """
-        images, global_targets = batch
-        images = images.to(self.device)
-        global_targets = global_targets.to(self.device)
+        image, global_target = batch
+        image = image.to(self.device)
+        global_target = global_target.to(self.device)
 
         with torch.no_grad():
-            feat = self.emb_func(images)
+            feat = self.emb_func(image)
 
-        support_feat, query_feat, support_targets, query_targets = self.split_by_episode(feat, mode=4)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=4)
 
-        classifier, fast_weights = self.test_loop(support_feat, support_targets)
+        classifier, fast_weights = self.test_loop(support_feat, support_target)
 
         output = classifier(query_feat,fast_weights)
 
-        prec1, _ = accuracy(output, query_targets, topk=(1, 3))
+        prec1, _ = accuracy(output, query_target, topk=(1, 3))
 
         return output, prec1
 
@@ -74,33 +74,33 @@ class MTLPretrain(PretrainModel): # use image-size=80 in repo
         :param batch:
         :return:
         """
-        images, global_targets = batch
-        images = images.to(self.device)
-        global_targets = global_targets.to(self.device).contiguous()
+        image, global_target = batch
+        image = image.to(self.device)
+        global_target = global_target.to(self.device).contiguous()
 
-        feat = self.emb_func(images)
+        feat = self.emb_func(image)
 
         output = self.pre_fc(feat).contiguous()
 
-        loss = self.loss_func(output, global_targets)
-        prec1, _ = accuracy(output, global_targets, topk=(1, 3))
+        loss = self.loss_func(output, global_target)
+        prec1, _ = accuracy(output, global_target, topk=(1, 3))
         return output, prec1, loss
 
-    def test_loop(self, support_feat, support_targets):
-        return self.set_forward_adaptation(support_feat, support_targets)
+    def test_loop(self, support_feat, support_target):
+        return self.set_forward_adaptation(support_feat, support_target)
 
-    def set_forward_adaptation(self, support_feat, support_targets):
+    def set_forward_adaptation(self, support_feat, support_target):
 
         classifier = self.base_learner.to(self.device)
 
         logits = self.base_learner(support_feat)
-        loss = self.loss_func(logits,support_targets)
+        loss = self.loss_func(logits,support_target)
         grad = torch.autograd.grad(loss, self.base_learner.parameters())
         fast_weights = list(map(lambda p: p[1] - 0.01 * p[0], zip(grad, self.base_learner.parameters())))
 
         for _ in range(1, self.inner_train_iter):
             logits = self.base_learner(support_feat, fast_weights)
-            loss = F.cross_entropy(logits, support_targets)
+            loss = F.cross_entropy(logits, support_target)
             grad = torch.autograd.grad(loss, fast_weights)
             fast_weights = list(map(lambda p: p[1] - 0.01 * p[0], zip(grad, fast_weights)))
 
