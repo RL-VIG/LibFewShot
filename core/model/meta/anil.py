@@ -11,9 +11,9 @@ from ..backbone.maml_backbone import Linear_fw
 
 # FIXME 方法类初始不需要赋值
 
-class ANIL_Layer(nn.Module):
+class ANILLayer(nn.Module):
     def __init__(self, feat_dim, hid_dim, way_num):
-        super(ANIL_Layer, self).__init__()
+        super(ANILLayer, self).__init__()
         self.layers = nn.Sequential(
             # nn.Linear(feat_dim, hid_dim)
             Linear_fw(feat_dim, way_num)
@@ -28,7 +28,7 @@ class ANIL(MetaModel):
         super(ANIL, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.feat_dim = feat_dim
         self.loss_func = nn.CrossEntropyLoss()
-        self.classifier = ANIL_Layer(feat_dim=feat_dim, hid_dim=hid_dim, way_num=way_num)
+        self.classifier = ANILLayer(feat_dim=feat_dim, hid_dim=hid_dim, way_num=way_num)
         self.inner_para = inner_para
         self._init_network()
 

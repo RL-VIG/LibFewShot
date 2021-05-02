@@ -6,7 +6,7 @@ from core.utils import accuracy
 from .metric_model import MetricModel
 # https://github.com/LegenDong/ATL-Net
 
-class AEA_Module(nn.Module):
+class AEAModule(nn.Module):
     def __init__(self, feat_dim, scale_value, from_value, value_interval):
         super(AEA_Module, self).__init__()
 
@@ -35,10 +35,10 @@ class AEA_Module(nn.Module):
         return attention_mask
 
 
-class ATL_Layer(nn.Module):
+class ATLLayer(nn.Module):
     def __init__(self, way_num, shot_num, query_num, feat_dim,
                  scale_value, atten_scale_value, from_value, value_interval):
-        super(ATL_Layer, self).__init__()
+        super(ATLLayer, self).__init__()
         self.way_num = way_num
         self.shot_num = shot_num
         self.query_num = query_num
@@ -54,7 +54,7 @@ class ATL_Layer(nn.Module):
             nn.LeakyReLU(0.2, inplace=True)
         )
 
-        self.atten_layer = AEA_Module(self.feat_dim, self.atten_scale_value, self.from_value, self.value_interval)
+        self.attenLayer = AEAModule(self.feat_dim, self.atten_scale_value, self.from_value, self.value_interval)
 
     def forward(self, query_feat, support_feat):
         t, wq, c, h, w = query_feat.size()
@@ -71,7 +71,7 @@ class ATL_Layer(nn.Module):
 
         # t, wq, hw, c matmul t, 1, c, wshw -> t, wq, hw, wshw
         f_x = torch.matmul(w_query, w_support)
-        atten_score = self.atten_layer(w_query, f_x)
+        atten_score = self.attenLayer(w_query, f_x)
 
         # t, wq, c, hw -> t, wq, hw, c
         # t, ws, c, hw -> t, c, ws, hw -> t, 1, c, wshw
@@ -98,7 +98,7 @@ class ATLNet(MetricModel):
     def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim, scale_value=30,
                  atten_scale_value=50, from_value=0.5, value_interval=0.3):
         super(ATLNet, self).__init__(way_num, shot_num, query_num, emb_func, device)
-        self.atl_layer = ATL_Layer(way_num, shot_num, query_num, feat_dim, scale_value,
+        self.atlLayer = ATLLayer(way_num, shot_num, query_num, feat_dim, scale_value,
                                   atten_scale_value, from_value, value_interval)
         self.loss_func = nn.CrossEntropyLoss()
 
@@ -114,7 +114,7 @@ class ATLNet(MetricModel):
         feat = self.emb_func(image)
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
 
-        output = self.atl_layer(query_feat, support_feat) \
+        output = self.atlLayer(query_feat, support_feat) \
             .view(episode_size * self.way_num * self.query_num, self.way_num)
         acc = accuracy(output, query_target)
 
@@ -132,7 +132,7 @@ class ATLNet(MetricModel):
         feat = self.emb_func(image)
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
 
-        output = self.atl_layer(query_feat, support_feat) \
+        output = self.atlLayer(query_feat, support_feat) \
             .view(episode_size * self.way_num * self.query_num, self.way_num)
         loss = self.loss_func(output, query_target)
         acc = accuracy(output, query_target)

@@ -110,9 +110,9 @@ class CAM(nn.Module):
         return f1.transpose(1, 2), f2.transpose(1, 2)
 
 
-class CAM_Layer(nn.Module):
+class CAMLayer(nn.Module):
     def __init__(self, scale_cls, iter_num_prob=35.0/75, num_classes=64, feat_dim=512, HW=5):
-        super(CAM_Layer, self).__init__()
+        super(CAMLayer, self).__init__()
         self.scale_cls = scale_cls
         self.cam = CAM(HW)
         self.iter_num_prob = iter_num_prob
@@ -225,7 +225,7 @@ class CAM_Layer(nn.Module):
 class CAN(MetricModel):
     def __init__(self, way_num, shot_num, query_num, emb_func, device, scale_cls, iter_num_prob=35.0/75, num_classes=64, feat_dim=512, HW=5):
         super(CAN, self).__init__(way_num, shot_num, query_num, emb_func, device)
-        self.cam_layer = CAM_Layer(scale_cls, iter_num_prob, num_classes, feat_dim, HW)
+        self.camLayer = CAMLayer(scale_cls, iter_num_prob, num_classes, feat_dim, HW)
         self.loss_func = nn.CrossEntropyLoss()
 
     def set_forward(self, batch, ):
@@ -244,8 +244,8 @@ class CAN(MetricModel):
         support_target_one_hot = support_target_one_hot.view(episode_size, self.way_num*self.shot_num, self.way_num)
         query_target_one_hot = one_hot(query_target.view(episode_size*self.way_num*self.query_num), self.way_num)
         query_target_one_hot = query_target_one_hot.view(episode_size, self.way_num*self.query_num, self.way_num)
-        output = self.cam_layer(support_feat, query_feat, support_target_one_hot, query_target_one_hot)
-        # output = self.cam_layer.val_transductive(support_feat, query_feat, support_target_one_hot, query_target_one_hot)
+        output = self.camLayer(support_feat, query_feat, support_target_one_hot, query_target_one_hot)
+        # output = self.camLayer.val_transductive(support_feat, query_feat, support_target_one_hot, query_target_one_hot)
 
         output = output.view(episode_size * self.way_num*self.query_num, -1)
         acc = accuracy(output, query_target)
@@ -272,7 +272,7 @@ class CAN(MetricModel):
         query_target_one_hot = one_hot(query_target.view(episode_size*self.way_num*self.query_num), self.way_num)
         query_target_one_hot = query_target_one_hot.view(episode_size, self.way_num*self.query_num, self.way_num)
         # [75, 64, 6, 6], [75, 5, 6, 6]
-        output, output = self.cam_layer(support_feat, query_feat, support_target_one_hot, query_target_one_hot)
+        output, output = self.camLayer(support_feat, query_feat, support_target_one_hot, query_target_one_hot)
         loss1 = self.loss_func(output, query_global_targets.contiguous().view(-1))
         loss2 = self.loss_func(output, query_target.view(-1))
         loss = loss1 + 0.5 * loss2

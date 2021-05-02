@@ -6,9 +6,9 @@ from core.utils import accuracy
 from .metric_model import MetricModel
 # https://github.com/WenbinLee/DN4
 
-class DN4_Layer(nn.Module):
+class DN4Layer(nn.Module):
     def __init__(self, way_num, shot_num, query_num, n_k):
-        super(DN4_Layer, self).__init__()
+        super(DN4Layer, self).__init__()
         self.way_num = way_num
         self.shot_num = shot_num
         self.query_num = query_num
@@ -40,7 +40,7 @@ class DN4_Layer(nn.Module):
 class DN4(MetricModel):
     def __init__(self, way_num, shot_num, query_num, emb_func, device, n_k=3):
         super(DN4, self).__init__(way_num, shot_num, query_num, emb_func, device)
-        self.dn4_layer = DN4_Layer(way_num, shot_num, query_num, n_k)
+        self.dn4_layer = DN4Layer(way_num, shot_num, query_num, n_k)
         self.loss_func = nn.CrossEntropyLoss()
 
     def set_forward(self, batch, ):
@@ -73,7 +73,7 @@ class DN4(MetricModel):
         emb = self.emb_func(image)
         support_feat, query_feat, support_target, query_target = self.split_by_episode(emb,mode=2)
 
-        output = self.dn4_layer(query_feat, support_feat) \
+        output = self.dn4Layer(query_feat, support_feat) \
             .view(episode_size * self.way_num * self.query_num, self.way_num)
         loss = self.loss_func(output, query_target)
         acc = accuracy(output, query_target)

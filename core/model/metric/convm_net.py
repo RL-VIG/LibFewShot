@@ -5,14 +5,14 @@ from core.utils import accuracy
 from .metric_model import MetricModel
 # https://github.com/WenbinLee/CovaMNet
 
-class ConvM_Layer(nn.Module):
+class ConvMLayer(nn.Module):
     def __init__(self, way_num, shot_num, query_num, n_local):
-        super(ConvM_Layer, self).__init__()
+        super(ConvMLayer, self).__init__()
         self.way_num = way_num
         self.shot_num = shot_num
         self.query_num = query_num
 
-        self.conv1d_layer = nn.Sequential(
+        self.conv1dLayer = nn.Sequential(
             nn.LeakyReLU(0.2, inplace=True),
             nn.Dropout(),
             nn.Conv1d(in_channels=1, out_channels=1,
@@ -58,7 +58,7 @@ class ConvM_Layer(nn.Module):
         t, wq, c, h, w = query_feat.size()
         support_cov_mat = self._calc_support_cov(support_feat)
         cov_sim = self._calc_similarity(query_feat, support_cov_mat)
-        score = self.conv1d_layer(cov_sim).view(t, wq, self.way_num)
+        score = self.conv1dLayer(cov_sim).view(t, wq, self.way_num)
 
         return score
 
@@ -66,7 +66,7 @@ class ConvM_Layer(nn.Module):
 class ConvMNet(MetricModel):
     def __init__(self, way_num, shot_num, query_num, emb_func, device, n_local=3):
         super(ConvMNet, self).__init__(way_num, shot_num, query_num, emb_func, device)
-        self.convm_layer = ConvM_Layer(way_num, shot_num, query_num, n_local)
+        self.convmLayer = ConvMLayer(way_num, shot_num, query_num, n_local)
         self.loss_func = nn.CrossEntropyLoss()
 
     def set_forward(self, batch, ):
@@ -81,7 +81,7 @@ class ConvMNet(MetricModel):
         feat = self.emb_func(image)
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat,mode=2)
 
-        output = self.convm_layer(query_feat, support_feat) \
+        output = self.convmLayer(query_feat, support_feat) \
             .view(episode_size * self.way_num * self.query_num, self.way_num)
         acc = accuracy(output, query_target)
 
@@ -99,7 +99,7 @@ class ConvMNet(MetricModel):
         feat = self.emb_func(image)
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat,mode=2)
 
-        output = self.convm_layer(query_feat, support_feat) \
+        output = self.convmLayer(query_feat, support_feat) \
             .view(episode_size * self.way_num * self.query_num, self.way_num)
         loss = self.loss_func(output, query_target)
         acc = accuracy(output, query_target)

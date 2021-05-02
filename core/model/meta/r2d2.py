@@ -58,14 +58,14 @@ def one_hot(indices, depth):
     return encoded_indicie
 
 
-class R2D2_Layer(nn.Module):
+class R2D2Layer(nn.Module):
     """
     ICLR 2019: Meta-learning with differentiable closed-form solvers
     https://arxiv.org/abs/1805.08136
     """
 
     def __init__(self, way_num=5, shot_num=5):
-        super(R2D2_Layer, self).__init__()
+        super(R2D2Layer, self).__init__()
         self.way_num = way_num
         self.shot_num = shot_num
         self.register_parameter('alpha', nn.Parameter(torch.tensor([1.])))
@@ -105,7 +105,7 @@ class R2D2(MetaModel):
     def __init__(self, way_num, shot_num, query_num, feature, device):
         super(R2D2, self).__init__(way_num, shot_num, query_num, feature, device)
         self.loss_func = nn.CrossEntropyLoss()
-        self.classifier = R2D2_Layer(self.way_num, self.shot_num)
+        self.classifier = R2D2Layer(self.way_num, self.shot_num)
         self._init_network()
 
     def set_forward(self, batch, ):

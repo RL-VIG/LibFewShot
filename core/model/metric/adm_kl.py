@@ -5,9 +5,9 @@ from core.utils import accuracy
 from .metric_model import MetricModel
 # https://github.com/WenbinLee/ADM
 
-class KL_Layer(nn.Module):
+class KLLayer(nn.Module):
     def __init__(self,way_num, shot_num, query_num,n_k,device,CMS = False):
-        super(KL_Layer, self).__init__()
+        super(KLLayer, self).__init__()
         self.way_num = way_num
         self.shot_num = shot_num
         self.query_num = query_num
@@ -137,7 +137,7 @@ class ADM_KL(MetricModel):
     def __init__(self, way_num, shot_num, query_num, emb_func, device, n_k=3, CMS=False):
         super(ADM_KL, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.n_k = n_k
-        self.kl_layer = KL_Layer(way_num, shot_num, query_num, n_k, device, CMS)
+        self.klLayer = KLLayer(way_num, shot_num, query_num, n_k, device, CMS)
         self.loss_func = nn.CrossEntropyLoss()
 
     def set_forward(self, batch, ):
@@ -152,7 +152,7 @@ class ADM_KL(MetricModel):
         feat = self.emb_func(image)
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
 
-        output = self.kl_layer(query_feat, support_feat).view(episode_size * self.way_num * self.query_num, -1)
+        output = self.klLayer(query_feat, support_feat).view(episode_size * self.way_num * self.query_num, -1)
         acc = accuracy(output, query_target)
         return output, acc
 
@@ -168,7 +168,7 @@ class ADM_KL(MetricModel):
         feat = self.emb_func(image)
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
         # assume here we will get n_dim=5
-        output = self.kl_layer(query_feat, support_feat).view(episode_size * self.way_num * self.query_num, -1)
+        output = self.klLayer(query_feat, support_feat).view(episode_size * self.way_num * self.query_num, -1)
         loss = self.loss_func(output, query_target)
         acc = accuracy(output, query_target)
         return output, acc, loss

@@ -6,16 +6,16 @@ from core.utils import accuracy
 from .metric_model import MetricModel
 # https://github.com/WenbinLee/ADM
 
-class ADM_Layer(nn.Module):
+class ADMLayer(nn.Module):
     def __init__(self,way_num, shot_num, query_num,n_k,device):
-        super(ADM_Layer, self).__init__()
+        super(ADMLayer, self).__init__()
         self.way_num = way_num
         self.shot_num = shot_num
         self.query_num = query_num
         self.n_k= n_k
         self.device = device
-        self.norm_layer = nn.BatchNorm1d(self.way_num * 2, affine=True)
-        self.fc_layer = nn.Conv1d(1, 1, kernel_size=2, stride=1, dilation=5, bias=False)
+        self.normLayer = nn.BatchNorm1d(self.way_num * 2, affine=True)
+        self.fcLayer = nn.Conv1d(1, 1, kernel_size=2, stride=1, dilation=5, bias=False)
 
     def _cal_cov_matrix_batch(self, feat):  # feature: e *  Batch * descriptor_num * 64
         e, _, n_local, c = feat.size()
@@ -118,10 +118,10 @@ class ADM_Layer(nn.Module):
         # Using FC layer to combine two parts ---- The original
         adm_sim_soft = torch.cat((kl_dis, inner_sim), 2)
 
-        adm_sim_soft = torch.cat([self.norm_layer(each_task).unsqueeze(1) for each_task in adm_sim_soft])
+        adm_sim_soft = torch.cat([self.normLayer(each_task).unsqueeze(1) for each_task in adm_sim_soft])
         # e * 75 * 1 * 10
 
-        adm_sim_soft = self.fc_layer(adm_sim_soft).squeeze(1).reshape([e, b, -1])
+        adm_sim_soft = self.fcLayer(adm_sim_soft).squeeze(1).reshape([e, b, -1])
 
         return adm_sim_soft
 
@@ -133,7 +133,7 @@ class ADM(MetricModel):
     def __init__(self, way_num, shot_num, query_num, emb_func, device, n_k=3):
         super(ADM, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.n_k = n_k
-        self.adm_layer = ADM_Layer(way_num, shot_num, query_num,n_k,device)
+        self.admLayer = ADMLayer(way_num, shot_num, query_num,n_k,device)
         self.loss_func = nn.CrossEntropyLoss()
 
     def set_forward(self, batch, ):
@@ -148,7 +148,7 @@ class ADM(MetricModel):
         feat = self.emb_func(image)
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
 
-        output = self.adm_layer(query_feat, support_feat).view(episode_size*self.way_num*self.query_num,-1)
+        output = self.admLayer(query_feat, support_feat).view(episode_size*self.way_num*self.query_num,-1)
         acc = accuracy(output, query_target)
         return output, acc
 
@@ -164,7 +164,7 @@ class ADM(MetricModel):
         feat = self.emb_func(image)
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
         # assume here we will get n_dim=5
-        output = self.adm_layer(query_feat, support_feat).view(episode_size*self.way_num*self.query_num,-1)
+        output = self.admLayer(query_feat, support_feat).view(episode_size*self.way_num*self.query_num,-1)
         loss = self.loss_func(output, query_target)
         acc = accuracy(output, query_target)
         return output, acc, loss
