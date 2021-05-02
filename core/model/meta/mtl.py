@@ -47,9 +47,9 @@ class MTL(MetaModel):
         '''
         meta-validation
         '''
-        images, targets = batch
+        images, global_targets = batch
         images = images.to(self.device)
-        targets = targets.to(self.device)
+        global_targets = global_targets.to(self.device)
 
         with torch.no_grad():
             feat = self.model_func(images)
@@ -68,9 +68,9 @@ class MTL(MetaModel):
         '''
         meta-train
         '''
-        images, targets = batch
+        images, global_targets = batch
         images = images.to(self.device)
-        targets = targets.to(self.device)
+        global_targets = global_targets.to(self.device)
 
         feat = self.model_func(images)
 

@@ -50,7 +50,7 @@ class MAML(MetaModel):
         return out2
 
     def set_forward(self, batch, ):
-        images, _ = batch
+        images, global_targets = batch # unused global_targets
         images = images.to(self.device)
         support_images, query_images, support_targets, query_targets = self.split_by_episode(images, mode=2)
         episode_size, _, c, h, w = support_images.size()
@@ -72,7 +72,7 @@ class MAML(MetaModel):
         return output, prec1
 
     def set_forward_loss(self, batch, ):
-        images, _ = batch
+        images, global_targets = batch # unused global_targets
         images = images.to(self.device)
         support_images, query_images, support_targets, query_targets = self.split_by_episode(images, mode=2)
         episode_size, _, c, h, w = support_images.size()

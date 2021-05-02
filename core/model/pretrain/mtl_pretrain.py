@@ -51,9 +51,9 @@ class MTLPretrain(PretrainModel): # use image-size=80 in repo
         :param batch:
         :return:
         """
-        images, targets = batch
+        images, global_targets = batch
         images = images.to(self.device)
-        targets = targets.to(self.device)
+        global_targets = global_targets.to(self.device)
 
         with torch.no_grad():
             feat = self.model_func(images)
@@ -74,16 +74,16 @@ class MTLPretrain(PretrainModel): # use image-size=80 in repo
         :param batch:
         :return:
         """
-        images, targets = batch
+        images, global_targets = batch
         images = images.to(self.device)
-        targets = targets.to(self.device).contiguous()
+        global_targets = global_targets.to(self.device).contiguous()
 
         feat = self.model_func(images)
 
         output = self.pre_fc(feat).contiguous()
 
-        loss = self.loss_func(output, targets)
-        prec1, _ = accuracy(output, targets, topk=(1, 3))
+        loss = self.loss_func(output, global_targets)
+        prec1, _ = accuracy(output, global_targets, topk=(1, 3))
         return output, prec1, loss
 
     def test_loop(self, support_feat, support_targets):

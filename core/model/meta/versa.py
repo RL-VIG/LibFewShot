@@ -70,7 +70,7 @@ class VERSA(MetaModel):
         self.head = VERSA_HEAD(way_num, sample_num)
 
     def set_forward(self, batch, ):
-        images, _ = batch
+        images, global_targets = batch
         images = images.to(self.device)
 
         feat = self.model_func(images)
@@ -92,7 +92,7 @@ class VERSA(MetaModel):
         return averaged_predictions, prec1
 
     def set_forward_loss(self, batch, ):
-        images, _ = batch
+        images, global_targets= batch
         images = images.to(self.device)
 
         feat = self.model_func(images)
