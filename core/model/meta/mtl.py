@@ -56,9 +56,9 @@ class MTL(MetaModel):
 
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=4)
 
-        classifier, fast_weights = self.train_loop(support_feat, support_target)
+        classifier, base_learner_weight = self.train_loop(support_feat, support_target)
 
-        output = classifier(query_feat, fast_weights)
+        output = classifier(query_feat, base_learner_weight)
 
         prec1, _ = accuracy(output, query_target, topk=(1, 3))
 
@@ -76,9 +76,9 @@ class MTL(MetaModel):
 
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=4)
 
-        classifier, fast_weights = self.train_loop(support_feat, support_target)
+        classifier, base_learner_weight = self.train_loop(support_feat, support_target)
 
-        output = classifier(query_feat, fast_weights)
+        output = classifier(query_feat, base_learner_weight)
         loss = self.loss_func(output,query_target)
         prec1, _ = accuracy(output, query_target, topk=(1, 3))
 
@@ -89,15 +89,15 @@ class MTL(MetaModel):
         logits = self.base_learner(support_feat)
         loss = self.loss_func(logits, support_target)
         grad = torch.autograd.grad(loss, self.base_learner.parameters())
-        fast_weights = list(map(lambda p: p[1] - 0.01 * p[0], zip(grad, self.base_learner.parameters())))
+        base_learner_weight = list(map(lambda p: p[1] - 0.01 * p[0], zip(grad, self.base_learner.parameters())))
 
         for _ in range(1, self.inner_train_iter):
-            logits = self.base_learner(support_feat, fast_weights)
+            logits = self.base_learner(support_feat, base_learner_weight)
             loss = F.cross_entropy(logits, support_target)
-            grad = torch.autograd.grad(loss, fast_weights)
-            fast_weights = list(map(lambda p: p[1] - 0.01 * p[0], zip(grad, fast_weights)))
+            grad = torch.autograd.grad(loss, base_learner_weight)
+            base_learner_weight = list(map(lambda p: p[1] - 0.01 * p[0], zip(grad, base_learner_weight)))
 
-        return classifier, fast_weights
+        return classifier, base_learner_weight
 
     def test_loop(self, *args, **kwargs):
         raise NotImplementedError

@@ -140,13 +140,13 @@ class LEO(MetaModel):
 
         latents, kl_div, encoder_penalty = self.train_loop(support_feat, support_target, episode_size)
 
-        classifier_weights = self.decoder(latents)
-        classifier_weights = sample(classifier_weights, self.feat_dim)
-        classifier_weights = classifier_weights.permute([0, 2, 1])
+        leo_weight = self.decoder(latents)
+        leo_weight = sample(leo_weight, self.feat_dim)
+        leo_weight = leo_weight.permute([0, 2, 1])
 
-        classifier_weights = self.finetune(classifier_weights, support_feat, support_target)
+        leo_weight = self.finetune(leo_weight, support_feat, support_target)
 
-        output = torch.bmm(query_feat, classifier_weights)
+        output = torch.bmm(query_feat, leo_weight)
         output = output.contiguous().reshape(-1, self.way_num)
 
         prec1, _ = accuracy(output, query_target.contiguous().reshape(-1), topk=(1, 3))
