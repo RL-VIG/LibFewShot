@@ -1,3 +1,4 @@
+import errno
 import os
 import random
 from collections import OrderedDict
@@ -80,7 +81,11 @@ def accuracy(output, target, topk=(1,)):
         maxk = max(topk)
         batch_size = target.size(0)
 
-        _, pred = output.topk(maxk, 1, True, True)
+        _, pred = {
+            'Tensor' : torch.topk,
+            'ndarray': lambda output, maxk, axis: (None, torch.from_numpy(topk_(output, maxk, axis)[1]).to(target.device)),
+        }[output.__class__.__name__](output, maxk, 1)
+
         pred = pred.t()
         correct = pred.eq(target.view(1, -1).expand_as(pred))
 
@@ -89,6 +94,24 @@ def accuracy(output, target, topk=(1,)):
             correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
             res.append(correct_k.mul_(100.0 / batch_size).item())
         return res
+
+
+def topk_(matrix, K, axis):
+    if axis == 0:
+        row_index = np.arange(matrix.shape[1 - axis])
+        topk_index = np.argpartition(-matrix, K, axis=axis)[0:K, :]
+        topk_data = matrix[topk_index, row_index]
+        topk_index_sort = np.argsort(-topk_data, axis=axis)
+        topk_data_sort = topk_data[topk_index_sort, row_index]
+        topk_index_sort = topk_index[0:K, :][topk_index_sort, row_index]
+    else:
+        column_index = np.arange(matrix.shape[1 - axis])[:, None]
+        topk_index = np.argpartition(-matrix, K, axis=axis)[:, 0:K]
+        topk_data = matrix[column_index, topk_index]
+        topk_index_sort = np.argsort(-topk_data, axis=axis)
+        topk_data_sort = topk_data[column_index, topk_index_sort]
+        topk_index_sort = topk_index[:, 0:K][column_index, topk_index_sort]
+    return topk_data_sort, topk_index_sort
 
 
 def mean_confidence_interval(data, confidence=0.95):
@@ -103,6 +126,15 @@ def mean_confidence_interval(data, confidence=0.95):
     m, se = np.mean(a), scipy.stats.sem(a)
     h = se * sp.stats.t._ppf((1 + confidence) / 2., n - 1)
     return m, h
+
+
+def force_symlink(file1, file2):
+    try:
+        os.symlink(file1, file2)
+    except OSError as e:
+        if e.errno == errno.EEXIST:
+            os.remove(file2)
+            os.symlink(file1, file2)
 
 
 def create_dirs(dir_paths):
@@ -180,8 +212,8 @@ def save_model(model, optimizer, lr_Scheduler, save_path, name, epoch, save_type
     if save_type == SaveType.NORMAL or save_type == SaveType.BEST:
         torch.save(model_state_dict, save_name)
     else:
-        torch.save({'epoch': epoch, 'model': model_state_dict,
-                    'optimizer': optimizer.state_dict(),
+        torch.save({'epoch'       : epoch, 'model': model_state_dict,
+                    'optimizer'   : optimizer.state_dict(),
                     'lr_scheduler': lr_Scheduler.state_dict()}, save_name)
 
     return save_name

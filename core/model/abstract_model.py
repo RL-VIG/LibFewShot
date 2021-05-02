@@ -32,7 +32,10 @@ class AbstractModel(nn.Module):
         return out
 
     def train(self, mode=True):
-        return super(AbstractModel, self).train(mode)
+        super(AbstractModel, self).train(mode)
+        # for methods with distiller
+        if hasattr(self, 'distill_layer'):
+            self.distill_layer.train(False)
 
     def eval(self):
         return super(AbstractModel, self).eval()
@@ -54,7 +57,8 @@ class AbstractModel(nn.Module):
         episode_size = features.size(0) // (self.way_num * (self.shot_num + self.query_num))
         local_labels = self._generate_local_targets(episode_size).to(self.device).contiguous().view(episode_size,
                                                                                                     self.way_num,
-                                                                                                    self.shot_num + self.query_num)
+                                                                                                    self.shot_num +
+                                                                                                    self.query_num)
 
         if mode == 1:  # input 2D, return 3D(with episode) E.g.ANIL & R2D2
             features = features.contiguous().view(episode_size, self.way_num, self.shot_num + self.query_num, -1)
@@ -82,9 +86,10 @@ class AbstractModel(nn.Module):
                                                                                      h, w)
             query_features = features[:, self.shot_num:, :, ...].contiguous().view(self.way_num * self.query_num, c,
                                                                                    h, w)
-            support_target = local_labels[:, :, :self.shot_num].contiguous().view(-1)
-            query_target = local_labels[:, :, self.shot_num:].contiguous().view(-1)
-        elif mode == 4:  # pretrain baseline input 2D, return 2D(w/o episode) E.g.baseline set_forward FIXME: 暂时用来处理还没有实现multi-task的方法
+            support_targets = local_labels[:, :, :self.shot_num].contiguous().view(-1)
+            query_targets = local_labels[:, :, self.shot_num:].contiguous().view(-1)
+        elif mode == 4:  # pretrain baseline input 2D, return 2D(w/o episode) E.g.baseline set_forward FIXME:
+            # 暂时用来处理还没有实现multi-task的方法
             features = features.view(self.way_num, self.shot_num + self.query_num, -1)
             support_features = features[:, :self.shot_num, :].contiguous().view(self.way_num * self.shot_num, -1)
             query_features = features[:, self.shot_num:, :].contiguous().view(self.way_num * self.query_num, -1)

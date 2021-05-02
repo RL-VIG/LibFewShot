@@ -1,3 +1,4 @@
+import datetime
 import os
 from logging import getLogger
 from time import time
@@ -8,8 +9,8 @@ from torch import nn
 
 import core.model as arch
 from core.data import get_dataloader
-from core.utils import init_logger, prepare_device, init_seed, AverageMeter, \
-    count_parameters, save_model, create_dirs, get_local_time, ModelType, TensorboardWriter, SaveType
+from core.utils import (AverageMeter, ModelType, SaveType, TensorboardWriter, count_parameters, create_dirs,
+                        force_symlink, get_local_time, init_logger, init_seed, prepare_device, save_model)
 
 
 def get_instance(module, name, config, *args):
@@ -36,8 +37,9 @@ class Trainer(object):
             config)
 
     def train_loop(self):
-        best_val_acc = float('-inf')
-        best_test_acc = float('-inf')
+        best_val_prec1 = float('-inf')
+        best_test_prec1 = float('-inf')
+        experiment_begin = time()
         for epoch_idx in range(self.from_epoch + 1, self.config['epoch']):
             self.logger.info(
                 '============ Train on the train set ============')
@@ -65,6 +67,9 @@ class Trainer(object):
             self._save_model(epoch_idx, SaveType.LAST)
 
             self.scheduler.step()
+        self.logger.info("End of experiment, took {}".format(
+            str(datetime.timedelta(seconds=int(time() - experiment_begin))))
+        )
 
     def _train(self, epoch_idx):
         self.model.train()
@@ -88,12 +93,14 @@ class Trainer(object):
             meter.update('data_time', time() - end)
 
             # calculate the output
-            output, acc, loss = self.model.set_forward_loss(batch)
+            calc_begin = time()
+            output, prec1, loss = self.model.set_forward_loss(batch)
 
             # compute gradients
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
+            meter.update('calc_time', time() - calc_begin)
 
             # measure accuracy and record loss
             meter.update('loss', loss.item())
@@ -101,24 +108,30 @@ class Trainer(object):
 
             # measure elapsed time
             meter.update('batch_time', time() - end)
-            end = time()
 
             # print the intermediate results
-            if batch_idx != 0 and batch_idx % self.config['log_interval'] == 0:
+            if (batch_idx != 0 and batch_idx % self.config['log_interval'] == 0)\
+                    or batch_idx * episode_size > len(self.train_loader):
                 info_str = ('Epoch-({}): [{}/{}]\t'
                             'Time {:.3f} ({:.3f})\t'
+                            'Calc {:.3f} ({:.3f})\t'
                             'Data {:.3f} ({:.3f})\t'
                             'Loss {:.3f} ({:.3f})\t'
                             'Prec@1 {:.3f} ({:.3f})'
                             .format(epoch_idx, batch_idx * episode_size,
                                     len(self.train_loader),
-                                    meter.last('batch_time'), meter.avg(
-                                        'batch_time'),
-                                    meter.last('data_time'), meter.avg(
-                                        'data_time'),
-                                    meter.last('loss'), meter.avg('loss'),
-                                    meter.last('acc'), meter.avg('acc'), ))
+                                    meter.last('batch_time'),
+                                    meter.avg('batch_time'),
+                                    meter.last('calc_time'),
+                                    meter.avg('calc_time'),
+                                    meter.last('data_time'),
+                                    meter.avg('data_time'),
+                                    meter.last('loss'),
+                                    meter.avg('loss'),
+                                    meter.last('prec1'),
+                                    meter.avg('prec1'), ))
                 self.logger.info(info_str)
+            end = time()
 
         return meter.avg('acc')
 
@@ -135,36 +148,42 @@ class Trainer(object):
         with torch.set_grad_enabled(enable_grad):
             for batch_idx, batch in enumerate(
                     self.test_loader if is_test else self.val_loader):
-                self.writer.set_step(epoch_idx * len(self.test_loader)
-                                     + batch_idx * episode_size)
+                self.writer.set_step(int((epoch_idx * len(self.test_loader)
+                                          + batch_idx * episode_size) * self.config['tb_scale']))
 
                 meter.update('data_time', time() - end)
 
                 # calculate the output
-                output, acc = self.model.set_forward(batch)
+                calc_begin = time()
+                output, prec1 = self.model.set_forward(batch)
+                meter.update('calc_time', time() - calc_begin)
 
                 # measure accuracy and record loss
                 meter.update('acc', acc)
 
                 # measure elapsed time
                 meter.update('batch_time', time() - end)
-                end = time()
 
-                if batch_idx != 0 and \
-                        batch_idx % self.config['log_interval'] == 0:
+                if (batch_idx != 0 and
+                        batch_idx % self.config['log_interval'] == 0)\
+                        or batch_idx * episode_size > len(self.val_loader):
                     info_str = ('Epoch-({}): [{}/{}]\t'
                                 'Time {:.3f} ({:.3f})\t'
+                                'Calc {:.3f} ({:.3f})\t'
                                 'Data {:.3f} ({:.3f})\t'
                                 'Prec@1 {:.3f} ({:.3f})'
                                 .format(epoch_idx, batch_idx * episode_size,
                                         len(self.val_loader),
                                         meter.last('batch_time'),
                                         meter.avg('batch_time'),
+                                        meter.last('calc_time'),
+                                        meter.avg('calc_time'),
                                         meter.last('data_time'),
                                         meter.avg('data_time'),
                                         meter.last('acc'),
                                         meter.avg('acc'), ))
                     self.logger.info(info_str)
+                end = time()
 
         return meter.avg('acc')
 
@@ -172,10 +191,13 @@ class Trainer(object):
         # you should ensure that data_root name contains its true name
         # FIXME 改成如果不包含data_name就自动切会不会好点
         symlink_dir = '{}-{}-{}-{}-{}' \
-            .format(config['classifier']['name'], config['data_root'].split('/')[-1],
+            .format(config['classifier']['name'],
+                    config['data_root'].split('/')[-1],
                     config['backbone']['name'],
                     config['way_num'], config['shot_num'])
-        result_dir = symlink_dir + "-{}".format(get_local_time())
+        result_dir = symlink_dir + "-{}".format(get_local_time()) \
+            if config['log_name'] is None \
+            else config['log_name']
         symlink_path = os.path.join(config['result_root'], symlink_dir)
         result_path = os.path.join(config['result_root'], result_dir)
 
@@ -184,7 +206,7 @@ class Trainer(object):
         viz_path = os.path.join(log_path, 'tfboard_files')
         create_dirs([result_path, log_path, checkpoints_path, viz_path])
 
-        os.symlink(result_path, symlink_path)
+        force_symlink(result_path, symlink_path)
 
         with open(os.path.join(result_path, 'config.yaml'), 'w',
                   encoding='utf-8') as fout:
@@ -308,11 +330,11 @@ class Trainer(object):
                         self.logger.warning('')
 
     def _init_meter(self):
-        train_meter = AverageMeter('train', ['batch_time', 'data_time', 'loss', 'acc'],
+        train_meter = AverageMeter('train', ['batch_time', 'data_time', 'calc_time', 'loss', 'prec1'],
                                    self.writer)
         val_meter = AverageMeter(
-            'val', ['batch_time', 'data_time', 'acc'], self.writer)
-        test_meter = AverageMeter('test', ['batch_time', 'data_time', 'acc'],
+            'val', ['batch_time', 'data_time', 'calc_time', 'prec1'], self.writer)
+        test_meter = AverageMeter('test', ['batch_time', 'data_time', 'calc_time', 'prec1'],
                                   self.writer)
 
         return train_meter, val_meter, test_meter

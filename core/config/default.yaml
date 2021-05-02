@@ -1,4 +1,5 @@
-log_name: miniImageNet
+log_name: ~
+
 
 # base info
 way_num: 5
@@ -12,13 +13,18 @@ test_shot: ~
 test_query: ~
 
 # data info
-data_root: /data/wzy/miniImageNet--ravi
+data_root: /data/student/miniImageNet--ravi
 image_size: 84
 use_memory: False
 augment: True
 augment_times: 1
+augment_times_query: 1
 train_episode: 10000
 test_episode: 1000
+
+includes:
+  - headers/yaml_import_test.yaml
+  - headers/base_info.yaml
 
 # train info
 epoch: 50
