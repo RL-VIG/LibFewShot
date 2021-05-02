@@ -69,7 +69,7 @@ class RFSModel(PretrainModel):
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
 
         outputs = []
-        prec1s = []
+        accs = []
         for idx in range(episode_size):
             support_feat = support_feat[idx]
             query_feat = query_feat[idx]
@@ -82,14 +82,14 @@ class RFSModel(PretrainModel):
             query_target = query_target.detach().cpu().numpy()
 
             output = classifier.predict(query_feat)
-            prec1 = metrics.accuracy_score(query_target, output) * 100
+            acc = metrics.accuracy_score(query_target, output) * 100
 
             outputs.append(output)
-            prec1s.append(prec1)
+            accs.append(acc)
 
         output = np.stack(outputs, axis=0)
-        prec1 = sum(prec1s) / episode_size
-        return output, prec1
+        acc = sum(accs) / episode_size
+        return output, acc
 
     def set_forward_loss(self, batch):
         """
@@ -109,9 +109,9 @@ class RFSModel(PretrainModel):
         alpha_loss = self.kl_loss_func(output, distill_output)
         loss = gamma_loss * self.gamma + alpha_loss * self.alpha
 
-        prec1, _ = accuracy(output, target, topk=(1, 3))
+        acc, _ = accuracy(output, target, topk=(1, 3))
 
-        return output, prec1, loss
+        return output, acc, loss
 
     def test_loop(self, support_feat, support_target):
         return self.set_forward_adaptation(support_feat, support_target)

@@ -64,9 +64,9 @@ class MTLPretrain(PretrainModel): # use image-size=80 in repo
 
         output = classifier(query_feat,fast_weights)
 
-        prec1, _ = accuracy(output, query_target, topk=(1, 3))
+        acc, _ = accuracy(output, query_target, topk=(1, 3))
 
-        return output, prec1
+        return output, acc
 
     def set_forward_loss(self, batch):
         """
@@ -83,8 +83,8 @@ class MTLPretrain(PretrainModel): # use image-size=80 in repo
         output = self.pre_fc(feat).contiguous()
 
         loss = self.loss_func(output, global_target)
-        prec1, _ = accuracy(output, global_target, topk=(1, 3))
-        return output, prec1, loss
+        acc, _ = accuracy(output, global_target, topk=(1, 3))
+        return output, acc, loss
 
     def test_loop(self, support_feat, support_target):
         return self.set_forward_adaptation(support_feat, support_target)

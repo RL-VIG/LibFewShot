@@ -57,9 +57,9 @@ class DN4(MetricModel):
 
         output = self.dn4_layer(query_feat, support_feat) \
             .view(episode_size * self.way_num * self.query_num, self.way_num)
-        prec1, _ = accuracy(output, query_target, topk=(1, 3))
+        acc, _ = accuracy(output, query_target, topk=(1, 3))
 
-        return output, prec1
+        return output, acc
 
     def set_forward_loss(self, batch):
         """
@@ -76,6 +76,6 @@ class DN4(MetricModel):
         output = self.dn4_layer(query_feat, support_feat) \
             .view(episode_size * self.way_num * self.query_num, self.way_num)
         loss = self.loss_func(output, query_target)
-        prec1, _ = accuracy(output, query_target, topk=(1, 3))
+        acc, _ = accuracy(output, query_target, topk=(1, 3))
 
-        return output, prec1, loss
+        return output, acc, loss

@@ -121,8 +121,8 @@ class R2D2(MetaModel):
         # output = self.alpha * output + self.beta
 
         output = output.contiguous().view(-1, self.way_num)
-        prec1, _ = accuracy(output.squeeze(), query_target.contiguous().reshape(-1), topk=(1, 3))
-        return output, prec1
+        acc, _ = accuracy(output.squeeze(), query_target.contiguous().reshape(-1), topk=(1, 3))
+        return output, acc
 
     def set_forward_loss(self, batch, ):
         image, global_target = batch
@@ -137,8 +137,8 @@ class R2D2(MetaModel):
 
         output = output.contiguous().view(-1, self.way_num)
         loss = self.loss_func(output, query_target.contiguous().reshape(-1))
-        prec1, _ = accuracy(output.squeeze(), query_target.contiguous().reshape(-1), topk=(1, 3))
-        return output, prec1, loss
+        acc, _ = accuracy(output.squeeze(), query_target.contiguous().reshape(-1), topk=(1, 3))
+        return output, acc, loss
 
     def train_loop(self, emb_support, support_target, W):
         # optimizer = self.sub_optimizer([{"params": self.alpha}, {"params": self.beta}], self.inner_optim)

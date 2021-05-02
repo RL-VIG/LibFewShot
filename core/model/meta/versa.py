@@ -88,8 +88,8 @@ class VERSA(MetaModel):
 
         output, _ = self.head(query_feat, query_target, weight_means, weight_logvars,
                                             bias_means, bias_logvars)
-        prec1, _ = accuracy(output, query_target.reshape(-1), topk=(1, 3))
-        return output, prec1
+        acc, _ = accuracy(output, query_target.reshape(-1), topk=(1, 3))
+        return output, acc
 
     def set_forward_loss(self, batch, ):
         image, global_target= batch
@@ -110,9 +110,9 @@ class VERSA(MetaModel):
 
         output, task_score = self.head(query_feat, query_target, weight_means, weight_logvars,
                                                      bias_means, bias_logvars)
-        prec1, _ = accuracy(output, query_target.reshape(-1), topk=(1, 3))
+        acc, _ = accuracy(output, query_target.reshape(-1), topk=(1, 3))
         loss = -torch.mean(task_score, dim=0)
-        return output, prec1, loss
+        return output, acc, loss
 
     def train_loop(self, *args, **kwargs):
         raise NotImplementedError

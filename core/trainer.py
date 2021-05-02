@@ -36,27 +36,27 @@ class Trainer(object):
             config)
 
     def train_loop(self):
-        best_val_prec1 = float('-inf')
-        best_test_prec1 = float('-inf')
+        best_val_acc = float('-inf')
+        best_test_acc = float('-inf')
         for epoch_idx in range(self.from_epoch + 1, self.config['epoch']):
             self.logger.info(
                 '============ Train on the train set ============')
-            train_prec1 = self._train(epoch_idx)
-            self.logger.info(' * Prec@1 {:.3f} '.format(train_prec1))
+            train_acc = self._train(epoch_idx)
+            self.logger.info(' * Prec@1 {:.3f} '.format(train_acc))
             self.logger.info(
                 '============ Validation on the val set ============')
-            val_prec1 = self._validate(epoch_idx, is_test=False)
-            self.logger.info(' * Prec@1 {:.3f} Best Prec1 {:.3f}'
-                             .format(val_prec1, best_val_prec1))
+            val_acc = self._validate(epoch_idx, is_test=False)
+            self.logger.info(' * Prec@1 {:.3f} Best acc {:.3f}'
+                             .format(val_acc, best_val_acc))
             self.logger.info(
                 '============ Testing on the test set ============')
-            test_prec1 = self._validate(epoch_idx, is_test=True)
-            self.logger.info(' * Prec@1 {:.3f} Best Prec1 {:.3f}'
-                             .format(test_prec1, best_test_prec1))
+            test_acc = self._validate(epoch_idx, is_test=True)
+            self.logger.info(' * Prec@1 {:.3f} Best acc {:.3f}'
+                             .format(test_acc, best_test_acc))
 
-            if val_prec1 > best_val_prec1:
-                best_val_prec1 = val_prec1
-                best_test_prec1 = test_prec1
+            if val_acc > best_val_acc:
+                best_val_acc = val_acc
+                best_test_acc = test_acc
                 self._save_model(epoch_idx, SaveType.BEST)
 
             if epoch_idx != 0 and epoch_idx % self.config['save_interval'] == 0:
@@ -82,7 +82,7 @@ class Trainer(object):
             meter.update('data_time', time() - end)
 
             # calculate the output
-            output, prec1, loss = self.model.set_forward_loss(batch)
+            output, acc, loss = self.model.set_forward_loss(batch)
 
             # compute gradients
             self.optimizer.zero_grad()
@@ -91,7 +91,7 @@ class Trainer(object):
 
             # measure accuracy and record loss
             meter.update('loss', loss.item())
-            meter.update('prec1', prec1)
+            meter.update('acc', acc)
 
             # measure elapsed time
             meter.update('batch_time', time() - end)
@@ -111,10 +111,10 @@ class Trainer(object):
                                     meter.last('data_time'), meter.avg(
                                         'data_time'),
                                     meter.last('loss'), meter.avg('loss'),
-                                    meter.last('prec1'), meter.avg('prec1'), ))
+                                    meter.last('acc'), meter.avg('acc'), ))
                 self.logger.info(info_str)
 
-        return meter.avg('prec1')
+        return meter.avg('acc')
 
     def _validate(self, epoch_idx, is_test=False):
         # switch to evaluate mode
@@ -135,10 +135,10 @@ class Trainer(object):
                 meter.update('data_time', time() - end)
 
                 # calculate the output
-                output, prec1 = self.model.set_forward(batch)
+                output, acc = self.model.set_forward(batch)
 
                 # measure accuracy and record loss
-                meter.update('prec1', prec1)
+                meter.update('acc', acc)
 
                 # measure elapsed time
                 meter.update('batch_time', time() - end)
@@ -156,11 +156,11 @@ class Trainer(object):
                                         meter.avg('batch_time'),
                                         meter.last('data_time'),
                                         meter.avg('data_time'),
-                                        meter.last('prec1'),
-                                        meter.avg('prec1'), ))
+                                        meter.last('acc'),
+                                        meter.avg('acc'), ))
                     self.logger.info(info_str)
 
-        return meter.avg('prec1')
+        return meter.avg('acc')
 
     def _init_files(self, config):
         # you should ensure that data_root name contains its true name
@@ -302,11 +302,11 @@ class Trainer(object):
                         self.logger.warning('')
 
     def _init_meter(self):
-        train_meter = AverageMeter('train', ['batch_time', 'data_time', 'loss', 'prec1'],
+        train_meter = AverageMeter('train', ['batch_time', 'data_time', 'loss', 'acc'],
                                    self.writer)
         val_meter = AverageMeter(
-            'val', ['batch_time', 'data_time', 'prec1'], self.writer)
-        test_meter = AverageMeter('test', ['batch_time', 'data_time', 'prec1'],
+            'val', ['batch_time', 'data_time', 'acc'], self.writer)
+        test_meter = AverageMeter('test', ['batch_time', 'data_time', 'acc'],
                                   self.writer)
 
         return train_meter, val_meter, test_meter
