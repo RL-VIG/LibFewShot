@@ -47,7 +47,7 @@ classifier:
         lr: 1e-3
     inner_train_iter: 100
     inner_batch_size: 4
-    feat_dim: 512 
+    feat_dim: 512
     num_classes: 64
 
 # result info
@@ -68,13 +68,3 @@ parallel_part:
   - emb_func
 seed: 0
 deterministic: True
-
-
-
-
-
-
-
-
-
-

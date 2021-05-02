@@ -11,6 +11,7 @@ from torch.nn import functional as F
 from core.utils import accuracy
 from core.model.metric.metric_model import MetricModel
 
+
 def one_hot(indice, depth, use_cuda=True):
     if use_cuda:
         encoded_indicie = torch.zeros(indice.size() + torch.Size([depth])).cuda()
@@ -58,17 +59,20 @@ class CAM(nn.Module):
     """
     Support & Query share one attention
     """
+
     def __init__(self, mid_channels):
         super(CAM, self).__init__()
         # self.conv1 = ConvBlock(25, 5, 1)
         # self.conv2 = nn.Conv2d(5, 25, 1, stride=1, padding=0)
         self.conv1 = ConvBlock(mid_channels * mid_channels, mid_channels, 1)
-        self.conv2 = nn.Conv2d(mid_channels, mid_channels * mid_channels, 1, stride=1, padding=0)
+        self.conv2 = nn.Conv2d(
+            mid_channels, mid_channels * mid_channels, 1, stride=1, padding=0
+        )
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                m.weight.data.normal_(0, math.sqrt(2. / n))
+                m.weight.data.normal_(0, math.sqrt(2.0 / n))
 
     def get_attention(self, a):
         input_a = a
@@ -111,7 +115,9 @@ class CAM(nn.Module):
 
 
 class CAM_Layer(nn.Module):
-    def __init__(self, scale_cls, iter_num_prob=35.0/75, num_classes=64, feat_dim=512, HW=5):
+    def __init__(
+        self, scale_cls, iter_num_prob=35.0 / 75, num_classes=64, feat_dim=512, HW=5
+    ):
         super(CAM_Layer, self).__init__()
         self.scale_cls = scale_cls
         self.cam = CAM(HW)
@@ -122,9 +128,15 @@ class CAM_Layer(nn.Module):
     def val(self, support_feat, query_feat):
         query_feat = query_feat.mean(4)
         query_feat = query_feat.mean(4)
-        support_feat = F.normalize(support_feat, p=2, dim=support_feat.dim()-1, eps=1e-12)  # [1, 75, 5, 512]
-        query_feat = F.normalize(query_feat, p=2, dim=query_feat.dim()-1, eps=1e-12) # [1, 75, 5, 512]
-        scores = self.scale_cls * torch.sum(query_feat * support_feat, dim=-1) # [1, 75, 5]
+        support_feat = F.normalize(
+            support_feat, p=2, dim=support_feat.dim() - 1, eps=1e-12
+        )  # [1, 75, 5, 512]
+        query_feat = F.normalize(
+            query_feat, p=2, dim=query_feat.dim() - 1, eps=1e-12
+        )  # [1, 75, 5, 512]
+        scores = self.scale_cls * torch.sum(
+            query_feat * support_feat, dim=-1
+        )  # [1, 75, 5]
         return scores
 
     def forward(self, support_feat, query_feat, support_target, query_target):
@@ -147,10 +159,18 @@ class CAM_Layer(nn.Module):
         labels_train_transposed = support_target.transpose(1, 2)  # [1, 5, 5]
 
         # calc the prototypes of support set
-        prototype = torch.bmm(labels_train_transposed, support_feat)  # [1, 5, 5]x[1, 5, 640]
-        prototype = prototype.div(labels_train_transposed.sum(dim=2, keepdim=True).expand_as(prototype))  # [1, 5, 640]
-        prototype = prototype.reshape(batch_size, -1, *original_feat_shape[2:])  # [1, 5, 512, 6, 6]
-        prototype, query_feat = self.cam(prototype, query_feat) # [1, 75, 5, 512, 6, 6]  # [2, 75, 640, 1, 1]
+        prototype = torch.bmm(
+            labels_train_transposed, support_feat
+        )  # [1, 5, 5]x[1, 5, 640]
+        prototype = prototype.div(
+            labels_train_transposed.sum(dim=2, keepdim=True).expand_as(prototype)
+        )  # [1, 5, 640]
+        prototype = prototype.reshape(
+            batch_size, -1, *original_feat_shape[2:]
+        )  # [1, 5, 512, 6, 6]
+        prototype, query_feat = self.cam(
+            prototype, query_feat
+        )  # [1, 75, 5, 512, 6, 6]  # [2, 75, 640, 1, 1]
         prototype = prototype.mean(4)
         prototype = prototype.mean(4)  # [1, 75, 5, 512]
 
@@ -168,7 +188,9 @@ class CAM_Layer(nn.Module):
         query_feat = query_feat.transpose(2, 3)
         query_target = query_target.unsqueeze(3)
         query_feat = torch.matmul(query_feat, query_target)
-        query_feat = query_feat.view(batch_size * n_query, -1, *original_feat_shape[-2:])
+        query_feat = query_feat.view(
+            batch_size * n_query, -1, *original_feat_shape[-2:]
+        )
         query_target = self.classifier(query_feat)
 
         return query_target, cls_score
@@ -182,15 +204,19 @@ class CAM_Layer(nn.Module):
 
         support_target_transposed = support_target.transpose(1, 2)
         support_feat = torch.bmm(support_target_transposed, support_feat.view(b, n, -1))
-        support_feat = support_feat.div(support_target_transposed.sum(dim=2, keepdim=True).expand_as(support_feat))
+        support_feat = support_feat.div(
+            support_target_transposed.sum(dim=2, keepdim=True).expand_as(support_feat)
+        )
         support_feat = support_feat.view(b, -1, c, h, w)
 
         support_feat, query_feat = self.cam(support_feat, query_feat)
         support_feat = support_feat.mean(-1).mean(-1)
         query_feat = query_feat.mean(-1).mean(-1)
 
-        query_feat = F.normalize(query_feat, p=2, dim=query_feat.dim()-1, eps=1e-12)
-        support_feat = F.normalize(support_feat, p=2, dim=support_feat.dim()-1, eps=1e-12)
+        query_feat = F.normalize(query_feat, p=2, dim=query_feat.dim() - 1, eps=1e-12)
+        support_feat = F.normalize(
+            support_feat, p=2, dim=support_feat.dim() - 1, eps=1e-12
+        )
         score = self.scale_cls * torch.sum(query_feat * support_feat, dim=-1)
         return score
 
@@ -223,31 +249,59 @@ class CAM_Layer(nn.Module):
 
 
 class CAN(MetricModel):
-    def __init__(self, way_num, shot_num, query_num, emb_func, device, scale_cls, iter_num_prob=35.0/75, num_classes=64, feat_dim=512, HW=5):
+    def __init__(
+        self,
+        way_num,
+        shot_num,
+        query_num,
+        emb_func,
+        device,
+        scale_cls,
+        iter_num_prob=35.0 / 75,
+        num_classes=64,
+        feat_dim=512,
+        HW=5,
+    ):
         super(CAN, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.cam_layer = CAM_Layer(scale_cls, iter_num_prob, num_classes, feat_dim, HW)
         self.loss_func = nn.CrossEntropyLoss()
 
-    def set_forward(self, batch, ):
+    def set_forward(self, batch):
         """
         :param batch:
         :return:
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=2
+        )
 
         # convert to one-hot
-        support_target_one_hot = one_hot(support_target.view(episode_size*self.way_num*self.shot_num), self.way_num)
-        support_target_one_hot = support_target_one_hot.view(episode_size, self.way_num*self.shot_num, self.way_num)
-        query_target_one_hot = one_hot(query_target.view(episode_size*self.way_num*self.query_num), self.way_num)
-        query_target_one_hot = query_target_one_hot.view(episode_size, self.way_num*self.query_num, self.way_num)
-        output = self.cam_layer(support_feat, query_feat, support_target_one_hot, query_target_one_hot)
+        support_target_one_hot = one_hot(
+            support_target.view(episode_size * self.way_num * self.shot_num),
+            self.way_num,
+        )
+        support_target_one_hot = support_target_one_hot.view(
+            episode_size, self.way_num * self.shot_num, self.way_num
+        )
+        query_target_one_hot = one_hot(
+            query_target.view(episode_size * self.way_num * self.query_num),
+            self.way_num,
+        )
+        query_target_one_hot = query_target_one_hot.view(
+            episode_size, self.way_num * self.query_num, self.way_num
+        )
+        output = self.cam_layer(
+            support_feat, query_feat, support_target_one_hot, query_target_one_hot
+        )
         # output = self.cam_layer.val_transductive(support_feat, query_feat, support_target_one_hot, query_target_one_hot)
 
-        output = output.view(episode_size * self.way_num*self.query_num, -1)
+        output = output.view(episode_size * self.way_num * self.query_num, -1)
         acc = accuracy(output, query_target)
         return output, acc
 
@@ -258,25 +312,43 @@ class CAN(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
         feat = self.emb_func(image)  # [80, 640]
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)  # [4,5,512,6,6] [4, 75, 512,6,6] [4, 5] [300]
-        support_global_targets, query_global_targets = global_target[:, :, :self.shot_num], global_target[:, :, self.shot_num:]
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=2
+        )  # [4,5,512,6,6] [4, 75, 512,6,6] [4, 5] [300]
+        support_global_targets, query_global_targets = (
+            global_target[:, :, : self.shot_num],
+            global_target[:, :, self.shot_num :],
+        )
         # # TODO: Shuffle label index
         # support_feat, support_target, support_global_targets = shuffle(support_feat, support_target, support_global_targets.reshape(*support_target.size()))
         # query_feat, query_target, query_global_targets = shuffle(query_feat, query_target.reshape(*query_feat.size()[:2]), query_global_targets.reshape(*query_feat.size()[:2]))
 
         # convert to one-hot
-        support_target_one_hot = one_hot(support_target.view(episode_size*self.way_num*self.shot_num), self.way_num)
-        support_target_one_hot = support_target_one_hot.view(episode_size, self.way_num*self.shot_num, self.way_num)
-        query_target_one_hot = one_hot(query_target.view(episode_size*self.way_num*self.query_num), self.way_num)
-        query_target_one_hot = query_target_one_hot.view(episode_size, self.way_num*self.query_num, self.way_num)
+        support_target_one_hot = one_hot(
+            support_target.view(episode_size * self.way_num * self.shot_num),
+            self.way_num,
+        )
+        support_target_one_hot = support_target_one_hot.view(
+            episode_size, self.way_num * self.shot_num, self.way_num
+        )
+        query_target_one_hot = one_hot(
+            query_target.view(episode_size * self.way_num * self.query_num),
+            self.way_num,
+        )
+        query_target_one_hot = query_target_one_hot.view(
+            episode_size, self.way_num * self.query_num, self.way_num
+        )
         # [75, 64, 6, 6], [75, 5, 6, 6]
-        output, output = self.cam_layer(support_feat, query_feat, support_target_one_hot, query_target_one_hot)
+        output, output = self.cam_layer(
+            support_feat, query_feat, support_target_one_hot, query_target_one_hot
+        )
         loss1 = self.loss_func(output, query_global_targets.contiguous().view(-1))
         loss2 = self.loss_func(output, query_target.view(-1))
         loss = loss1 + 0.5 * loss2
         output = torch.sum(output.view(*output.size()[:2], -1), dim=-1)  # [300, 5]
         acc = accuracy(output, query_target.view(-1))
         return output, acc, loss
-

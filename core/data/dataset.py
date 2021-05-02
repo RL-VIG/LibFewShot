@@ -10,13 +10,14 @@ from torch.utils.data import Dataset
 def pil_loader(path):
     # open path as file to avoid ResourceWarning
     # (https://github.com/python-pillow/Pillow/issues/835)
-    with open(path, 'rb') as f:
+    with open(path, "rb") as f:
         with Image.open(f) as img:
-            return img.convert('RGB')
+            return img.convert("RGB")
 
 
 def accimage_loader(path):
     import accimage
+
     try:
         return accimage.Image(path)
     except IOError:
@@ -25,24 +26,31 @@ def accimage_loader(path):
 
 
 def gray_loader(path):
-    with open(path, 'rb') as f:
+    with open(path, "rb") as f:
         with Image.open(f) as img:
-            return img.convert('P')
+            return img.convert("P")
 
 
 def default_loader(path):
     from torchvision import get_image_backend
-    if get_image_backend() == 'accimage':
+
+    if get_image_backend() == "accimage":
         return accimage_loader(path)
     else:
         return pil_loader(path)
 
 
 class GeneralDataset(Dataset):
-    def __init__(self, data_root="", mode="train", loader=default_loader,
-                 use_memory=True, trfms=None):
+    def __init__(
+        self,
+        data_root="",
+        mode="train",
+        loader=default_loader,
+        use_memory=True,
+        trfms=None,
+    ):
         super(GeneralDataset, self).__init__()
-        assert mode in ['train', 'val', 'test']
+        assert mode in ["train", "val", "test"]
 
         self.data_root = data_root
         self.mode = mode
@@ -52,27 +60,30 @@ class GeneralDataset(Dataset):
         self.logger = getLogger(__name__)
 
         if use_memory:
-            cache_path = os.path.join(data_root, '{}.pth'.format(mode))
-            self.data_list, self.label_list, self.class_label_dict = \
-                self._load_cache(cache_path)
+            cache_path = os.path.join(data_root, "{}.pth".format(mode))
+            self.data_list, self.label_list, self.class_label_dict = self._load_cache(
+                cache_path
+            )
         else:
-            self.data_list, self.label_list, self.class_label_dict \
-                = self._generate_data_list()
+            self.data_list, self.label_list, self.class_label_dict = (
+                self._generate_data_list()
+            )
 
         self.label_num = len(self.class_label_dict)
         self.length = len(self.data_list)
 
-        self.logger.info('load {} image with {} label.'
-                         .format(self.length, self.label_num))
+        self.logger.info(
+            "load {} image with {} label.".format(self.length, self.label_num)
+        )
 
     def _generate_data_list(self):
-        meta_csv = os.path.join(self.data_root, '{}.csv'.format(self.mode))
+        meta_csv = os.path.join(self.data_root, "{}.csv".format(self.mode))
 
         data_list = []
         label_list = []
         class_label_dict = dict()
         with open(meta_csv) as f_csv:
-            f_train = csv.reader(f_csv, delimiter=',')
+            f_train = csv.reader(f_csv, delimiter=",")
             for row in f_train:
                 if f_train.line_num == 1:
                     continue
@@ -87,21 +98,23 @@ class GeneralDataset(Dataset):
 
     def _load_cache(self, cache_path):
         if os.path.exists(cache_path):
-            self.logger.info('load cache from {}...'.format(cache_path))
-            with open(cache_path, 'rb') as fin:
+            self.logger.info("load cache from {}...".format(cache_path))
+            with open(cache_path, "rb") as fin:
                 data_list, label_list, class_label_dict = pickle.load(fin)
         else:
-            self.logger.info('dump the cache to {}, please wait...'.format(cache_path))
+            self.logger.info("dump the cache to {}, please wait...".format(cache_path))
             data_list, label_list, class_label_dict = self._save_cache(cache_path)
 
         return data_list, label_list, class_label_dict
 
     def _save_cache(self, cache_path):
         data_list, label_list, class_label_dict = self._generate_data_list()
-        data_list = [self.loader(os.path.join(self.data_root, 'images', path))
-                     for path in data_list]
+        data_list = [
+            self.loader(os.path.join(self.data_root, "images", path))
+            for path in data_list
+        ]
 
-        with open(cache_path, 'wb') as fout:
+        with open(cache_path, "wb") as fout:
             pickle.dump((data_list, label_list, class_label_dict), fout)
         return data_list, label_list, class_label_dict
 
@@ -113,7 +126,7 @@ class GeneralDataset(Dataset):
             data = self.data_list[idx]
         else:
             image_name = self.data_list[idx]
-            image_path = os.path.join(self.data_root, 'images', image_name)
+            image_path = os.path.join(self.data_root, "images", image_name)
             data = self.loader(image_path)
 
         if self.trfms is not None:

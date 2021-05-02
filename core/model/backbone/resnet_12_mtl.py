@@ -21,13 +21,25 @@ from torch.nn.modules.utils import _pair
 class _ConvNdMtl(Module):
     """The class for meta-transfer convolution"""
 
-    def __init__(self, in_channels, out_channels, kernel_size, stride,
-                 padding, dilation, transposed, output_padding, groups, bias, MTL):
+    def __init__(
+        self,
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride,
+        padding,
+        dilation,
+        transposed,
+        output_padding,
+        groups,
+        bias,
+        MTL,
+    ):
         super(_ConvNdMtl, self).__init__()
         if in_channels % groups != 0:
-            raise ValueError('in_channels must be divisible by groups')
+            raise ValueError("in_channels must be divisible by groups")
         if out_channels % groups != 0:
-            raise ValueError('out_channels must be divisible by groups')
+            raise ValueError("out_channels must be divisible by groups")
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.kernel_size = kernel_size
@@ -39,19 +51,25 @@ class _ConvNdMtl(Module):
         self.groups = groups
         self.MTL = MTL
         if transposed:
-            self.weight = Parameter(torch.Tensor(
-                    in_channels, out_channels // groups, *kernel_size))
-            self.mtl_weight = Parameter(torch.ones(in_channels, out_channels // groups, 1, 1))
+            self.weight = Parameter(
+                torch.Tensor(in_channels, out_channels // groups, *kernel_size)
+            )
+            self.mtl_weight = Parameter(
+                torch.ones(in_channels, out_channels // groups, 1, 1)
+            )
         else:
-            self.weight = Parameter(torch.Tensor(
-                    out_channels, in_channels // groups, *kernel_size))
-            self.mtl_weight = Parameter(torch.ones(out_channels, in_channels // groups, 1, 1))
+            self.weight = Parameter(
+                torch.Tensor(out_channels, in_channels // groups, *kernel_size)
+            )
+            self.mtl_weight = Parameter(
+                torch.ones(out_channels, in_channels // groups, 1, 1)
+            )
         if bias:
             self.bias = Parameter(torch.Tensor(out_channels))
             self.mtl_bias = Parameter(torch.zeros(out_channels))
         else:
-            self.register_parameter('bias', None)
-            self.register_parameter('mtl_bias', None)
+            self.register_parameter("bias", None)
+            self.register_parameter("mtl_bias", None)
         if MTL:
             self.weight.requires_grad = False
             if bias:
@@ -67,7 +85,7 @@ class _ConvNdMtl(Module):
         n = self.in_channels
         for k in self.kernel_size:
             n *= k
-        stdv = 1. / math.sqrt(n)
+        stdv = 1.0 / math.sqrt(n)
         self.weight.data.uniform_(-stdv, stdv)
         self.mtl_weight.data.uniform_(1, 1)
         if self.bias is not None:
@@ -75,36 +93,58 @@ class _ConvNdMtl(Module):
             self.mtl_bias.data.uniform_(0, 0)
 
     def extra_repr(self):
-        s = ('{in_channels}, {out_channels}, kernel_size={kernel_size}'
-             ', stride={stride}')
+        s = (
+            "{in_channels}, {out_channels}, kernel_size={kernel_size}"
+            ", stride={stride}"
+        )
         if self.padding != (0,) * len(self.padding):
-            s += ', padding={padding}'
+            s += ", padding={padding}"
         if self.dilation != (1,) * len(self.dilation):
-            s += ', dilation={dilation}'
+            s += ", dilation={dilation}"
         if self.output_padding != (0,) * len(self.output_padding):
-            s += ', output_padding={output_padding}'
+            s += ", output_padding={output_padding}"
         if self.groups != 1:
-            s += ', groups={groups}'
+            s += ", groups={groups}"
         if self.bias is None:
-            s += ', bias=False'
+            s += ", bias=False"
         if self.MTL is not None:
-            s += ', MTL={MTL}'
+            s += ", MTL={MTL}"
         return s.format(**self.__dict__)
 
 
 class Conv2dMtl(_ConvNdMtl):
     """The class for meta-transfer convolution"""
 
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1,
-                 padding=0, dilation=1, groups=1, bias=True, MTL=False):
+    def __init__(
+        self,
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride=1,
+        padding=0,
+        dilation=1,
+        groups=1,
+        bias=True,
+        MTL=False,
+    ):
         kernel_size = _pair(kernel_size)
         stride = _pair(stride)
         padding = _pair(padding)
         dilation = _pair(dilation)
         self.MTL = MTL
         super(Conv2dMtl, self).__init__(
-                in_channels, out_channels, kernel_size, stride, padding, dilation,
-                False, _pair(0), groups, bias, MTL)
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            padding,
+            dilation,
+            False,
+            _pair(0),
+            groups,
+            bias,
+            MTL,
+        )
 
     def forward(self, inp):  # override conv2d forward
         if self.MTL:
@@ -117,23 +157,46 @@ class Conv2dMtl(_ConvNdMtl):
         else:
             new_weight = self.weight
             new_bias = self.bias
-        return F.conv2d(inp, new_weight, new_bias, self.stride,
-                        self.padding, self.dilation, self.groups)
+        return F.conv2d(
+            inp,
+            new_weight,
+            new_bias,
+            self.stride,
+            self.padding,
+            self.dilation,
+            self.groups,
+        )
 
 
 def conv3x3MTL(in_planes, out_planes, stride=1, MTL=False):
     """3x3 convolution with padding"""
-    return Conv2dMtl(in_planes, out_planes, kernel_size=3, stride=stride,
-                     padding=1, bias=False, MTL=MTL)
+    return Conv2dMtl(
+        in_planes,
+        out_planes,
+        kernel_size=3,
+        stride=stride,
+        padding=1,
+        bias=False,
+        MTL=MTL,
+    )
 
 
 class BasicBlockMTL(nn.Module):
     expansion = 1
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None, drop_rate=0.0,
-                 drop_block=False, block_size=1, MTL=False):
+    def __init__(
+        self,
+        inplanes,
+        planes,
+        stride=1,
+        downsample=None,
+        drop_rate=0.0,
+        drop_block=False,
+        block_size=1,
+        MTL=False,
+    ):
         super(BasicBlockMTL, self).__init__()
-        self.conv1 = conv3x3MTL(inplanes, planes,MTL=MTL)
+        self.conv1 = conv3x3MTL(inplanes, planes, MTL=MTL)
         self.bn1 = nn.BatchNorm2d(planes)
         self.relu = nn.LeakyReLU(0.1)
         self.conv2 = conv3x3MTL(planes, planes, MTL=MTL)
@@ -175,31 +238,62 @@ class BasicBlockMTL(nn.Module):
             if self.drop_block == True:
                 feat_size = out.size()[2]
                 keep_rate = max(
-                        1.0 - self.drop_rate / (20 * 2000) * (self.num_batches_tracked),
-                        1.0 - self.drop_rate)
-                gamma = (1 - keep_rate) / self.block_size ** 2 * feat_size ** 2 / (
-                        feat_size - self.block_size + 1) ** 2
+                    1.0 - self.drop_rate / (20 * 2000) * (self.num_batches_tracked),
+                    1.0 - self.drop_rate,
+                )
+                gamma = (
+                    (1 - keep_rate)
+                    / self.block_size ** 2
+                    * feat_size ** 2
+                    / (feat_size - self.block_size + 1) ** 2
+                )
                 out = self.DropBlock(out, gamma=gamma)
             else:
-                out = F.dropout(out, p=self.drop_rate, training=self.training,
-                                inplace=True)
+                out = F.dropout(
+                    out, p=self.drop_rate, training=self.training, inplace=True
+                )
 
         return out
 
 
 class ResNet12MTLORI(nn.Module):
-
-    def __init__(self, block=BasicBlockMTL, keep_prob=1.0, avg_pool=True, drop_rate=0.1,
-                 dropblock_size=5, is_flatten=True, MTL=False):
+    def __init__(
+        self,
+        block=BasicBlockMTL,
+        keep_prob=1.0,
+        avg_pool=True,
+        drop_rate=0.1,
+        dropblock_size=5,
+        is_flatten=True,
+        MTL=False,
+    ):
         self.inplanes = 3
         super(ResNet12MTLORI, self).__init__()
         self.Conv2d = Conv2dMtl
-        self.layer1 = self._make_layer(block, 64, stride=2, drop_rate=drop_rate, MTL=MTL)
-        self.layer2 = self._make_layer(block, 160, stride=2, drop_rate=drop_rate, MTL=MTL)
-        self.layer3 = self._make_layer(block, 320, stride=2, drop_rate=drop_rate,
-                                       drop_block=True, block_size=dropblock_size, MTL=MTL)
-        self.layer4 = self._make_layer(block, 640, stride=2, drop_rate=drop_rate,
-                                       drop_block=True, block_size=dropblock_size, MTL=MTL)
+        self.layer1 = self._make_layer(
+            block, 64, stride=2, drop_rate=drop_rate, MTL=MTL
+        )
+        self.layer2 = self._make_layer(
+            block, 160, stride=2, drop_rate=drop_rate, MTL=MTL
+        )
+        self.layer3 = self._make_layer(
+            block,
+            320,
+            stride=2,
+            drop_rate=drop_rate,
+            drop_block=True,
+            block_size=dropblock_size,
+            MTL=MTL,
+        )
+        self.layer4 = self._make_layer(
+            block,
+            640,
+            stride=2,
+            drop_rate=drop_rate,
+            drop_block=True,
+            block_size=dropblock_size,
+            MTL=MTL,
+        )
         if avg_pool:
             self.avgpool = nn.AvgPool2d(5, stride=1)
         self.keep_prob = keep_prob
@@ -209,25 +303,39 @@ class ResNet12MTLORI(nn.Module):
         self.is_flatten = is_flatten
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out',
-                                        nonlinearity='leaky_relu')
+                nn.init.kaiming_normal_(
+                    m.weight, mode="fan_out", nonlinearity="leaky_relu"
+                )
             elif isinstance(m, nn.BatchNorm2d):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
 
-    def _make_layer(self, block, planes, stride=1, drop_rate=0.0, drop_block=False,
-                    block_size=1, MTL=False):
+    def _make_layer(
+        self,
+        block,
+        planes,
+        stride=1,
+        drop_rate=0.0,
+        drop_block=False,
+        block_size=1,
+        MTL=False,
+    ):
         downsample = None
         if stride != 1 or self.inplanes != planes * block.expansion:
             downsample = nn.Sequential(
-                    self.Conv2d(self.inplanes, planes * block.expansion,
-                                kernel_size=1, stride=1, bias=False,MTL=MTL),
-                    nn.BatchNorm2d(planes * block.expansion),
+                self.Conv2d(
+                    self.inplanes,
+                    planes * block.expansion,
+                    kernel_size=1,
+                    stride=1,
+                    bias=False,
+                    MTL=MTL,
+                ),
+                nn.BatchNorm2d(planes * block.expansion),
             )
 
         layers = []
-        layers.append(
-                block(self.inplanes, planes, stride, downsample,MTL=MTL))
+        layers.append(block(self.inplanes, planes, stride, downsample, MTL=MTL))
         self.inplanes = planes * block.expansion
 
         return nn.Sequential(*layers)
@@ -244,8 +352,15 @@ class ResNet12MTLORI(nn.Module):
         return x
 
 
-def resnet12mtlori(keep_prob=1.0, avg_pool=True, is_flatten=True,MTL=False, **kwargs):
+def resnet12mtlori(keep_prob=1.0, avg_pool=True, is_flatten=True, MTL=False, **kwargs):
     """Constructs a ResNet-12 model.
     """
-    model = ResNet12MTLORI(BasicBlockMTL, keep_prob=keep_prob, avg_pool=avg_pool, is_flatten=is_flatten, MTL=MTL, **kwargs)
+    model = ResNet12MTLORI(
+        BasicBlockMTL,
+        keep_prob=keep_prob,
+        avg_pool=avg_pool,
+        is_flatten=is_flatten,
+        MTL=MTL,
+        **kwargs
+    )
     return model

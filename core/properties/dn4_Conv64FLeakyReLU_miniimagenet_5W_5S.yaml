@@ -67,4 +67,3 @@ parallel_part:
   - emb_func
 seed: 0
 deterministic: True
-

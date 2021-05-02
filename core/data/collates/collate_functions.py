@@ -14,15 +14,21 @@ class GeneralCollateFunction(object):
         try:
             images, targets = zip(*batch)
 
-            images = list(itertools.chain.from_iterable(
-                    [[image] * self.times for image in images]))
+            images = list(
+                itertools.chain.from_iterable(
+                    [[image] * self.times for image in images]
+                )
+            )
             images = [self.trfms(image).unsqueeze(0) for image in images]
 
-            targets = list(itertools.chain.from_iterable(
-                    [[target] * self.times for target in targets]))
+            targets = list(
+                itertools.chain.from_iterable(
+                    [[target] * self.times for target in targets]
+                )
+            )
             targets = [torch.tensor([target]) for target in targets]
 
-            assert len(images) == len(targets), '图像和标签数量不一致'
+            assert len(images) == len(targets), "图像和标签数量不一致"
 
             images = torch.cat(images)
 
@@ -30,7 +36,7 @@ class GeneralCollateFunction(object):
 
             return images, targets
         except TypeError:
-            raise TypeError('不应该在dataset传入transform，在collate_fn传入transform')
+            raise TypeError("不应该在dataset传入transform，在collate_fn传入transform")
 
     def __call__(self, batch):
         return self.method(batch)
@@ -41,7 +47,9 @@ class FewShotAugCollateFunction(object):
     增广5次的样例: 01234 -> 0000011111222223333344444
     """
 
-    def __init__(self, trfms, times, times_q, way_num, shot_num, query_num, episode_size):
+    def __init__(
+        self, trfms, times, times_q, way_num, shot_num, query_num, episode_size
+    ):
         super(FewShotAugCollateFn, self).__init__()
         try:
             self.trfms_support, self.trfms_query = trfms
@@ -64,11 +72,15 @@ class FewShotAugCollateFunction(object):
             # images
             images, labels = zip(*batch)
             # images = [img_label_tuple[0] for img_label_tuple in batch]  # 111111222222 (5s1q for example)
-            images_split_by_label = [images[index:index + self.shot_num + self.query_num] for index in
-                                     range(0, len(images), self.shot_num + self.query_num)]
+            images_split_by_label = [
+                images[index : index + self.shot_num + self.query_num]
+                for index in range(0, len(images), self.shot_num + self.query_num)
+            ]
             # 111111; 222222 ;
-            images_split_by_label_type = [[spt_qry[:self.shot_num], spt_qry[self.shot_num:]] for spt_qry in
-                                          images_split_by_label]
+            images_split_by_label_type = [
+                [spt_qry[: self.shot_num], spt_qry[self.shot_num :]]
+                for spt_qry in images_split_by_label
+            ]
             # 11111,1;22222,2;  == [shot, query]
 
             # aug support # fixme: should have a elegant method # 1111111111,1;2222222222,2 # (aug_time = 2 for example)
@@ -77,25 +89,41 @@ class FewShotAugCollateFunction(object):
                 cls[1] = cls[1] * self.times_q  # aug query
 
             # flatten and apply trfms
-            flat = lambda t: [x for sub in t for x in flat(sub)] if isinstance(t, Iterable) else [t]
+            flat = (
+                lambda t: [x for sub in t for x in flat(sub)]
+                if isinstance(t, Iterable)
+                else [t]
+            )
             images = flat(images_split_by_label_type)  # 1111111111122222222222
             # images = [self.trfms(image) for image in images]  # list of tensors([c, h, w])
-            images = [self.trfms_support(image)
-                      if index % (self.shot_aug + self.query_aug) < self.shot_aug else self.trfms_query(image)
-                      for index, image in enumerate(images)]  # list of tensors([c, h, w])
+            images = [
+                self.trfms_support(image)
+                if index % (self.shot_aug + self.query_aug) < self.shot_aug
+                else self.trfms_query(image)
+                for index, image in enumerate(images)
+            ]  # list of tensors([c, h, w])
             images = torch.stack(images)  # [b', c, h, w] <- b' = b after aug
 
             # labels
             # global_labels = torch.tensor(labels,dtype=torch.int64)
             # global_labels = torch.tensor(labels,dtype=torch.int64).reshape(self.episode_size,self.way_num,self.shot_num*self.times+self.query_num)
-            global_labels = torch.tensor(labels, dtype=torch.int64).reshape(self.episode_size, self.way_num,
-                                                                            self.shot_num + self.query_num)
-            global_labels = global_labels[..., 0].unsqueeze(-1).repeat(1, 1,
-                                                                       self.shot_num * self.times + self.query_num* self.times_q)
+            global_labels = torch.tensor(labels, dtype=torch.int64).reshape(
+                self.episode_size, self.way_num, self.shot_num + self.query_num
+            )
+            global_labels = (
+                global_labels[..., 0]
+                .unsqueeze(-1)
+                .repeat(
+                    1, 1, self.shot_num * self.times + self.query_num * self.times_q
+                )
+            )
 
-            return images, global_labels  # images.shape = [e*(q+s) x c x h x w],  global_labels.shape = [e x w x (q+s)]
+            return (
+                images,
+                global_labels,
+            )  # images.shape = [e*(q+s) x c x h x w],  global_labels.shape = [e x w x (q+s)]
         except TypeError:
-            raise TypeError('不应该在dataset传入transform，在collate_fn传入transform')
+            raise TypeError("不应该在dataset传入transform，在collate_fn传入transform")
 
     def __call__(self, batch):
-        return self.method(batch) 
+        return self.method(batch)

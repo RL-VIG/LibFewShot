@@ -16,9 +16,9 @@ def computeGramMatrix(A, B):
     Returns: a (n_batch, n, m) Tensor.
     """
 
-    assert (A.dim() == 3)
-    assert (B.dim() == 3)
-    assert (A.size(0) == B.size(0) and A.size(2) == B.size(2))
+    assert A.dim() == 3
+    assert B.dim() == 3
+    assert A.size(0) == B.size(0) and A.size(2) == B.size(2)
 
     return torch.bmm(A, B.transpose(1, 2))
 
@@ -51,7 +51,9 @@ def one_hot(indices, depth):
     Returns: a (n_batch, m, depth) Tensor or (m, depth) Tensor.
     """
 
-    encoded_indicie = torch.zeros(indices.size() + torch.Size([depth])).to(indices.device)
+    encoded_indicie = torch.zeros(indices.size() + torch.Size([depth])).to(
+        indices.device
+    )
     index = indices.view(indices.size() + torch.Size([1]))
     encoded_indicie = encoded_indicie.scatter_(1, index, 1)
 
@@ -68,24 +70,34 @@ class R2D2_Layer(nn.Module):
         super(R2D2_Layer, self).__init__()
         self.way_num = way_num
         self.shot_num = shot_num
-        self.register_parameter('alpha', nn.Parameter(torch.tensor([1.])))
-        self.register_parameter('beta', nn.Parameter(torch.tensor([0.])))
-        self.register_parameter('gamma', nn.Parameter(torch.tensor([50.])))
+        self.register_parameter("alpha", nn.Parameter(torch.tensor([1.0])))
+        self.register_parameter("beta", nn.Parameter(torch.tensor([0.0])))
+        self.register_parameter("gamma", nn.Parameter(torch.tensor([50.0])))
 
     def forward(self, query, support, support_target):
         tasks_per_batch = query.size(0)
         n_support = support.size(1)
         support_target = support_target.squeeze()
 
-        assert (query.dim() == 3)
-        assert (support.dim() == 3)
-        assert (query.size(0) == support.size(0) and query.size(2) == support.size(2))
-        assert (n_support == self.way_num * self.shot_num)  # n_support must equal to n_way * n_shot
+        assert query.dim() == 3
+        assert support.dim() == 3
+        assert query.size(0) == support.size(0) and query.size(2) == support.size(2)
+        assert (
+            n_support == self.way_num * self.shot_num
+        )  # n_support must equal to n_way * n_shot
 
-        support_labels_one_hot = one_hot(support_target.view(tasks_per_batch * n_support), self.way_num)
-        support_labels_one_hot = support_labels_one_hot.view(tasks_per_batch, n_support, self.way_num)
+        support_labels_one_hot = one_hot(
+            support_target.view(tasks_per_batch * n_support), self.way_num
+        )
+        support_labels_one_hot = support_labels_one_hot.view(
+            tasks_per_batch, n_support, self.way_num
+        )
 
-        id_matrix = torch.eye(n_support).expand(tasks_per_batch, n_support, n_support).to(query.device)
+        id_matrix = (
+            torch.eye(n_support)
+            .expand(tasks_per_batch, n_support, n_support)
+            .to(query.device)
+        )
 
         # Compute the dual form solution of the ridge regression.
         # W = X^T(X X^T - lambda * I)^(-1) Y
@@ -108,24 +120,28 @@ class R2D2(MetaModel):
         self.classifier = R2D2_Layer(self.way_num, self.shot_num)
         self._init_network()
 
-    def set_forward(self, batch, ):
+    def set_forward(self, batch):
         image, global_target = batch
         image = image.to(self.device)
 
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=1
+        )
         output, weight = self.classifier(query_feat, support_feat, support_target)
 
         output = output.contiguous().view(-1, self.way_num)
         acc = accuracy(output.squeeze(), query_target.contiguous().reshape(-1))
         return output, acc
 
-    def set_forward_loss(self, batch, ):
+    def set_forward_loss(self, batch):
         image, global_target = batch
         image = image.to(self.device)
 
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=1
+        )
         output, weight = self.classifier(query_feat, support_feat, support_target)
 
         output = output.contiguous().view(-1, self.way_num)

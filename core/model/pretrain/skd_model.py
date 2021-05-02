@@ -15,18 +15,26 @@ from core.model.loss import L2DistLoss
 # FIXME 加上多GPU
 # https://github.com/brjathu/SKD
 
+
 class DistillLayer(nn.Module):
-    def __init__(self, emb_func, cls_classifier, is_distill,
-                 emb_func_path=None, cls_classifier_path=None, ):
+    def __init__(
+        self,
+        emb_func,
+        cls_classifier,
+        is_distill,
+        emb_func_path=None,
+        cls_classifier_path=None,
+    ):
         super(DistillLayer, self).__init__()
         self.emb_func = self._load_state_dict(emb_func, emb_func_path, is_distill)
-        self.cls_classifier = self._load_state_dict(cls_classifier, cls_classifier_path,
-                                                    is_distill)
+        self.cls_classifier = self._load_state_dict(
+            cls_classifier, cls_classifier_path, is_distill
+        )
 
     def _load_state_dict(self, model, state_dict_path, is_distill):
         new_model = None
         if is_distill and state_dict_path is not None:
-            model_state_dict = torch.load(state_dict_path, map_location='cpu')
+            model_state_dict = torch.load(state_dict_path, map_location="cpu")
             model.load_state_dict(model_state_dict)
             new_model = copy.deepcopy(model)
         return new_model
@@ -42,10 +50,23 @@ class DistillLayer(nn.Module):
 
 
 class SKDModel(PretrainModel):
-    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim,
-                 num_class, gamma=1, alpha=1, is_distill=False, kd_T=4,
-                 emb_func_path=None, cls_classifier_path=None, ):
-        super(SKDModel, self).__init__(way_num, shot_num, query_num, emb_func, device, )
+    def __init__(
+        self,
+        way_num,
+        shot_num,
+        query_num,
+        emb_func,
+        device,
+        feat_dim,
+        num_class,
+        gamma=1,
+        alpha=1,
+        is_distill=False,
+        kd_T=4,
+        emb_func_path=None,
+        cls_classifier_path=None,
+    ):
+        super(SKDModel, self).__init__(way_num, shot_num, query_num, emb_func, device)
 
         self.feat_dim = feat_dim
         self.num_class = num_class
@@ -61,24 +82,30 @@ class SKDModel(PretrainModel):
         self.l2_loss_func = L2DistLoss()
         self.kl_loss_func = DistillKLLoss(T=kd_T)
 
+        self.distill_layer = DistillLayer(
+            self.emb_func,
+            self.cls_classifier,
+            self.is_distill,
+            emb_func_path,
+            cls_classifier_path,
+        )
 
-        self.distill_layer = DistillLayer(self.emb_func, self.cls_classifier,
-                                          self.is_distill, emb_func_path,
-                                          cls_classifier_path, )
-
-    def set_forward(self, batch, ):
+    def set_forward(self, batch):
         """
 
         :param batch:
         :return:
         """
         image, global_target = batch
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
         image = image.to(self.device)
         with torch.no_grad():
             feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target \
-            = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=1
+        )
 
         output_list = []
         acc_list = []
@@ -115,8 +142,9 @@ class SKDModel(PretrainModel):
 
         batch_size = image.size(0)
 
-        generated_image, generated_target, rot_target \
-            = self.rot_image_generation(image, target)
+        generated_image, generated_target, rot_target = self.rot_image_generation(
+            image, target
+        )
 
         feat = self.emb_func(generated_image)
         output = self.cls_classifier(feat)
@@ -124,13 +152,13 @@ class SKDModel(PretrainModel):
 
         if self.is_distill:
             gamma_loss = self.kl_loss_func(output[:batch_size], distill_output)
-            alpha_loss = self.l2_loss_func(output[batch_size:],
-                                           output[:batch_size]) / 3
+            alpha_loss = self.l2_loss_func(output[batch_size:], output[:batch_size]) / 3
         else:
             rot_output = self.rot_classifier(output)
             gamma_loss = self.ce_loss_func(output, generated_target)
             alpha_loss = torch.sum(
-                F.binary_cross_entropy_with_logits(rot_output, rot_target))
+                F.binary_cross_entropy_with_logits(rot_output, rot_target)
+            )
 
         loss = gamma_loss * self.gamma + alpha_loss * self.alpha
 
@@ -142,11 +170,13 @@ class SKDModel(PretrainModel):
         return self.set_forward_adaptation(support_feat, support_target)
 
     def set_forward_adaptation(self, support_feat, support_target):
-        classifier = LogisticRegression(random_state=0,
-                                        solver='lbfgs',
-                                        max_iter=1000,
-                                        penalty='l2',
-                                        multi_class='multinomial')
+        classifier = LogisticRegression(
+            random_state=0,
+            solver="lbfgs",
+            max_iter=1000,
+            penalty="l2",
+            multi_class="multinomial",
+        )
 
         support_feat = F.normalize(support_feat, p=2, dim=1).detach().cpu().numpy()
         support_target = support_target.detach().cpu().numpy()
@@ -169,16 +199,18 @@ class SKDModel(PretrainModel):
             rot_target[batch_size:] += 1
             rot_target = rot_target.long().to(self.device)
         else:
-            generated_image = torch.cat((image, images_90, images_180, images_270),
-                                         dim=0)
+            generated_image = torch.cat(
+                (image, images_90, images_180, images_270), dim=0
+            )
             generated_target = target.repeat(4)
 
             rot_target = torch.zeros(batch_size * 4)
             rot_target[batch_size:] += 1
-            rot_target[batch_size * 2:] += 1
-            rot_target[batch_size * 3:] += 1
-            rot_target = F.one_hot(rot_target.to(torch.int64), 4) \
-                .float().to(self.device)
+            rot_target[batch_size * 2 :] += 1
+            rot_target[batch_size * 3 :] += 1
+            rot_target = (
+                F.one_hot(rot_target.to(torch.int64), 4).float().to(self.device)
+            )
 
         return generated_image, generated_target, rot_target
 

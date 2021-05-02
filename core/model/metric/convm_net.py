@@ -3,7 +3,9 @@ from torch import nn
 
 from core.utils import accuracy
 from .metric_model import MetricModel
+
 # https://github.com/WenbinLee/CovaMNet
+
 
 class ConvM_Layer(nn.Module):
     def __init__(self, way_num, shot_num, query_num, n_local):
@@ -15,15 +17,18 @@ class ConvM_Layer(nn.Module):
         self.conv1d_layer = nn.Sequential(
             nn.LeakyReLU(0.2, inplace=True),
             nn.Dropout(),
-            nn.Conv1d(in_channels=1, out_channels=1,
-                      kernel_size=n_local, stride=n_local)
+            nn.Conv1d(
+                in_channels=1, out_channels=1, kernel_size=n_local, stride=n_local
+            ),
         )
 
     def _calc_support_cov(self, support_feat):
         t, ws, c, h, w = support_feat.size()
 
         # t, ws, c, h, w -> t, ws, hw, c -> t, w, shw, c
-        support_feat = support_feat.view(t, ws, c, h * w).permute(0, 1, 3, 2).contiguous()
+        support_feat = (
+            support_feat.view(t, ws, c, h * w).permute(0, 1, 3, 2).contiguous()
+        )
         support_feat = support_feat.view(t, self.way_num, self.shot_num * h * w, c)
         support_feat = support_feat - torch.mean(support_feat, dim=2, keepdim=True)
 
@@ -45,8 +50,11 @@ class ConvM_Layer(nn.Module):
         # t, wq, w, hw, c matmul t, wq, 1, c, hw -> t, wq, w, hw, hw -> twqw, hw, hw
         support_cov_mat = support_cov_mat.unsqueeze(1)
         prod_mat = torch.matmul(query_feat, support_cov_mat)
-        prod_mat = torch.matmul(prod_mat, torch.transpose(query_feat, 3, 4)) \
-            .contiguous().view(t * self.way_num * wq, h * w, h * w)
+        prod_mat = (
+            torch.matmul(prod_mat, torch.transpose(query_feat, 3, 4))
+            .contiguous()
+            .view(t * self.way_num * wq, h * w, h * w)
+        )
 
         # twq, 1, whw
         cov_sim = torch.diagonal(prod_mat, dim1=1, dim2=2).contiguous()
@@ -69,7 +77,7 @@ class ConvMNet(MetricModel):
         self.convm_layer = ConvM_Layer(way_num, shot_num, query_num, n_local)
         self.loss_func = nn.CrossEntropyLoss()
 
-    def set_forward(self, batch, ):
+    def set_forward(self, batch):
         """
 
         :param batch:
@@ -77,12 +85,17 @@ class ConvMNet(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat,mode=2)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=2
+        )
 
-        output = self.convm_layer(query_feat, support_feat) \
-            .view(episode_size * self.way_num * self.query_num, self.way_num)
+        output = self.convm_layer(query_feat, support_feat).view(
+            episode_size * self.way_num * self.query_num, self.way_num
+        )
         acc = accuracy(output, query_target)
 
         return output, acc
@@ -95,12 +108,17 @@ class ConvMNet(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat,mode=2)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=2
+        )
 
-        output = self.convm_layer(query_feat, support_feat) \
-            .view(episode_size * self.way_num * self.query_num, self.way_num)
+        output = self.convm_layer(query_feat, support_feat).view(
+            episode_size * self.way_num * self.query_num, self.way_num
+        )
         loss = self.loss_func(output, query_target)
         acc = accuracy(output, query_target)
 

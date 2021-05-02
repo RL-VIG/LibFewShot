@@ -13,9 +13,11 @@ from .. import DistillKLLoss
 
 # FIXME 加上多GPU
 
-#https://github.com/WangYueFt/rfs
+# https://github.com/WangYueFt/rfs
 class DistillLayer(nn.Module):
-    def __init__(self, emb_func, classifier, is_distill, emb_func_path=None, classifier_path=None):
+    def __init__(
+        self, emb_func, classifier, is_distill, emb_func_path=None, classifier_path=None
+    ):
         super(DistillLayer, self).__init__()
         self.emb_func = self._load_state_dict(emb_func, emb_func_path, is_distill)
         self.classifier = self._load_state_dict(classifier, classifier_path, is_distill)
@@ -24,7 +26,7 @@ class DistillLayer(nn.Module):
         new_model = None
         if is_distill and state_dict_path is not None:
             new_model = copy.deepcopy(model)
-            model_state_dict = torch.load(state_dict_path, map_location='cpu')
+            model_state_dict = torch.load(state_dict_path, map_location="cpu")
             new_model.load_state_dict(model_state_dict)
         return new_model
 
@@ -38,9 +40,22 @@ class DistillLayer(nn.Module):
 
 
 class RFSModel(PretrainModel):
-    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim,
-                 num_class, gamma=1, alpha=0, is_distill=False, kd_T=4,
-                 emb_func_path=None, classifier_path=None):
+    def __init__(
+        self,
+        way_num,
+        shot_num,
+        query_num,
+        emb_func,
+        device,
+        feat_dim,
+        num_class,
+        gamma=1,
+        alpha=0,
+        is_distill=False,
+        kd_T=4,
+        emb_func_path=None,
+        classifier_path=None,
+    ):
         super(RFSModel, self).__init__(way_num, shot_num, query_num, emb_func, device)
 
         self.feat_dim = feat_dim
@@ -56,21 +71,30 @@ class RFSModel(PretrainModel):
 
         self._init_network()
 
-        self.distill_layer = DistillLayer(self.emb_func, self.classifier,
-                                          self.is_distill, emb_func_path, classifier_path)
+        self.distill_layer = DistillLayer(
+            self.emb_func,
+            self.classifier,
+            self.is_distill,
+            emb_func_path,
+            classifier_path,
+        )
 
-    def set_forward(self, batch, ):
+    def set_forward(self, batch):
         """
 
         :param batch:
         :return:
         """
         image, global_target = batch
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
         image = image.to(self.device)
         with torch.no_grad():
             feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=1
+        )
 
         output_list = []
         acc_list = []
@@ -121,12 +145,14 @@ class RFSModel(PretrainModel):
         return self.set_forward_adaptation(support_feat, support_target)
 
     def set_forward_adaptation(self, support_feat, support_target):
-        classifier = LogisticRegression(penalty='l2',
-                                        random_state=0,
-                                        C=1.0,
-                                        solver='lbfgs',
-                                        max_iter=1000,
-                                        multi_class='multinomial')
+        classifier = LogisticRegression(
+            penalty="l2",
+            random_state=0,
+            C=1.0,
+            solver="lbfgs",
+            max_iter=1000,
+            multi_class="multinomial",
+        )
 
         support_feat = F.normalize(support_feat, p=2, dim=1).detach().cpu().numpy()
         support_target = support_target.detach().cpu().numpy()

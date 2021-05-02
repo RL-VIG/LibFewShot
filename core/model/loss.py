@@ -1,6 +1,8 @@
 from torch import nn
 from torch.nn import functional as F
 import torch
+
+
 class L2DistLoss(nn.Module):
     def __init__(self):
         super(L2DistLoss, self).__init__()
@@ -10,6 +12,7 @@ class L2DistLoss(nn.Module):
         if torch.isnan(loss).any():
             loss = 0.0
         return loss
+
 
 class LabelSmoothCELoss(nn.Module):
     def __init__(self, smoothing):
@@ -33,7 +36,7 @@ class DistillKLLoss(nn.Module):
 
     def forward(self, y_s, y_t):
         if y_t is None:
-            return 0.
+            return 0.0
 
         p_s = F.log_softmax(y_s / self.T, dim=1)
         p_t = F.softmax(y_t / self.T, dim=1)

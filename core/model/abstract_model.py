@@ -8,8 +8,16 @@ from .init import init_weights
 
 
 class AbstractModel(nn.Module):
-    def __init__(self, way_num, shot_num, query_num, emb_func, device, init_type,
-                 model_type=ModelType.ABSTRACT):
+    def __init__(
+        self,
+        way_num,
+        shot_num,
+        query_num,
+        emb_func,
+        device,
+        init_type,
+        model_type=ModelType.ABSTRACT,
+    ):
         super(AbstractModel, self).__init__()
         self.way_num = way_num
         self.shot_num = shot_num
@@ -34,7 +42,7 @@ class AbstractModel(nn.Module):
     def train(self, mode=True):
         super(AbstractModel, self).train(mode)
         # for methods with distiller
-        if hasattr(self, 'distill_layer'):
+        if hasattr(self, "distill_layer"):
             self.distill_layer.train(False)
 
     def eval(self):
@@ -44,8 +52,12 @@ class AbstractModel(nn.Module):
         init_weights(self, self.init_type)
 
     def _generate_local_targets(self, episode_size):
-        local_targets = torch.arange(self.way_num, dtype=torch.long).view(1, -1, 1) \
-            .repeat(episode_size, 1, self.shot_num + self.query_num).view(-1)
+        local_targets = (
+            torch.arange(self.way_num, dtype=torch.long)
+            .view(1, -1, 1)
+            .repeat(episode_size, 1, self.shot_num + self.query_num)
+            .view(-1)
+        )
         return local_targets
 
     def split_by_episode(self, features, mode):
@@ -54,47 +66,91 @@ class AbstractModel(nn.Module):
         generate local targets + split labels by episode
         #!FIXME: 使用mode参数的方式需要调整，现在很难看
         """
-        episode_size = features.size(0) // (self.way_num * (self.shot_num + self.query_num))
-        local_labels = self._generate_local_targets(episode_size).to(self.device).contiguous().view(episode_size,
-                                                                                                    self.way_num,
-                                                                                                    self.shot_num +
-                                                                                                    self.query_num)
+        episode_size = features.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
+        local_labels = (
+            self._generate_local_targets(episode_size)
+            .to(self.device)
+            .contiguous()
+            .view(episode_size, self.way_num, self.shot_num + self.query_num)
+        )
 
         if mode == 1:  # input 2D, return 3D(with episode) E.g.ANIL & R2D2
-            features = features.contiguous().view(episode_size, self.way_num, self.shot_num + self.query_num, -1)
-            support_features = features[:, :, :self.shot_num, :].contiguous().view(episode_size,
-                                                                                   self.way_num * self.shot_num, -1)
-            query_features = features[:, :, self.shot_num:, :].contiguous().view(episode_size,
-                                                                                 self.way_num * self.query_num, -1)
-            support_target = local_labels[:, :, :self.shot_num].contiguous().view(episode_size, -1)
-            query_target = local_labels[:, :, self.shot_num:].contiguous().view(episode_size, -1)
+            features = features.contiguous().view(
+                episode_size, self.way_num, self.shot_num + self.query_num, -1
+            )
+            support_features = (
+                features[:, :, : self.shot_num, :]
+                .contiguous()
+                .view(episode_size, self.way_num * self.shot_num, -1)
+            )
+            query_features = (
+                features[:, :, self.shot_num :, :]
+                .contiguous()
+                .view(episode_size, self.way_num * self.query_num, -1)
+            )
+            support_target = (
+                local_labels[:, :, : self.shot_num].contiguous().view(episode_size, -1)
+            )
+            query_target = (
+                local_labels[:, :, self.shot_num :].contiguous().view(episode_size, -1)
+            )
         elif mode == 2:  # input 4D, return 5D(with episode) E.g.DN4
             b, c, h, w = features.shape
-            features = features.contiguous().view(episode_size, self.way_num, self.shot_num + self.query_num, c, h, w)
-            support_features = features[:, :, :self.shot_num, :, ...].contiguous().view(episode_size,
-                                                                                        self.way_num * self.shot_num, c,
-                                                                                        h, w)
-            query_features = features[:, :, self.shot_num:, :, ...].contiguous().view(episode_size,
-                                                                                      self.way_num * self.query_num, c,
-                                                                                      h, w)
-            support_target = local_labels[:, :, :self.shot_num].contiguous().view(episode_size, -1)
-            query_target = local_labels[:, :, self.shot_num:].contiguous().view(-1)
-        elif mode == 3:  # input 4D, return 4D(w/o episode) E.g.realationnet FIXME: 暂时用来处理还没有实现multi-task的方法
+            features = features.contiguous().view(
+                episode_size, self.way_num, self.shot_num + self.query_num, c, h, w
+            )
+            support_features = (
+                features[:, :, : self.shot_num, :, ...]
+                .contiguous()
+                .view(episode_size, self.way_num * self.shot_num, c, h, w)
+            )
+            query_features = (
+                features[:, :, self.shot_num :, :, ...]
+                .contiguous()
+                .view(episode_size, self.way_num * self.query_num, c, h, w)
+            )
+            support_target = (
+                local_labels[:, :, : self.shot_num].contiguous().view(episode_size, -1)
+            )
+            query_target = local_labels[:, :, self.shot_num :].contiguous().view(-1)
+        elif (
+            mode == 3
+        ):  # input 4D, return 4D(w/o episode) E.g.realationnet FIXME: 暂时用来处理还没有实现multi-task的方法
             b, c, h, w = features.shape
-            features = features.contiguous().view(self.way_num, self.shot_num + self.query_num, c, h, w)
-            support_features = features[:, :self.shot_num, :, ...].contiguous().view(self.way_num * self.shot_num, c,
-                                                                                     h, w)
-            query_features = features[:, self.shot_num:, :, ...].contiguous().view(self.way_num * self.query_num, c,
-                                                                                   h, w)
-            support_targets = local_labels[:, :, :self.shot_num].contiguous().view(-1)
-            query_targets = local_labels[:, :, self.shot_num:].contiguous().view(-1)
-        elif mode == 4:  # pretrain baseline input 2D, return 2D(w/o episode) E.g.baseline set_forward FIXME:
+            features = features.contiguous().view(
+                self.way_num, self.shot_num + self.query_num, c, h, w
+            )
+            support_features = (
+                features[:, : self.shot_num, :, ...]
+                .contiguous()
+                .view(self.way_num * self.shot_num, c, h, w)
+            )
+            query_features = (
+                features[:, self.shot_num :, :, ...]
+                .contiguous()
+                .view(self.way_num * self.query_num, c, h, w)
+            )
+            support_targets = local_labels[:, :, : self.shot_num].contiguous().view(-1)
+            query_targets = local_labels[:, :, self.shot_num :].contiguous().view(-1)
+        elif (
+            mode == 4
+        ):  # pretrain baseline input 2D, return 2D(w/o episode) E.g.baseline set_forward FIXME:
             # 暂时用来处理还没有实现multi-task的方法
             features = features.view(self.way_num, self.shot_num + self.query_num, -1)
-            support_features = features[:, :self.shot_num, :].contiguous().view(self.way_num * self.shot_num, -1)
-            query_features = features[:, self.shot_num:, :].contiguous().view(self.way_num * self.query_num, -1)
-            support_target = local_labels[:, :, :self.shot_num].contiguous().view(-1)
-            query_target = local_labels[:, :, self.shot_num:].contiguous().view(-1)
+            support_features = (
+                features[:, : self.shot_num, :]
+                .contiguous()
+                .view(self.way_num * self.shot_num, -1)
+            )
+            query_features = (
+                features[:, self.shot_num :, :]
+                .contiguous()
+                .view(self.way_num * self.query_num, -1)
+            )
+            support_target = local_labels[:, :, : self.shot_num].contiguous().view(-1)
+            query_target = local_labels[:, :, self.shot_num :].contiguous().view(-1)
         else:
             raise Exception("mode should in [1,2,3,4], not {}".format(mode))
 

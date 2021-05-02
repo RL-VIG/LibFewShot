@@ -4,15 +4,17 @@ from torch.nn import functional as F
 
 from core.utils import accuracy
 from .metric_model import MetricModel
+
 # https://github.com/WenbinLee/ADM
 
+
 class ADM_Layer(nn.Module):
-    def __init__(self,way_num, shot_num, query_num,n_k,device):
+    def __init__(self, way_num, shot_num, query_num, n_k, device):
         super(ADM_Layer, self).__init__()
         self.way_num = way_num
         self.shot_num = shot_num
         self.query_num = query_num
-        self.n_k= n_k
+        self.n_k = n_k
         self.device = device
         self.norm_layer = nn.BatchNorm1d(self.way_num * 2, affine=True)
         self.fc_layer = nn.Conv1d(1, 1, kernel_size=2, stride=1, dilation=5, bias=False)
@@ -21,9 +23,11 @@ class ADM_Layer(nn.Module):
         e, _, n_local, c = feat.size()
         feature_mean = torch.mean(feat, 2, True)  # e * Batch * 1 * 64
         feat = feat - feature_mean
-        cov_matrix = torch.matmul(feat.permute(0, 1, 3, 2), feat) #  ebc1 * eb1c = ebcc
+        cov_matrix = torch.matmul(feat.permute(0, 1, 3, 2), feat)  #  ebc1 * eb1c = ebcc
         cov_matrix = torch.div(cov_matrix, n_local - 1)
-        cov_matrix = cov_matrix + 0.01 * torch.eye(c).to(self.device) # broadcast from the last dim
+        cov_matrix = cov_matrix + 0.01 * torch.eye(c).to(
+            self.device
+        )  # broadcast from the last dim
 
         return feature_mean, cov_matrix
 
@@ -52,27 +56,37 @@ class ADM_Layer(nn.Module):
         mean_diff = -(mean1 - mean2.squeeze(2).unsqueeze(1))  # e * 75 * 5 * 64
 
         # Calculate the trace
-        matrix_prod = torch.matmul(cov1.unsqueeze(2), cov2_inverse.unsqueeze(1))  # e * 75 * 5 * 64 * 64
+        matrix_prod = torch.matmul(
+            cov1.unsqueeze(2), cov2_inverse.unsqueeze(1)
+        )  # e * 75 * 5 * 64 * 64
         # trace_dist = [[torch.trace(matrix_prod[e][j][i]).unsqueeze(0) # modified for multi-task, stack for 64*64 tensors
         #                for j in range(matrix_prod.size(1))
         #                for i in range(matrix_prod.size(2))]
         #               for e in range(matrix_prod.size(0))] # list of trace_dist
         # trace_dist = torch.stack([torch.cat(trace_dist_list, 0) for trace_dist_list in trace_dist]) #
-        trace_dist = torch.diagonal(matrix_prod,offset=0,dim1=-2,dim2=-1)  # e * 75 * 5 * 64
-        trace_dist = torch.sum(trace_dist,dim=-1) # e * 75 * 5
+        trace_dist = torch.diagonal(
+            matrix_prod, offset=0, dim1=-2, dim2=-1
+        )  # e * 75 * 5 * 64
+        trace_dist = torch.sum(trace_dist, dim=-1)  # e * 75 * 5
         # trace_dist = trace_dist.view(matrix_prod.size(0),matrix_prod.size(1), matrix_prod.size(2))  # e * 75 * 5
 
         # Calcualte the Mahalanobis Distance
-        maha_prod = torch.matmul(mean_diff.unsqueeze(3), cov2_inverse.unsqueeze(1))  # e * 75 * 5 * 1 * 64
-        maha_prod = torch.matmul(maha_prod, mean_diff.unsqueeze(4))  # e * 75 * 5 * 1 * 1
+        maha_prod = torch.matmul(
+            mean_diff.unsqueeze(3), cov2_inverse.unsqueeze(1)
+        )  # e * 75 * 5 * 1 * 64
+        maha_prod = torch.matmul(
+            maha_prod, mean_diff.unsqueeze(4)
+        )  # e * 75 * 5 * 1 * 1
         maha_prod = maha_prod.squeeze(4)
         maha_prod = maha_prod.squeeze(3)  # e * 75 * 5
 
-        matrix_det = torch.slogdet(cov2).logabsdet.unsqueeze(1) - torch.slogdet(cov1).logabsdet.unsqueeze(2)
+        matrix_det = torch.slogdet(cov2).logabsdet.unsqueeze(1) - torch.slogdet(
+            cov1
+        ).logabsdet.unsqueeze(2)
 
         kl_dist = trace_dist + maha_prod + matrix_det - mean1.size(3)
 
-        return kl_dist / 2.
+        return kl_dist / 2.0
 
     # Calculate KL divergence Distance
     def _cal_adm_sim(self, query_feat, support_feat):
@@ -98,7 +112,9 @@ class ADM_Layer(nn.Module):
         s_mean, s_cov = self._cal_cov_matrix_batch(support_set)
 
         # Calculate the Wasserstein Distance
-        kl_dis = -self._calc_kl_dist_batch(query_mean, query_cov, s_mean, s_cov)  # e * 75 * 5
+        kl_dis = -self._calc_kl_dist_batch(
+            query_mean, query_cov, s_mean, s_cov
+        )  # e * 75 * 5
 
         # Calculate the Image-to-Class Similarity
         query_norm = F.normalize(query_feat, p=2, dim=3)
@@ -107,8 +123,9 @@ class ADM_Layer(nn.Module):
 
         # cosine similarity between a query set and a support set
         # e * 75 * 5 * 441 * 2205
-        inner_prod_matrix = torch.matmul(query_norm.unsqueeze(2),
-                                         support_norm.permute(0, 1, 3, 2).unsqueeze(1))
+        inner_prod_matrix = torch.matmul(
+            query_norm.unsqueeze(2), support_norm.permute(0, 1, 3, 2).unsqueeze(1)
+        )
 
         # choose the top-k nearest neighbors
         # e * 75 * 5 * 441 * 1
@@ -118,7 +135,9 @@ class ADM_Layer(nn.Module):
         # Using FC layer to combine two parts ---- The original
         adm_sim_soft = torch.cat((kl_dis, inner_sim), 2)
 
-        adm_sim_soft = torch.cat([self.norm_layer(each_task).unsqueeze(1) for each_task in adm_sim_soft])
+        adm_sim_soft = torch.cat(
+            [self.norm_layer(each_task).unsqueeze(1) for each_task in adm_sim_soft]
+        )
         # e * 75 * 1 * 10
 
         adm_sim_soft = self.fc_layer(adm_sim_soft).squeeze(1).reshape([e, b, -1])
@@ -126,17 +145,17 @@ class ADM_Layer(nn.Module):
         return adm_sim_soft
 
     def forward(self, query_feat, support_feat):
-        return self._cal_adm_sim(query_feat,support_feat)
+        return self._cal_adm_sim(query_feat, support_feat)
 
 
 class ADM(MetricModel):
     def __init__(self, way_num, shot_num, query_num, emb_func, device, n_k=3):
         super(ADM, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.n_k = n_k
-        self.adm_layer = ADM_Layer(way_num, shot_num, query_num,n_k,device)
+        self.adm_layer = ADM_Layer(way_num, shot_num, query_num, n_k, device)
         self.loss_func = nn.CrossEntropyLoss()
 
-    def set_forward(self, batch, ):
+    def set_forward(self, batch):
         """
 
         :param batch:
@@ -144,11 +163,17 @@ class ADM(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=2
+        )
 
-        output = self.adm_layer(query_feat, support_feat).view(episode_size*self.way_num*self.query_num,-1)
+        output = self.adm_layer(query_feat, support_feat).view(
+            episode_size * self.way_num * self.query_num, -1
+        )
         acc = accuracy(output, query_target)
         return output, acc
 
@@ -160,11 +185,17 @@ class ADM(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=2
+        )
         # assume here we will get n_dim=5
-        output = self.adm_layer(query_feat, support_feat).view(episode_size*self.way_num*self.query_num,-1)
+        output = self.adm_layer(query_feat, support_feat).view(
+            episode_size * self.way_num * self.query_num, -1
+        )
         loss = self.loss_func(output, query_target)
         acc = accuracy(output, query_target)
         return output, acc, loss

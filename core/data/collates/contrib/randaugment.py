@@ -119,7 +119,7 @@ def Sharpness(img, v):  # [0.1,1.9]
 
 def Cutout(img, v):  # [0, 60] => percentage: [0, 0.2]
     assert 0.0 <= v <= 0.2
-    if v <= 0.:
+    if v <= 0.0:
         return img
 
     v = v * img.size[0]
@@ -134,8 +134,8 @@ def CutoutAbs(img, v):  # [0, 60] => percentage: [0, 0.2]
     x0 = np.random.uniform(w)
     y0 = np.random.uniform(h)
 
-    x0 = int(max(0, x0 - v / 2.))
-    y0 = int(max(0, y0 - v / 2.))
+    x0 = int(max(0, x0 - v / 2.0))
+    y0 = int(max(0, y0 - v / 2.0))
     x1 = min(w, x0 + v)
     y1 = min(h, y0 + v)
 
@@ -195,11 +195,11 @@ def augment_list():  # 16 oeprations and their ranges
         (Contrast, 0.1, 1.9),
         (Brightness, 0.1, 1.9),
         (Sharpness, 0.1, 1.9),
-        (ShearX, 0., 0.3),
-        (ShearY, 0., 0.3),
+        (ShearX, 0.0, 0.3),
+        (ShearY, 0.0, 0.3),
         (CutoutAbs, 0, 40),
-        (TranslateXabs, 0., 100),
-        (TranslateYabs, 0., 100),
+        (TranslateXabs, 0.0, 100),
+        (TranslateYabs, 0.0, 100),
     ]
 
     return l
@@ -218,10 +218,14 @@ class Lighting(object):
             return img
 
         alpha = img.new().resize_(3).normal_(0, self.alphastd)
-        rgb = self.eigvec.type_as(img).clone() \
-            .mul(alpha.view(1, 3).expand(3, 3)) \
-            .mul(self.eigval.view(1, 3).expand(3, 3)) \
-            .sum(1).squeeze()
+        rgb = (
+            self.eigvec.type_as(img)
+            .clone()
+            .mul(alpha.view(1, 3).expand(3, 3))
+            .mul(self.eigval.view(1, 3).expand(3, 3))
+            .sum(1)
+            .squeeze()
+        )
 
         return img.add(rgb.view(3, 1, 1).expand_as(img))
 
@@ -230,6 +234,7 @@ class CutoutDefault(object):
     """
     Reference : https://github.com/quark0/darts/blob/master/cnn/utils.py
     """
+
     def __init__(self, length):
         self.length = length
 
@@ -244,7 +249,7 @@ class CutoutDefault(object):
         x1 = np.clip(x - self.length // 2, 0, w)
         x2 = np.clip(x + self.length // 2, 0, w)
 
-        mask[y1: y2, x1: x2] = 0.
+        mask[y1:y2, x1:x2] = 0.0
         mask = torch.from_numpy(mask)
         mask = mask.expand_as(img)
         img *= mask
@@ -254,7 +259,7 @@ class CutoutDefault(object):
 class RandAugment:
     def __init__(self, n=1, m=1):
         self.n = n
-        self.m = m      # [0, 30]
+        self.m = m  # [0, 30]
         self.augment_list = augment_list()
 
     def __call__(self, img):

@@ -7,6 +7,7 @@ from .meta_model import MetaModel
 
 # adapted from tensorflow codes of https://github.com/deepmind/leo
 
+
 def sample(weight, size):
     mean, var = weight[:, :, :size], weight[:, :, size:]
     z = torch.normal(0.0, 1.0, mean.size()).to(weight.device)
@@ -15,15 +16,23 @@ def sample(weight, size):
 
 def cal_log_prob(x, mean, var):
     eps = 1e-20
-    log_unnormalized = - 0.5 * ((x - mean) / (var + eps)) ** 2
+    log_unnormalized = -0.5 * ((x - mean) / (var + eps)) ** 2
     # log_normalization = torch.log(var + eps) + 0.5 * math.log(2 * math.pi)
-    log_normalization = torch.log(var + eps) + 0.5 * torch.log(2 * torch.tensor(math.pi))
+    log_normalization = torch.log(var + eps) + 0.5 * torch.log(
+        2 * torch.tensor(math.pi)
+    )
     return log_unnormalized - log_normalization
 
 
 def cal_kl_div(latent, mean, var):
     return torch.mean(
-        cal_log_prob(latent, mean, var) - cal_log_prob(latent, torch.zeros(mean.size()).to(latent.device), torch.ones(var.size()).to(latent.device)))
+        cal_log_prob(latent, mean, var)
+        - cal_log_prob(
+            latent,
+            torch.zeros(mean.size()).to(latent.device),
+            torch.ones(var.size()).to(latent.device),
+        )
+    )
 
 
 def orthogonality(weight):
@@ -66,11 +75,13 @@ class Encoder(nn.Module):
         x = torch.cat((t1, t2), dim=-1)
 
         x = self.relation_net(x)
-        x = x.reshape(episode_size, self.way_num, self.way_num * self.shot_num * self.shot_num, -1)
+        x = x.reshape(
+            episode_size, self.way_num, self.way_num * self.shot_num * self.shot_num, -1
+        )
         x = torch.mean(x, dim=2)
 
         latent = sample(x, self.hid_dim)
-        mean, var = x[:, :, :self.hid_dim], x[:, :, self.hid_dim:]
+        mean, var = x[:, :, : self.hid_dim], x[:, :, self.hid_dim :]
         kl_div = cal_kl_div(latent, mean, var)
 
         return latent, kl_div
@@ -86,7 +97,20 @@ class Decoder(nn.Module):
 
 
 class LEO(MetaModel):
-    def __init__(self, way_num, shot_num, query_num, emb_func, device, inner_para, feat_dim, hid_dim, kl_weight, encoder_penalty_weight, orthogonality_penalty_weight):
+    def __init__(
+        self,
+        way_num,
+        shot_num,
+        query_num,
+        emb_func,
+        device,
+        inner_para,
+        feat_dim,
+        hid_dim,
+        kl_weight,
+        encoder_penalty_weight,
+        orthogonality_penalty_weight,
+    ):
         super(LEO, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.feat_dim = feat_dim
         self.hid_dim = hid_dim
@@ -99,16 +123,20 @@ class LEO(MetaModel):
 
         self.loss_func = nn.CrossEntropyLoss()
 
-    def set_forward(self, batch, ):
+    def set_forward(self, batch):
         image, global_target = batch
         image = image.to(self.device)
 
         with torch.no_grad():
             feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=1
+        )
         episode_size = support_feat.size(0)
 
-        latents, kl_div, encoder_penalty = self.train_loop(support_feat, support_target, episode_size)
+        latents, kl_div, encoder_penalty = self.train_loop(
+            support_feat, support_target, episode_size
+        )
 
         leo_weight = self.decoder(latents)
         leo_weight = sample(leo_weight, self.feat_dim)
@@ -122,22 +150,28 @@ class LEO(MetaModel):
         acc = accuracy(output, query_target.contiguous().reshape(-1))
         return output, acc
 
-    def set_forward_loss(self, batch, ):
+    def set_forward_loss(self, batch):
         image, global_target = batch
         image = image.to(self.device)
 
         with torch.no_grad():
             feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=1
+        )
         episode_size = support_feat.size(0)
 
-        latent, kl_div, encoder_penalty = self.train_loop(support_feat, support_target, episode_size)
+        latent, kl_div, encoder_penalty = self.train_loop(
+            support_feat, support_target, episode_size
+        )
 
         classifier_weight = self.decoder(latent)
         classifier_weight = sample(classifier_weight, self.feat_dim)
         classifier_weight = classifier_weight.permute([0, 2, 1])
 
-        classifier_weight = self.finetune(classifier_weight, support_feat, support_target)
+        classifier_weight = self.finetune(
+            classifier_weight, support_feat, support_target
+        )
 
         output = torch.bmm(query_feat, classifier_weight)
         output = output.contiguous().reshape(-1, self.way_num)
@@ -145,7 +179,12 @@ class LEO(MetaModel):
 
         orthogonality_penalty = orthogonality(list(self.decoder.parameters())[0])
 
-        total_loss = pred_loss + self.kl_weight * kl_div + self.encoder_penalty_weight * encoder_penalty + self.orthogonality_penalty_weight * orthogonality_penalty
+        total_loss = (
+            pred_loss
+            + self.kl_weight * kl_div
+            + self.encoder_penalty_weight * encoder_penalty
+            + self.orthogonality_penalty_weight * orthogonality_penalty
+        )
         acc = accuracy(output, query_target.contiguous().reshape(-1))
         return output, acc, total_loss
 
@@ -158,7 +197,7 @@ class LEO(MetaModel):
     def set_forward_adaptation(self, emb_support, support_target, episode_size):
         latent, kl_div = self.encoder(emb_support)
         latent_init = latent
-        for i in range(self.inner_para['iter']):
+        for i in range(self.inner_para["iter"]):
             latent.retain_grad()
             classifier_weight = self.decoder(latent)
             classifier_weight = sample(classifier_weight, self.feat_dim)
@@ -170,7 +209,7 @@ class LEO(MetaModel):
 
             loss.backward(retain_graph=True)
 
-            latent = latent - self.inner_para['lr'] * latent.grad
+            latent = latent - self.inner_para["lr"] * latent.grad
 
         encoder_penalty = torch.mean((latent_init - latent) ** 2)
         return latent, kl_div, encoder_penalty
@@ -182,9 +221,12 @@ class LEO(MetaModel):
         target = support_target.contiguous().reshape(-1)
         pred_loss = self.loss_func(output, target)
 
-        for j in range(self.inner_para['finetune_iter']):
+        for j in range(self.inner_para["finetune_iter"]):
             pred_loss.backward(retain_graph=True)
-            classifier_weight = classifier_weight - self.inner_para['finetune_lr'] * classifier_weight.grad
+            classifier_weight = (
+                classifier_weight
+                - self.inner_para["finetune_lr"] * classifier_weight.grad
+            )
             classifier_weight.retain_grad()
 
             output = torch.bmm(emb_support, classifier_weight)

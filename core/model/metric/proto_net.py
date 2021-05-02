@@ -23,8 +23,9 @@ class ProtoLayer(nn.Module):
         proto_feat = torch.mean(support_feat, dim=2)
 
         # t, wq, 1, c - t, 1, w, c -> t, wq, w
-        dist = -torch.sum(torch.pow(query_feat.unsqueeze(2) -
-                                    proto_feat.unsqueeze(1), 2), dim=3)
+        dist = -torch.sum(
+            torch.pow(query_feat.unsqueeze(2) - proto_feat.unsqueeze(1), 2), dim=3
+        )
 
         return dist
 
@@ -35,7 +36,7 @@ class ProtoNet(MetricModel):
         self.proto_layer = Proto_Layer(way_num, shot_num, query_num)
         self.loss_func = nn.CrossEntropyLoss()
 
-    def set_forward(self, batch, ):
+    def set_forward(self, batch):
         """
 
         :param batch:
@@ -43,12 +44,17 @@ class ProtoNet(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat,mode=1)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=1
+        )
 
-        output = self.proto_layer(query_feat, support_feat) \
-            .view(episode_size * self.way_num * self.query_num, self.way_num)
+        output = self.proto_layer(query_feat, support_feat).view(
+            episode_size * self.way_num * self.query_num, self.way_num
+        )
         acc = accuracy(output, query_target)
 
         return output, acc
@@ -61,12 +67,17 @@ class ProtoNet(MetricModel):
         """
         images, global_targets = batch
         images = images.to(self.device)
-        episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = images.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
         emb = self.emb_func(images)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(emb,mode=1)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            emb, mode=1
+        )
 
-        output = self.proto_layer(query_feat, support_feat) \
-            .view(episode_size * self.way_num * self.query_num, self.way_num)
+        output = self.proto_layer(query_feat, support_feat).view(
+            episode_size * self.way_num * self.query_num, self.way_num
+        )
         loss = self.loss_func(output, query_target)
         acc = accuracy(output, query_target)
 

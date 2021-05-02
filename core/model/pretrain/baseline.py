@@ -8,9 +8,21 @@ from .pretrain_model import PretrainModel
 # https://github.com/wyharveychen/CloserLookFewShot.git
 # FIXME 加上多GPU
 
+
 class Baseline(PretrainModel):
-    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim,
-                 num_class, inner_optim=None, inner_batch_size=4, inner_train_iter=20):
+    def __init__(
+        self,
+        way_num,
+        shot_num,
+        query_num,
+        emb_func,
+        device,
+        feat_dim,
+        num_class,
+        inner_optim=None,
+        inner_batch_size=4,
+        inner_train_iter=20,
+    ):
         super(Baseline, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.feat_dim = feat_dim
         self.num_class = num_class
@@ -21,8 +33,7 @@ class Baseline(PretrainModel):
         self.classifier = nn.Linear(self.feat_dim, self.num_class)
         self.loss_func = nn.CrossEntropyLoss()
 
-
-    def set_forward(self, batch, ):
+    def set_forward(self, batch):
         """
         :param batch:
         :return:
@@ -31,7 +42,9 @@ class Baseline(PretrainModel):
         image = image.to(self.device)
         with torch.no_grad():
             feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=4)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=4
+        )
 
         classifier = self.test_loop(support_feat, support_target)
 
@@ -69,7 +82,7 @@ class Baseline(PretrainModel):
         for epoch in range(self.inner_train_iter):
             rand_id = torch.randperm(support_size)
             for i in range(0, support_size, self.inner_batch_size):
-                select_id = rand_id[i:min(i + self.inner_batch_size, support_size)]
+                select_id = rand_id[i : min(i + self.inner_batch_size, support_size)]
                 batch = support_feat[select_id]
                 target = support_target[select_id]
 

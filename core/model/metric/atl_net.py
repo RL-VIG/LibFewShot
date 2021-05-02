@@ -4,7 +4,9 @@ from torch.nn import functional as F
 
 from core.utils import accuracy
 from .metric_model import MetricModel
+
 # https://github.com/LegenDong/ATL-Net
+
 
 class AEA_Module(nn.Module):
     def __init__(self, feat_dim, scale_value, from_value, value_interval):
@@ -19,7 +21,7 @@ class AEA_Module(nn.Module):
             nn.Linear(self.feat_dim, self.feat_dim // 16),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Linear(self.feat_dim // 16, 1),
-            nn.Sigmoid()
+            nn.Sigmoid(),
         )
 
     def forward(self, x, f_x):
@@ -27,7 +29,9 @@ class AEA_Module(nn.Module):
         t, wq, hw, c = x.size()
 
         # t, wq, hw, c -> t, wq, hw, 1
-        clamp_value = self.f_psi(x.view(t * wq * hw, c)) * self.value_interval + self.from_value
+        clamp_value = (
+            self.f_psi(x.view(t * wq * hw, c)) * self.value_interval + self.from_value
+        )
         clamp_value = clamp_value.view(t, wq, hw, 1)
         clamp_fx = torch.sigmoid(self.scale_value * (f_x - clamp_value))
         attention_mask = F.normalize(clamp_fx, p=1, dim=-1)
@@ -36,8 +40,17 @@ class AEA_Module(nn.Module):
 
 
 class ATL_Layer(nn.Module):
-    def __init__(self, way_num, shot_num, query_num, feat_dim,
-                 scale_value, atten_scale_value, from_value, value_interval):
+    def __init__(
+        self,
+        way_num,
+        shot_num,
+        query_num,
+        feat_dim,
+        scale_value,
+        atten_scale_value,
+        from_value,
+        value_interval,
+    ):
         super(ATL_Layer, self).__init__()
         self.way_num = way_num
         self.shot_num = shot_num
@@ -49,12 +62,16 @@ class ATL_Layer(nn.Module):
         self.value_interval = value_interval
 
         self.W = nn.Sequential(
-            nn.Conv2d(self.feat_dim, self.feat_dim, kernel_size=1, stride=1, bias=False),
+            nn.Conv2d(
+                self.feat_dim, self.feat_dim, kernel_size=1, stride=1, bias=False
+            ),
             nn.BatchNorm2d(self.feat_dim),
-            nn.LeakyReLU(0.2, inplace=True)
+            nn.LeakyReLU(0.2, inplace=True),
         )
 
-        self.atten_layer = AEA_Module(self.feat_dim, self.atten_scale_value, self.from_value, self.value_interval)
+        self.atten_layer = AEA_Module(
+            self.feat_dim, self.atten_scale_value, self.from_value, self.value_interval
+        )
 
     def forward(self, query_feat, support_feat):
         t, wq, c, h, w = query_feat.size()
@@ -62,9 +79,19 @@ class ATL_Layer(nn.Module):
 
         # t, wq, c, hw -> t, wq, hw, c
         # t, ws, c, hw -> t, c, ws, hw -> t, 1, c, wshw
-        w_query = self.W(query_feat.view(t * wq, c, h, w)).view(t, wq, c, h * w).permute(0, 1, 3, 2).contiguous()
-        w_support = self.W(support_feat.view(t * ws, c, h, w)).view(t, ws, c, h * w) \
-            .permute(0, 2, 1, 3).contiguous().view(t, 1, c, ws * h * w)
+        w_query = (
+            self.W(query_feat.view(t * wq, c, h, w))
+            .view(t, wq, c, h * w)
+            .permute(0, 1, 3, 2)
+            .contiguous()
+        )
+        w_support = (
+            self.W(support_feat.view(t * ws, c, h, w))
+            .view(t, ws, c, h * w)
+            .permute(0, 2, 1, 3)
+            .contiguous()
+            .view(t, 1, c, ws * h * w)
+        )
 
         w_query = F.normalize(w_query, dim=3)
         w_support = F.normalize(w_support, dim=2)
@@ -76,7 +103,12 @@ class ATL_Layer(nn.Module):
         # t, wq, c, hw -> t, wq, hw, c
         # t, ws, c, hw -> t, c, ws, hw -> t, 1, c, wshw
         query_feat = query_feat.view(t, wq, c, h * w).permute(0, 1, 3, 2).contiguous()
-        support_feat = support_feat.view(t, ws, c, h * w).permute(0, 2, 1, 3).contiguous().view(t, 1, c, ws * h * w)
+        support_feat = (
+            support_feat.view(t, ws, c, h * w)
+            .permute(0, 2, 1, 3)
+            .contiguous()
+            .view(t, 1, c, ws * h * w)
+        )
 
         query_feat = F.normalize(query_feat, dim=3)
         support_feat = F.normalize(support_feat, dim=2)
@@ -85,8 +117,11 @@ class ATL_Layer(nn.Module):
         # t, wq, hw, wshw -> t, wq, hw, w, s, hw -> t, wq, w, s, hw, hw -> t, wq, w
         match_score = torch.matmul(query_feat, support_feat)
 
-        atten_match_score = torch.mul(atten_score, match_score) \
-            .view(t, wq, h * w, self.way_num, self.shot_num, h * w).permute(0, 1, 3, 4, 2, 5)
+        atten_match_score = (
+            torch.mul(atten_score, match_score)
+            .view(t, wq, h * w, self.way_num, self.shot_num, h * w)
+            .permute(0, 1, 3, 4, 2, 5)
+        )
         score = torch.sum(atten_match_score, dim=5)
         score = torch.mean(score, dim=[3, 4]) * self.scale_value
 
@@ -95,14 +130,33 @@ class ATL_Layer(nn.Module):
 
 # TODO a large gap in the 5-way 5-shot
 class ATLNet(MetricModel):
-    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim, scale_value=30,
-                 atten_scale_value=50, from_value=0.5, value_interval=0.3):
+    def __init__(
+        self,
+        way_num,
+        shot_num,
+        query_num,
+        emb_func,
+        device,
+        feat_dim,
+        scale_value=30,
+        atten_scale_value=50,
+        from_value=0.5,
+        value_interval=0.3,
+    ):
         super(ATLNet, self).__init__(way_num, shot_num, query_num, emb_func, device)
-        self.atl_layer = ATL_Layer(way_num, shot_num, query_num, feat_dim, scale_value,
-                                  atten_scale_value, from_value, value_interval)
+        self.atl_layer = ATL_Layer(
+            way_num,
+            shot_num,
+            query_num,
+            feat_dim,
+            scale_value,
+            atten_scale_value,
+            from_value,
+            value_interval,
+        )
         self.loss_func = nn.CrossEntropyLoss()
 
-    def set_forward(self, batch, ):
+    def set_forward(self, batch):
         """
 
         :param batch:
@@ -110,12 +164,17 @@ class ATLNet(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=2
+        )
 
-        output = self.atl_layer(query_feat, support_feat) \
-            .view(episode_size * self.way_num * self.query_num, self.way_num)
+        output = self.atl_layer(query_feat, support_feat).view(
+            episode_size * self.way_num * self.query_num, self.way_num
+        )
         acc = accuracy(output, query_target)
 
         return output, acc
@@ -128,12 +187,17 @@ class ATLNet(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=2
+        )
 
-        output = self.atl_layer(query_feat, support_feat) \
-            .view(episode_size * self.way_num * self.query_num, self.way_num)
+        output = self.atl_layer(query_feat, support_feat).view(
+            episode_size * self.way_num * self.query_num, self.way_num
+        )
         loss = self.loss_func(output, query_target)
         acc = accuracy(output, query_target)
 
