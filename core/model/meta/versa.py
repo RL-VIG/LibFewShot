@@ -75,7 +75,7 @@ class VERSA(MetaModel):
         images, _ = batch
         images = images.to(self.device)
 
-        feat = self.model_func(images)
+        feat = self.emb_func(images)
         support_feat, query_feat, support_targets, query_targets = self.split_by_episode(feat, mode=1)
         episode_size = support_targets.size(0)
         query_targets = query_targets.contiguous().reshape(episode_size, -1)
@@ -97,7 +97,7 @@ class VERSA(MetaModel):
         images, _ = batch
         images = images.to(self.device)
 
-        feat = self.model_func(images)
+        feat = self.emb_func(images)
         support_feat, query_feat, support_targets, query_targets = self.split_by_episode(feat, mode=1)
         episode_size = support_targets.size(0)
         query_targets = query_targets.contiguous().reshape(episode_size, -1)

@@ -55,7 +55,7 @@ class RelationNet(MetricModel):
         images, global_targets = batch
         images = images.to(self.device)
 
-        feat = self.model_func(images)
+        feat = self.emb_func(images)
         support_feat, query_feat, support_targets, query_targets \
             = self.split_by_episode(feat, mode=2)
 
@@ -74,7 +74,7 @@ class RelationNet(MetricModel):
         images, global_targets = batch
         images = images.to(self.device)
 
-        feat = self.model_func(images)
+        feat = self.emb_func(images)
         support_feat, query_feat, support_targets, query_targets \
             = self.split_by_episode(feat, mode=2)
 

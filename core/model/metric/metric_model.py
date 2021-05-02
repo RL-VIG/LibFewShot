@@ -20,5 +20,5 @@ class MetricModel(AbstractModel):
         pass
 
     def forward(self, x):
-        out = self.model_func(x)
+        out = self.emb_func(x)
         return out

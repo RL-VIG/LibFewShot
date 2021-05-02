@@ -46,7 +46,7 @@ class MAML(MetaModel):
         self._init_network()
 
     def forward_output(self, x):
-        out1 = self.model_func(x)
+        out1 = self.emb_func(x)
         out2 = self.classifier(out1)
         return out2
 
@@ -101,7 +101,7 @@ class MAML(MetaModel):
         for parameter in self.parameters():
             parameter.fast = None
 
-        self.model_func.train()
+        self.emb_func.train()
         self.classifier.train()
         for i in range(self.inner_train_iter):
             output = self.forward_output(support_set)

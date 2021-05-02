@@ -53,7 +53,7 @@ class ProtoNetGlobal(MetricModel):
         """
         images, global_targets = batch
         images = images.to(self.device)
-        feat = self.model_func(images)
+        feat = self.emb_func(images)
 
         episode_size = images.size(0) // (
                 self.test_way * (self.test_shot + self.test_query))
@@ -90,7 +90,7 @@ class ProtoNetGlobal(MetricModel):
         global_targets = global_targets.to(self.device)
         images = images.to(self.device)
         episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
-        feat = self.model_func(images)
+        feat = self.emb_func(images)
         global_output = self.classifier(feat)
         global_loss = self.loss_func(global_output, global_targets.view(-1))
 

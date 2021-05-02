@@ -197,22 +197,22 @@ class Trainer(object):
         return train_loader, val_loader, test_loader
 
     def _init_model(self, config):
-        model_func = get_instance(arch, 'backbone', config)
+        emb_func = get_instance(arch, 'backbone', config)
         model = get_instance(arch, 'classifier', config,
                              config['way_num'],
                              config['shot_num'] * config['augment_times'],
                              config['query_num'],
-                             model_func, self.device)
+                             emb_func, self.device)
 
         self.logger.info(model)
         self.logger.info(count_parameters(model))
 
         if self.config['pretrain_path'] is not None:
-            self.logger.info('load pretrain model_func from {}'
+            self.logger.info('load pretrain emb_func from {}'
                              .format(self.config['pretrain_path']))
             state_dict = torch.load(
                 self.config['pretrain_path'], map_location='cpu')
-            model.model_func.load_state_dict(state_dict)
+            model.emb_func.load_state_dict(state_dict)
 
         if self.config['resume']:
             resume_path = os.path.join(self.checkpoints_path, 'model_last.pth')

@@ -79,7 +79,7 @@ class ConvMNet(MetricModel):
         images, global_targets = batch
         images = images.to(self.device)
         episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
-        emb = self.model_func(images)
+        emb = self.emb_func(images)
         support_feat, query_feat, support_targets, query_targets = self.split_by_episode(emb,mode=2)
 
         output = self.convm_layer(query_feat, support_feat) \
@@ -97,7 +97,7 @@ class ConvMNet(MetricModel):
         images, global_targets = batch
         images = images.to(self.device)
         episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
-        emb = self.model_func(images)
+        emb = self.emb_func(images)
         support_feat, query_feat, support_targets, query_targets = self.split_by_episode(emb,mode=2)
 
         output = self.convm_layer(query_feat, support_feat) \

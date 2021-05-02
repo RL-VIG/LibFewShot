@@ -54,7 +54,7 @@ class MTL(MetaModel):
         targets = targets.to(self.device)
 
         with torch.no_grad():
-            feat = self.model_func(images)
+            feat = self.emb_func(images)
 
         support_feat, query_feat, support_targets, query_targets = self.split_by_episode(feat, mode=4)
 
@@ -74,7 +74,7 @@ class MTL(MetaModel):
         images = images.to(self.device)
         targets = targets.to(self.device)
 
-        feat = self.model_func(images)
+        feat = self.emb_func(images)
 
         support_feat, query_feat, support_targets, query_targets = self.split_by_episode(feat, mode=4)
 

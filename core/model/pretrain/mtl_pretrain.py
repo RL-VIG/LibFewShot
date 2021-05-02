@@ -57,7 +57,7 @@ class MTLPretrain(PretrainModel): # use image-size=80 in repo
         targets = targets.to(self.device)
 
         with torch.no_grad():
-            feat = self.model_func(images)
+            feat = self.emb_func(images)
 
         support_feat, query_feat, support_targets, query_targets = self.split_by_episode(feat, mode=4)
 
@@ -79,7 +79,7 @@ class MTLPretrain(PretrainModel): # use image-size=80 in repo
         images = images.to(self.device)
         targets = targets.to(self.device).contiguous()
 
-        feat = self.model_func(images)
+        feat = self.emb_func(images)
 
         output = self.pre_fc(feat).contiguous()
 

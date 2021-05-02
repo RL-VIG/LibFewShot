@@ -54,7 +54,7 @@ class RFSModel(PretrainModel):
 
         self._init_network()
 
-        self.distill_layer = DistillLayer(self.model_func, self.classifier,
+        self.distill_layer = DistillLayer(self.emb_func, self.classifier,
                                           self.is_distill, model_func_path, classifier_path)
 
     def set_forward(self, batch, ):
@@ -67,7 +67,7 @@ class RFSModel(PretrainModel):
         episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
         images = images.to(self.device)
         with torch.no_grad():
-            feat = self.model_func(images)
+            feat = self.emb_func(images)
         support_feats, query_feats, support_targets, query_targets = self.split_by_episode(feat, mode=1)
 
         outputs = []
@@ -103,7 +103,7 @@ class RFSModel(PretrainModel):
         images = images.to(self.device)
         targets = targets.to(self.device)
 
-        feat = self.model_func(images)
+        feat = self.emb_func(images)
         output = self.classifier(feat)
         distill_output = self.distill_layer(images)
 
@@ -134,7 +134,7 @@ class RFSModel(PretrainModel):
         return classifier
 
     def train(self, mode=True):
-        self.model_func.train(mode)
+        self.emb_func.train(mode)
         self.classifier.train(mode)
         self.distill_layer.train(False)
 

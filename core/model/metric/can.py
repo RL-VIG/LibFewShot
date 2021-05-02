@@ -237,7 +237,7 @@ class CAN(MetricModel):
         images, global_targets = batch
         images = images.to(self.device)
         episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
-        emb = self.model_func(images)
+        emb = self.emb_func(images)
         support_feat, query_feat, support_targets, query_targets = self.split_by_episode(emb, mode=2)
 
         # convert to one-hot
@@ -260,7 +260,7 @@ class CAN(MetricModel):
         images, global_targets = batch
         images = images.to(self.device)
         episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
-        emb = self.model_func(images)  # [80, 640]
+        emb = self.emb_func(images)  # [80, 640]
         support_feat, query_feat, support_targets, query_targets = self.split_by_episode(emb, mode=2)  # [4,5,512,6,6] [4, 75, 512,6,6] [4, 5] [300]
         support_global_targets, query_global_targets = global_targets[:, :, :self.shot_num], global_targets[:, :, self.shot_num:]
         # # TODO: Shuffle label index
