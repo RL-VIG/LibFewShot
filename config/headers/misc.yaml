@@ -1,0 +1,9 @@
+# log settings
+log_name: ~ # if not ~: use for log file's name
+log_level: info
+log_interval: 100
+
+result_root: ./results
+save_interval: 10
+save_part:
+  - emb_func

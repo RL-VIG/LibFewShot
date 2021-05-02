@@ -16,7 +16,7 @@ epoch: 50
 
 includes:
   - headers/yaml_import_test.yaml
-  - headers/base_info.yaml
+  - headers/model.yaml
 
 
 save_part:
