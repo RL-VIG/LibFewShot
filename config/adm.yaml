@@ -2,7 +2,7 @@ train_episode: 1000
 test_episode: 200
 
 save_part:
-  - model_func
+  - emb_func
 
 # arch info
 backbone:

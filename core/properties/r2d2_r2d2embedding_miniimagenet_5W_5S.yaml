@@ -59,7 +59,7 @@ log_interval: 100
 device_ids: 0
 n_gpu: 1
 parallel_part:
-  - model_func
+  - emb_func
   - classifier
 seed: 0
 deterministic: True

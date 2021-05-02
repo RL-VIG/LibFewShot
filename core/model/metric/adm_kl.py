@@ -134,8 +134,8 @@ class KLLayer(nn.Module):
 
 
 class ADM_KL(MetricModel):
-    def __init__(self, way_num, shot_num, query_num, model_func, device, n_k=3,CMS=False):
-        super(ADM_KL, self).__init__(way_num, shot_num, query_num, model_func, device)
+    def __init__(self, way_num, shot_num, query_num, emb_func, device, n_k=3, CMS=False):
+        super(ADM_KL, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.n_k = n_k
         self.kl_layer = KLLayer(way_num, shot_num, query_num, n_k, device, CMS)
         self.loss_func = nn.CrossEntropyLoss()

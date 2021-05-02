@@ -22,7 +22,7 @@ test_epoch: 5
 resume: False
 
 save_part:
-  - model_func
+  - emb_func
   - classifier
 
 
@@ -34,7 +34,7 @@ log_interval: 100
 device_ids: 0, 1
 n_gpu: 2
 parallel_part:
-  - model_func
+  - emb_func
   - classifier
   - distill_layer
 seed: 1

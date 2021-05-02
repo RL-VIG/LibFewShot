@@ -52,7 +52,7 @@ lr_scheduler:
 result_root: ./results
 save_interval: 10
 save_part:
-  - model_func
+  - emb_func
 pretrain_path: /home/wzy/LibFewShot/results/MTLPretrain-resnet12MTL-5-1/checkpoints/model_func_best.pth
 
 # log info
@@ -63,6 +63,6 @@ log_interval: 10
 device_ids: 2
 n_gpu: 1
 parallel_part:
-  - model_func
+  - emb_func
 seed: 0
 deterministic: True

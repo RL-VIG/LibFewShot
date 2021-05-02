@@ -22,7 +22,7 @@ test_epoch: 5
 resume: False
 
 save_part:
-  - model_func
+  - emb_func
   - cls_classifier
   - rot_classifier
 
@@ -35,7 +35,7 @@ log_interval: 100
 device_ids: 2
 n_gpu: 1
 parallel_part:
-  - model_func
+  - emb_func
   - cls_classifier
   - rot_classifier
   - distill_layer
