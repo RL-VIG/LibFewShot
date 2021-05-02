@@ -64,10 +64,10 @@ class R2D2_Layer(nn.Module):
     https://arxiv.org/abs/1805.08136
     """
 
-    def __init__(self, way_num=5, shot_num=5):
+    def __init__(self, train_way=5, train_shot=5):
         super(R2D2_Layer, self).__init__()
-        self.way_num = way_num
-        self.shot_num = shot_num
+        self.train_way = train_way
+        self.train_shot = train_shot
         self.register_parameter('alpha', nn.Parameter(torch.tensor([1.])))
         self.register_parameter('beta', nn.Parameter(torch.tensor([0.])))
         self.register_parameter('gamma', nn.Parameter(torch.tensor([50.])))
@@ -80,10 +80,10 @@ class R2D2_Layer(nn.Module):
         assert (query.dim() == 3)
         assert (support.dim() == 3)
         assert (query.size(0) == support.size(0) and query.size(2) == support.size(2))
-        assert (n_support == self.way_num * self.shot_num)  # n_support must equal to n_way * n_shot
+        assert (n_support == self.train_way * self.train_shot)  # n_support must equal to n_way * n_shot
 
-        support_labels_one_hot = one_hot(support_target.view(tasks_per_batch * n_support), self.way_num)
-        support_labels_one_hot = support_labels_one_hot.view(tasks_per_batch, n_support, self.way_num)
+        support_labels_one_hot = one_hot(support_target.view(tasks_per_batch * n_support), self.train_way)
+        support_labels_one_hot = support_labels_one_hot.view(tasks_per_batch, n_support, self.train_way)
 
         id_matrix = torch.eye(n_support).expand(tasks_per_batch, n_support, n_support).to(query.device)
 
@@ -102,10 +102,10 @@ class R2D2_Layer(nn.Module):
 
 
 class R2D2(MetaModel):
-    def __init__(self, way_num, shot_num, query_num, feature, device):
-        super(R2D2, self).__init__(way_num, shot_num, query_num, feature, device)
+    def __init__(self, train_way, train_shot, train_query, feature, device):
+        super(R2D2, self).__init__(train_way, train_shot, train_query, feature, device)
         self.loss_func = nn.CrossEntropyLoss()
-        self.classifier = R2D2_Layer(self.way_num, self.shot_num)
+        self.classifier = R2D2_Layer(self.train_way, self.train_shot)
         self._init_network()
 
     def set_forward(self, batch, ):
@@ -116,7 +116,7 @@ class R2D2(MetaModel):
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
         output, weight = self.classifier(query_feat, support_feat, support_target)
 
-        output = output.contiguous().view(-1, self.way_num)
+        output = output.contiguous().view(-1, self.train_way)
         acc = accuracy(output.squeeze(), query_target.contiguous().reshape(-1))
         return output, acc
 
@@ -128,7 +128,7 @@ class R2D2(MetaModel):
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
         output, weight = self.classifier(query_feat, support_feat, support_target)
 
-        output = output.contiguous().view(-1, self.way_num)
+        output = output.contiguous().view(-1, self.train_way)
         loss = self.loss_func(output, query_target.contiguous().reshape(-1))
         acc = accuracy(output.squeeze(), query_target.contiguous().reshape(-1))
         return output, acc, loss

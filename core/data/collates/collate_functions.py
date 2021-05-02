@@ -41,7 +41,7 @@ class FewShotAugCollateFunction(object):
     增广5次的样例: 01234 -> 0000011111222223333344444
     """
 
-    def __init__(self, trfms, times, times_q, way_num, shot_num, query_num, episode_size):
+    def __init__(self, trfms, times, times_q, train_way, train_shot, train_query, episode_size):
         super(FewShotAugCollateFn, self).__init__()
         try:
             self.trfms_support, self.trfms_query = trfms
@@ -52,11 +52,11 @@ class FewShotAugCollateFunction(object):
         # when trfms=(T,T), apply to S and Q separately;
         self.times = 1 if times == 0 else times  # 暂时兼容times=0的写法;
         self.times_q = 1 if times_q == 0 else times_q
-        self.way_num = way_num
-        self.shot_num = shot_num
-        self.query_num = query_num
-        self.shot_aug = self.shot_num * self.times
-        self.query_aug = self.query_num * self.times_q
+        self.train_way = train_way
+        self.train_shot = train_shot
+        self.train_query = train_query
+        self.shot_aug = self.train_shot * self.times
+        self.query_aug = self.train_query * self.times_q
         self.episode_size = episode_size
 
     def method(self, batch):
@@ -64,10 +64,10 @@ class FewShotAugCollateFunction(object):
             # images
             images, labels = zip(*batch)
             # images = [img_label_tuple[0] for img_label_tuple in batch]  # 111111222222 (5s1q for example)
-            images_split_by_label = [images[index:index + self.shot_num + self.query_num] for index in
-                                     range(0, len(images), self.shot_num + self.query_num)]
+            images_split_by_label = [images[index:index + self.train_shot + self.train_query] for index in
+                                     range(0, len(images), self.train_shot + self.train_query)]
             # 111111; 222222 ;
-            images_split_by_label_type = [[spt_qry[:self.shot_num], spt_qry[self.shot_num:]] for spt_qry in
+            images_split_by_label_type = [[spt_qry[:self.train_shot], spt_qry[self.train_shot:]] for spt_qry in
                                           images_split_by_label]
             # 11111,1;22222,2;  == [shot, query]
 
@@ -87,11 +87,11 @@ class FewShotAugCollateFunction(object):
 
             # labels
             # global_labels = torch.tensor(labels,dtype=torch.int64)
-            # global_labels = torch.tensor(labels,dtype=torch.int64).reshape(self.episode_size,self.way_num,self.shot_num*self.times+self.query_num)
-            global_labels = torch.tensor(labels, dtype=torch.int64).reshape(self.episode_size, self.way_num,
-                                                                            self.shot_num + self.query_num)
+            # global_labels = torch.tensor(labels,dtype=torch.int64).reshape(self.episode_size,self.train_way,self.train_shot*self.times+self.train_query)
+            global_labels = torch.tensor(labels, dtype=torch.int64).reshape(self.episode_size, self.train_way,
+                                                                            self.train_shot + self.train_query)
             global_labels = global_labels[..., 0].unsqueeze(-1).repeat(1, 1,
-                                                                       self.shot_num * self.times + self.query_num* self.times_q)
+                                                                       self.train_shot * self.times + self.train_query* self.times_q)
 
             return images, global_labels  # images.shape = [e*(q+s) x c x h x w],  global_labels.shape = [e x w x (q+s)]
         except TypeError:

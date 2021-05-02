@@ -36,12 +36,12 @@ class AEA_Module(nn.Module):
 
 
 class ATL_Layer(nn.Module):
-    def __init__(self, way_num, shot_num, query_num, feat_dim,
+    def __init__(self, train_way, train_shot, train_query, feat_dim,
                  scale_value, atten_scale_value, from_value, value_interval):
         super(ATL_Layer, self).__init__()
-        self.way_num = way_num
-        self.shot_num = shot_num
-        self.query_num = query_num
+        self.train_way = train_way
+        self.train_shot = train_shot
+        self.train_query = train_query
         self.feat_dim = feat_dim
         self.scale_value = scale_value
         self.atten_scale_value = atten_scale_value
@@ -86,7 +86,7 @@ class ATL_Layer(nn.Module):
         match_score = torch.matmul(query_feat, support_feat)
 
         atten_match_score = torch.mul(atten_score, match_score) \
-            .view(t, wq, h * w, self.way_num, self.shot_num, h * w).permute(0, 1, 3, 4, 2, 5)
+            .view(t, wq, h * w, self.train_way, self.train_shot, h * w).permute(0, 1, 3, 4, 2, 5)
         score = torch.sum(atten_match_score, dim=5)
         score = torch.mean(score, dim=[3, 4]) * self.scale_value
 
@@ -95,10 +95,10 @@ class ATL_Layer(nn.Module):
 
 # TODO a large gap in the 5-way 5-shot
 class ATLNet(MetricModel):
-    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim, scale_value=30,
+    def __init__(self, train_way, train_shot, train_query, emb_func, device, feat_dim, scale_value=30,
                  atten_scale_value=50, from_value=0.5, value_interval=0.3):
-        super(ATLNet, self).__init__(way_num, shot_num, query_num, emb_func, device)
-        self.atl_layer = ATL_Layer(way_num, shot_num, query_num, feat_dim, scale_value,
+        super(ATLNet, self).__init__(train_way, train_shot, train_query, emb_func, device)
+        self.atl_layer = ATL_Layer(train_way, train_shot, train_query, feat_dim, scale_value,
                                   atten_scale_value, from_value, value_interval)
         self.loss_func = nn.CrossEntropyLoss()
 
@@ -110,12 +110,12 @@ class ATLNet(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (self.train_way * (self.train_shot + self.train_query))
         feat = self.emb_func(image)
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
 
         output = self.atl_layer(query_feat, support_feat) \
-            .view(episode_size * self.way_num * self.query_num, self.way_num)
+            .view(episode_size * self.train_way * self.train_query, self.train_way)
         acc = accuracy(output, query_target)
 
         return output, acc
@@ -128,12 +128,12 @@ class ATLNet(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (self.train_way * (self.train_shot + self.train_query))
         feat = self.emb_func(image)
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
 
         output = self.atl_layer(query_feat, support_feat) \
-            .view(episode_size * self.way_num * self.query_num, self.way_num)
+            .view(episode_size * self.train_way * self.train_query, self.train_way)
         loss = self.loss_func(output, query_target)
         acc = accuracy(output, query_target)
 

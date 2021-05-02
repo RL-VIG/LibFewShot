@@ -25,9 +25,9 @@ classifier:
 data_name: miniImageNet
 
 # base info
-way_num: 5
-shot_num: 5
-query_num: 10
+train_way: 5
+train_shot: 5
+train_query: 10
 
 # data info
 data_root: /data/wzy/miniImageNet--ravi

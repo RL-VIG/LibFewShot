@@ -47,9 +47,9 @@ class DistLinear(nn.Module):
 
 
 class BaselinePlus(PretrainModel):
-    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim,
+    def __init__(self, train_way, train_shot, train_query, emb_func, device, feat_dim,
                  num_class, inner_optim=None, inner_train_iter=20):
-        super(BaselinePlus, self).__init__(way_num, shot_num, query_num, emb_func,
+        super(BaselinePlus, self).__init__(train_way, train_shot, train_query, emb_func,
                                            device)
 
         self.feat_dim = feat_dim
@@ -102,7 +102,7 @@ class BaselinePlus(PretrainModel):
         return self.set_forward_adaptation(support_feat, support_target)
 
     def set_forward_adaptation(self, support_feat, support_target):
-        classifier = DistLinear(self.feat_dim, self.way_num)
+        classifier = DistLinear(self.feat_dim, self.train_way)
         optimizer = self.sub_optimizer(classifier, self.inner_optim)
 
         classifier = classifier.to(self.device)

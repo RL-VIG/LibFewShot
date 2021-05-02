@@ -6,11 +6,11 @@ from .metric_model import MetricModel
 
 
 class ConvM_Layer(nn.Module):
-    def __init__(self, way_num, shot_num, query_num, n_local):
+    def __init__(self, train_way, train_shot, train_query, n_local):
         super(ConvM_Layer, self).__init__()
-        self.way_num = way_num
-        self.shot_num = shot_num
-        self.query_num = query_num
+        self.train_way = train_way
+        self.train_shot = train_shot
+        self.train_query = train_query
 
         self.conv1d_layer = nn.Sequential(
             nn.LeakyReLU(0.2, inplace=True),
@@ -24,7 +24,7 @@ class ConvM_Layer(nn.Module):
 
         # t, ws, c, h, w -> t, ws, hw, c -> t, w, shw, c
         support_feat = support_feat.view(t, ws, c, h * w).permute(0, 1, 3, 2).contiguous()
-        support_feat = support_feat.view(t, self.way_num, self.shot_num * h * w, c)
+        support_feat = support_feat.view(t, self.train_way, self.train_shot * h * w, c)
         support_feat = support_feat - torch.mean(support_feat, dim=2, keepdim=True)
 
         # t, w, c, c
@@ -46,11 +46,11 @@ class ConvM_Layer(nn.Module):
         support_cov_mat = support_cov_mat.unsqueeze(1)
         prod_mat = torch.matmul(query_feat, support_cov_mat)
         prod_mat = torch.matmul(prod_mat, torch.transpose(query_feat, 3, 4)) \
-            .contiguous().view(t * self.way_num * wq, h * w, h * w)
+            .contiguous().view(t * self.train_way * wq, h * w, h * w)
 
         # twq, 1, whw
         cov_sim = torch.diagonal(prod_mat, dim1=1, dim2=2).contiguous()
-        cov_sim = cov_sim.view(t * wq, 1, self.way_num * h * w)
+        cov_sim = cov_sim.view(t * wq, 1, self.train_way * h * w)
 
         return cov_sim
 
@@ -58,15 +58,15 @@ class ConvM_Layer(nn.Module):
         t, wq, c, h, w = query_feat.size()
         support_cov_mat = self._calc_support_cov(support_feat)
         cov_sim = self._calc_similarity(query_feat, support_cov_mat)
-        score = self.conv1d_layer(cov_sim).view(t, wq, self.way_num)
+        score = self.conv1d_layer(cov_sim).view(t, wq, self.train_way)
 
         return score
 
 
 class ConvMNet(MetricModel):
-    def __init__(self, way_num, shot_num, query_num, emb_func, device, n_local=3):
-        super(ConvMNet, self).__init__(way_num, shot_num, query_num, emb_func, device)
-        self.convm_layer = ConvM_Layer(way_num, shot_num, query_num, n_local)
+    def __init__(self, train_way, train_shot, train_query, emb_func, device, n_local=3):
+        super(ConvMNet, self).__init__(train_way, train_shot, train_query, emb_func, device)
+        self.convm_layer = ConvM_Layer(train_way, train_shot, train_query, n_local)
         self.loss_func = nn.CrossEntropyLoss()
 
     def set_forward(self, batch, ):
@@ -77,12 +77,12 @@ class ConvMNet(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (self.train_way * (self.train_shot + self.train_query))
         feat = self.emb_func(image)
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat,mode=2)
 
         output = self.convm_layer(query_feat, support_feat) \
-            .view(episode_size * self.way_num * self.query_num, self.way_num)
+            .view(episode_size * self.train_way * self.train_query, self.train_way)
         acc = accuracy(output, query_target)
 
         return output, acc
@@ -95,12 +95,12 @@ class ConvMNet(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (self.train_way * (self.train_shot + self.train_query))
         feat = self.emb_func(image)
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat,mode=2)
 
         output = self.convm_layer(query_feat, support_feat) \
-            .view(episode_size * self.way_num * self.query_num, self.way_num)
+            .view(episode_size * self.train_way * self.train_query, self.train_way)
         loss = self.loss_func(output, query_target)
         acc = accuracy(output, query_target)
 

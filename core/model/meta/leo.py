@@ -35,10 +35,10 @@ def orthogonality(weight):
 
 
 class Encoder(nn.Module):
-    def __init__(self, way_num, shot_num, feat_dim, hid_dim, drop_prob=0.0):
+    def __init__(self, train_way, train_shot, feat_dim, hid_dim, drop_prob=0.0):
         super(Encoder, self).__init__()
-        self.way_num = way_num
-        self.shot_num = shot_num
+        self.train_way = train_way
+        self.train_shot = train_shot
         self.feat_dim = feat_dim
         self.hid_dim = hid_dim
         self.encoder_func = nn.Linear(feat_dim, hid_dim)
@@ -56,16 +56,16 @@ class Encoder(nn.Module):
         x = self.drop_out(x)
         out = self.encoder_func(x)
         episode_size = out.size(0)
-        out = out.contiguous().reshape(episode_size, self.way_num, self.shot_num, -1)
+        out = out.contiguous().reshape(episode_size, self.train_way, self.train_shot, -1)
 
         # for relation net
-        t1 = torch.repeat_interleave(out, self.shot_num, dim=2)
-        t1 = torch.repeat_interleave(t1, self.way_num, dim=1)
-        t2 = out.repeat((1, self.way_num, self.shot_num, 1))
+        t1 = torch.repeat_interleave(out, self.train_shot, dim=2)
+        t1 = torch.repeat_interleave(t1, self.train_way, dim=1)
+        t2 = out.repeat((1, self.train_way, self.train_shot, 1))
         x = torch.cat((t1, t2), dim=-1)
 
         x = self.relation_net(x)
-        x = x.reshape(episode_size, self.way_num, self.way_num * self.shot_num * self.shot_num, -1)
+        x = x.reshape(episode_size, self.train_way, self.train_way * self.train_shot * self.train_shot, -1)
         x = torch.mean(x, dim=2)
 
         latent = sample(x, self.hid_dim)
@@ -85,11 +85,11 @@ class Decoder(nn.Module):
 
 
 class LEO(MetaModel):
-    def __init__(self, way_num, shot_num, query_num, emb_func, device, inner_para, feat_dim, hid_dim, kl_weight, encoder_penalty_weight, orthogonality_penalty_weight):
-        super(LEO, self).__init__(way_num, shot_num, query_num, emb_func, device)
+    def __init__(self, train_way, train_shot, train_query, emb_func, device, inner_para, feat_dim, hid_dim, kl_weight, encoder_penalty_weight, orthogonality_penalty_weight):
+        super(LEO, self).__init__(train_way, train_shot, train_query, emb_func, device)
         self.feat_dim = feat_dim
         self.hid_dim = hid_dim
-        self.encoder = Encoder(way_num, shot_num, feat_dim, hid_dim)
+        self.encoder = Encoder(train_way, train_shot, feat_dim, hid_dim)
         self.decoder = Decoder(feat_dim, hid_dim)
         self.inner_para = inner_para
         self.kl_weight = kl_weight
@@ -116,7 +116,7 @@ class LEO(MetaModel):
         leo_weight = self.finetune(leo_weight, support_feat, support_target)
 
         output = torch.bmm(query_feat, leo_weight)
-        output = output.contiguous().reshape(-1, self.way_num)
+        output = output.contiguous().reshape(-1, self.train_way)
 
         acc = accuracy(output, query_target.contiguous().reshape(-1))
         return output, acc
@@ -139,7 +139,7 @@ class LEO(MetaModel):
         classifier_weight = self.finetune(classifier_weight, support_feat, support_target)
 
         output = torch.bmm(query_feat, classifier_weight)
-        output = output.contiguous().reshape(-1, self.way_num)
+        output = output.contiguous().reshape(-1, self.train_way)
         pred_loss = self.loss_func(output, query_target.contiguous().reshape(-1))
 
         orthogonality_penalty = orthogonality(list(self.decoder.parameters())[0])
@@ -163,7 +163,7 @@ class LEO(MetaModel):
             classifier_weight = sample(classifier_weight, self.feat_dim)
             classifier_weight = classifier_weight.permute([0, 2, 1])
             output = torch.bmm(emb_support, classifier_weight)
-            output = output.contiguous().reshape(-1, self.way_num)
+            output = output.contiguous().reshape(-1, self.train_way)
             targets = support_target.contiguous().reshape(-1)
             loss = self.loss_func(output, targets)
 
@@ -177,7 +177,7 @@ class LEO(MetaModel):
     def finetune(self, classifier_weight, emb_support, support_target):
         classifier_weight.retain_grad()
         output = torch.bmm(emb_support, classifier_weight)
-        output = output.contiguous().reshape(-1, self.way_num)
+        output = output.contiguous().reshape(-1, self.train_way)
         target = support_target.contiguous().reshape(-1)
         pred_loss = self.loss_func(output, target)
 
@@ -187,7 +187,7 @@ class LEO(MetaModel):
             classifier_weight.retain_grad()
 
             output = torch.bmm(emb_support, classifier_weight)
-            output = output.contiguous().reshape(-1, self.way_num)
+            output = output.contiguous().reshape(-1, self.train_way)
             targets = support_target.contiguous().reshape(-1)
             pred_loss = self.loss_func(output, targets)
 

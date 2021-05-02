@@ -37,8 +37,8 @@ class Trainer(object):
             config)
 
     def train_loop(self):
-        best_val_prec1 = float('-inf')
-        best_test_prec1 = float('-inf')
+        best_val_acc = float('-inf')
+        best_test_acc = float('-inf')
         experiment_begin = time()
         for epoch_idx in range(self.from_epoch + 1, self.config['epoch']):
             self.logger.info(
@@ -94,7 +94,7 @@ class Trainer(object):
 
             # calculate the output
             calc_begin = time()
-            output, prec1, loss = self.model.set_forward_loss(batch)
+            output, acc, loss = self.model.set_forward_loss(batch)
 
             # compute gradients
             self.optimizer.zero_grad()
@@ -155,7 +155,7 @@ class Trainer(object):
 
                 # calculate the output
                 calc_begin = time()
-                output, prec1 = self.model.set_forward(batch)
+                output, acc = self.model.set_forward(batch)
                 meter.update('calc_time', time() - calc_begin)
 
                 # measure accuracy and record loss
@@ -194,7 +194,7 @@ class Trainer(object):
             .format(config['classifier']['name'],
                     config['data_root'].split('/')[-1],
                     config['backbone']['name'],
-                    config['way_num'], config['shot_num'])
+                    config['train_way'], config['train_shot'])
         result_dir = symlink_dir + "-{}".format(get_local_time()) \
             if config['log_name'] is None \
             else config['log_name']
@@ -227,9 +227,9 @@ class Trainer(object):
     def _init_model(self, config):
         emb_func = get_instance(arch, 'backbone', config)
         model = get_instance(arch, 'classifier', config,
-                             config['way_num'],
-                             config['shot_num'] * config['augment_times'],
-                             config['query_num'],
+                             config['train_way'],
+                             config['train_shot'] * config['augment_times'],
+                             config['train_query'],
                              emb_func, self.device)
 
         self.logger.info(model)
