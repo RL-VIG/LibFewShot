@@ -29,7 +29,7 @@ classifier:
    name: MTL
    kwargs:
      feat_dim: 640
-     num_classes: 64
+     num_class: 64
      inner_para:
        iter: 10
 

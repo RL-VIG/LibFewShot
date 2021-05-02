@@ -29,7 +29,7 @@ classifier:
    name: MTLPretrain
    kwargs:
      feat_dim: 640
-     num_classes: 64
+     num_class: 64
      inner_train_iter: 100
 
 # optimizer info

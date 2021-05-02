@@ -72,7 +72,7 @@ classifier:
   name: SKDModel
   kwargs:
     feat_dim: 640
-    num_classes: 64
+    num_class: 64
     gamma: 1.0
     alpha: 0.1
     is_distill: True

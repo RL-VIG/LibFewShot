@@ -20,4 +20,4 @@ classifier:
         lr: 1e-2
     inner_train_iter: 20
     feat_dim: 1600
-    num_classes: 64
+    num_class: 64

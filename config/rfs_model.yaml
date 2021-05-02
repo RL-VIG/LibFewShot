@@ -50,7 +50,7 @@ classifier:
   name: RFSModel
   kwargs:
     feat_dim: 1600
-    num_classes: 64
+    num_class: 64
     gamma: 0.5
     alpha: 0.5
     is_distill: True

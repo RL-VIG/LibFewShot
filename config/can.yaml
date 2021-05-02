@@ -27,7 +27,7 @@ classifier:
   name: CAN
   kwargs:
     scale_cls: 7 # default
-    num_classes: 351
+    num_class: 351
     nFeat: 512
     HW: 11
 
