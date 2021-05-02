@@ -85,17 +85,13 @@ class Decoder(nn.Module):
 
 
 class LEO(MetaModel):
-    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim, hid_dim, inner_optim,
-                 inner_train_iter=10, finetune_iter=10, kl_weight=1, encoder_penalty_weight=1,
-                 orthogonality_penalty_weight=1):
+    def __init__(self, way_num, shot_num, query_num, emb_func, device, inner_para, feat_dim, hid_dim, kl_weight, encoder_penalty_weight, orthogonality_penalty_weight):
         super(LEO, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.feat_dim = feat_dim
         self.hid_dim = hid_dim
         self.encoder = Encoder(way_num, shot_num, feat_dim, hid_dim)
         self.decoder = Decoder(feat_dim, hid_dim)
-        self.inner_optim = inner_optim
-        self.inner_train_iter = inner_train_iter
-        self.finetune_iter = finetune_iter
+        self.inner_para = inner_para
         self.kl_weight = kl_weight
         self.encoder_penalty_weight = encoder_penalty_weight
         self.orthogonality_penalty_weight = orthogonality_penalty_weight
@@ -155,7 +151,7 @@ class LEO(MetaModel):
     def train_loop(self, emb_support, support_target, episode_size):
         latent, kl_div = self.encoder(emb_support)
         latent_init = latent
-        for i in range(self.inner_train_iter):
+        for i in range(self.inner_para['iter']):
             latent.retain_grad()
             classifier_weight = self.decoder(latent)
             classifier_weight = sample(classifier_weight, self.feat_dim)
@@ -167,7 +163,7 @@ class LEO(MetaModel):
 
             loss.backward(retain_graph=True)
 
-            latent = latent - self.inner_optim['inner_lr'] * latent.grad
+            latent = latent - self.inner_para['lr'] * latent.grad
 
         encoder_penalty = torch.mean((latent_init - latent) ** 2)
         return latent, kl_div, encoder_penalty
@@ -185,9 +181,9 @@ class LEO(MetaModel):
         target = support_target.contiguous().reshape(-1)
         pred_loss = self.loss_func(output, target)
 
-        for j in range(self.finetune_iter):
+        for j in range(self.inner_para['finetune_iter']):
             pred_loss.backward(retain_graph=True)
-            classifier_weight = classifier_weight - self.inner_optim['finetune_lr'] * classifier_weight.grad
+            classifier_weight = classifier_weight - self.inner_para['finetune_lr'] * classifier_weight.grad
             classifier_weight.retain_grad()
 
             output = torch.bmm(emb_support, classifier_weight)

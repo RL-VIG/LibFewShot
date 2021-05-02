@@ -24,12 +24,7 @@ backbone:
   kwargs:
 classifier:
   name: R2D2
-  kwargs:
-    inner_optim:
-      name: Adam
-      kwargs:
-        lr: 1e-3
-    inner_train_iter: 10
+  kwargs: ~
 
 # optimizer info
 optimizer:

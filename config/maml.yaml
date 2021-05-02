@@ -27,9 +27,9 @@ backbone:
 classifier:
   name: MAML
   kwargs:
-    inner_optim:
+    inner_para:
         lr: 1e-2
-    inner_train_iter: 5
+        iter: 5
     feat_dim: 1600
 
 # optimizer info

@@ -57,7 +57,7 @@ class VERSA_HEAD(nn.Module):
 
 
 class VERSA(MetaModel):
-    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim, hid_dim, sample_num=10):
+    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim, hid_dim, sample_num):
         super(VERSA, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.feat_dim = feat_dim
         self.hid_dim = hid_dim

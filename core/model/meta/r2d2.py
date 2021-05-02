@@ -102,7 +102,7 @@ class R2D2Head(nn.Module):
 
 
 class R2D2(MetaModel):
-    def __init__(self, way_num, shot_num, query_num, feature, device, inner_optim=None, inner_train_iter=10):
+    def __init__(self, way_num, shot_num, query_num, feature, device):
         super(R2D2, self).__init__(way_num, shot_num, query_num, feature, device)
         self.loss_func = nn.CrossEntropyLoss()
         self.classifier = R2D2Head(self.way_num, self.shot_num)
@@ -116,9 +116,6 @@ class R2D2(MetaModel):
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
         output, weight = self.classifier(query_feat, support_feat, support_target)
 
-        # self.train_loop(support_feat, support_target, W)
-        # output = self.alpha * output + self.beta
-
         output = output.contiguous().view(-1, self.way_num)
         acc, _ = accuracy(output.squeeze(), query_target.contiguous().reshape(-1), topk=(1, 3))
         return output, acc
@@ -131,24 +128,12 @@ class R2D2(MetaModel):
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
         output, weight = self.classifier(query_feat, support_feat, support_target)
 
-        # self.train_loop(support_feat, support_target, W)
-        # output = self.alpha * output + self.beta
-
         output = output.contiguous().view(-1, self.way_num)
         loss = self.loss_func(output, query_target.contiguous().reshape(-1))
         acc, _ = accuracy(output.squeeze(), query_target.contiguous().reshape(-1), topk=(1, 3))
         return output, acc, loss
 
     def train_loop(self, emb_support, support_target, W):
-        # optimizer = self.sub_optimizer([{"params": self.alpha}, {"params": self.beta}], self.inner_optim)
-        # for i in range(self.inner_train_iter):
-        #     predict = torch.bmm(emb_support, W).contiguous().view(-1, self.way_num).detach()
-        #     predict = self.alpha * predict + self.beta
-        #     loss = self.loss_func(predict, support_target.contiguous().view(-1))
-        #
-        #     optimizer.zero_grad()
-        #     loss.backward()
-        #     optimizer.step()
         raise NotImplementedError
 
     def test_loop(self, *args, **kwargs):

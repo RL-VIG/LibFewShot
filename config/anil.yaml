@@ -29,7 +29,7 @@ classifier:
   kwargs:
     inner_optim:
       lr: 1e-3
-    inner_train_iter: 10
+      iter: 10
     feat_dim: 800
 
 optimizer:

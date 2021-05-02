@@ -30,7 +30,8 @@ classifier:
    kwargs:
      feat_dim: 640
      num_classes: 64
-     inner_train_iter: 100
+     inner_para:
+       iter: 10
 
 # optimizer info
 optimizer:

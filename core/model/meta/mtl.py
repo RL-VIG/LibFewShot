@@ -33,13 +33,13 @@ class MTLBaseLearner(nn.Module):
 
 class MTL(MetaModel):
     def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim,
-                 num_classes, inner_train_iter):
+                 num_classes, inner_para):
         super(MTL, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.feat_dim = feat_dim
         self.num_classes = num_classes
 
         self.base_learner = MTLBaseLearner(way_num, z_dim=self.feat_dim).to(device)
-        self.inner_train_iter = inner_train_iter
+        self.inner_para = inner_para
 
         self.loss_func = nn.CrossEntropyLoss()
 
@@ -91,7 +91,7 @@ class MTL(MetaModel):
         grad = torch.autograd.grad(loss, self.base_learner.parameters())
         fast_parameters = list(map(lambda p: p[1] - 0.01 * p[0], zip(grad, self.base_learner.parameters())))
 
-        for _ in range(1, self.inner_train_iter):
+        for _ in range(1, self.inner_para['iter']):
             logit = self.base_learner(support_feat, fast_parameters)
             loss = F.cross_entropy(logit, support_target)
             grad = torch.autograd.grad(loss, fast_parameters)

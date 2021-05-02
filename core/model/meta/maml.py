@@ -22,14 +22,12 @@ class Classifier(nn.Module):
 
 
 class MAML(MetaModel):
-    def __init__(self, way_num, shot_num, query_num, feature, device, feat_dim=1600, inner_optim=None,
-                 inner_train_iter=10):
+    def __init__(self, way_num, shot_num, query_num, feature, device, inner_para, feat_dim):
         super(MAML, self).__init__(way_num, shot_num, query_num, feature, device)
         self.feat_dim = feat_dim
         self.loss_func = nn.CrossEntropyLoss()
         self.classifier = Classifier(feat_dim, way_num=way_num)
-        self.inner_optim = inner_optim
-        self.inner_train_iter = inner_train_iter
+        self.inner_para = inner_para
 
     def forward_output(self, x):
         out1 = self.emb_func(x)
@@ -82,14 +80,14 @@ class MAML(MetaModel):
         return output, acc, loss
 
     def train_loop(self, support_set, support_target):
-        lr = self.inner_optim['lr']
+        lr = self.inner_para['lr']
         fast_parameters = list(self.parameters())
         for parameter in self.parameters():
             parameter.fast = None
 
         self.emb_func.train()
         self.classifier.train()
-        for i in range(self.inner_train_iter):
+        for i in range(self.inner_para['iter']):
             output = self.forward_output(support_set)
             loss = self.loss_func(output, support_target)
             grad = torch.autograd.grad(loss, fast_parameters, create_graph=True)
@@ -99,7 +97,7 @@ class MAML(MetaModel):
                 if weight.fast is None:
                     weight.fast = weight - lr * grad[k]
                 else:
-                    weight.fast = weight.fast - self.inner_optim['lr'] * grad[k]
+                    weight.fast = weight.fast - self.inner_para['lr'] * grad[k]
                 fast_parameters.append(weight.fast)
 
     def test_loop(self, *args, **kwargs):

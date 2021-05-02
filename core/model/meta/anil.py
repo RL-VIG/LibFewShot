@@ -9,6 +9,8 @@ from .meta_model import MetaModel
 
 from ..backbone.maml_backbone import Linear_fw
 
+# FIXME 方法类初始不需要赋值
+
 class MLP(nn.Module):
     def __init__(self, feat_dim, hid_dim, way_num):
         super(MLP, self).__init__()
@@ -22,15 +24,12 @@ class MLP(nn.Module):
 
 
 class ANIL(MetaModel):
-    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim=1600,
-                 hid_dim=800, inner_optim=None,
-                 inner_train_iter=10):
+    def __init__(self, way_num, shot_num, query_num, emb_func, device, inner_para, feat_dim, hid_dim):
         super(ANIL, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.feat_dim = feat_dim
         self.loss_func = nn.CrossEntropyLoss()
         self.classifier = MLP(feat_dim=feat_dim, hid_dim=hid_dim, way_num=way_num)
-        self.inner_optim = inner_optim
-        self.inner_train_iter = inner_train_iter
+        self.inner_para = inner_para
         self._init_network()
 
     def set_forward(self, batch, ):
@@ -71,7 +70,7 @@ class ANIL(MetaModel):
         return output, acc, loss
 
     def train_loop(self, support_feat, support_target):
-        lr = self.inner_optim['lr']
+        lr = self.inner_para['lr']
         fast_parameters = list(self.classifier.parameters())
         for parameter in self.classifier.parameters():
             parameter.fast = None
@@ -79,7 +78,7 @@ class ANIL(MetaModel):
         self.emb_func.train()
         self.classifier.train()
 
-        for i in range(self.inner_train_iter):
+        for i in range(self.inner_para['iter']):
             output = self.classifier(support_feat)
             loss = self.loss_func(output, support_target)
             grad = torch.autograd.grad(loss, fast_parameters, create_graph=True)
@@ -89,7 +88,7 @@ class ANIL(MetaModel):
                 if weight.fast is None:
                     weight.fast = weight - lr * grad[k]
                 else:
-                    weight.fast = weight.fast - self.inner_optim['lr'] * grad[k]
+                    weight.fast = weight.fast - self.inner_para['lr'] * grad[k]
                 fast_parameters.append(weight.fast)
 
     def test_loop(self, *args, **kwargs):
