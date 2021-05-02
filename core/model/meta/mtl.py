@@ -89,15 +89,15 @@ class MTL(MetaModel):
         logits = self.base_learner(support_feat)
         loss = self.loss_func(logits, support_target)
         grad = torch.autograd.grad(loss, self.base_learner.parameters())
-        base_learner_weight = list(map(lambda p: p[1] - 0.01 * p[0], zip(grad, self.base_learner.parameters())))
+        fast_weights = list(map(lambda p: p[1] - 0.01 * p[0], zip(grad, self.base_learner.parameters())))
 
         for _ in range(1, self.inner_train_iter):
-            logits = self.base_learner(support_feat, base_learner_weight)
+            logits = self.base_learner(support_feat, fast_weights)
             loss = F.cross_entropy(logits, support_target)
-            grad = torch.autograd.grad(loss, base_learner_weight)
-            base_learner_weight = list(map(lambda p: p[1] - 0.01 * p[0], zip(grad, base_learner_weight)))
+            grad = torch.autograd.grad(loss, fast_weights)
+            fast_weights = list(map(lambda p: p[1] - 0.01 * p[0], zip(grad, fast_weights)))
 
-        return classifier, base_learner_weight
+        return classifier, fast_weights
 
     def test_loop(self, *args, **kwargs):
         raise NotImplementedError
