@@ -21,9 +21,9 @@ class Predictor(nn.Module):
         return out
 
 
-class VERSA_HEAD(nn.Module):
+class VERSA_Layer(nn.Module):
     def __init__(self, way_num, sample_num):
-        super(VERSA_HEAD, self).__init__()
+        super(VERSA_Layer, self).__init__()
         self.way_num = way_num
         self.sample_num = sample_num
         self.loss_func = nn.CrossEntropyLoss(reduction='none')
@@ -67,7 +67,7 @@ class VERSA(MetaModel):
         self.bias_mean = Predictor(self.feat_dim, self.hid_dim, 1)
         self.bias_logvar = Predictor(self.feat_dim, self.hid_dim, 1)
 
-        self.head = VERSA_HEAD(way_num, sample_num)
+        self.head = VERSA_Layer(way_num, sample_num)
 
     def set_forward(self, batch, ):
         image, global_target = batch

@@ -6,9 +6,9 @@ from .metric_model import MetricModel
 
 # FIXME 改为定义Flatten操作，而不是记录宽和高
 
-class RelationLayer(nn.Module):
+class Relation_Layer(nn.Module):
     def __init__(self, feat_dim=64, feat_height=3, feat_width=3):
-        super(RelationLayer, self).__init__()
+        super(Relation_Layer, self).__init__()
         self.layers = nn.Sequential(
             nn.Conv2d(feat_dim * 2, feat_dim, kernel_size=3, padding=0),
             nn.BatchNorm2d(feat_dim, momentum=1, affine=True),

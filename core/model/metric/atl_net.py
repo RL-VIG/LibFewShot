@@ -6,9 +6,9 @@ from core.utils import accuracy
 from .metric_model import MetricModel
 
 
-class AEAModule(nn.Module):
+class AEA_Module(nn.Module):
     def __init__(self, feat_dim, scale_value, from_value, value_interval):
-        super(AEAModule, self).__init__()
+        super(AEA_Module, self).__init__()
 
         self.feat_dim = feat_dim
         self.scale_value = scale_value
@@ -35,10 +35,10 @@ class AEAModule(nn.Module):
         return attention_mask
 
 
-class ATLLayer(nn.Module):
+class ATL_Layer(nn.Module):
     def __init__(self, way_num, shot_num, query_num, feat_dim,
                  scale_value, atten_scale_value, from_value, value_interval):
-        super(ATLLayer, self).__init__()
+        super(ATL_Layer, self).__init__()
         self.way_num = way_num
         self.shot_num = shot_num
         self.query_num = query_num
@@ -54,7 +54,7 @@ class ATLLayer(nn.Module):
             nn.LeakyReLU(0.2, inplace=True)
         )
 
-        self.atten_layer = AEAModule(self.feat_dim, self.atten_scale_value, self.from_value, self.value_interval)
+        self.atten_layer = AEA_Module(self.feat_dim, self.atten_scale_value, self.from_value, self.value_interval)
 
     def forward(self, query_feat, support_feat):
         t, wq, c, h, w = query_feat.size()
@@ -98,7 +98,7 @@ class ATLNet(MetricModel):
     def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim, scale_value=30,
                  atten_scale_value=50, from_value=0.5, value_interval=0.3):
         super(ATLNet, self).__init__(way_num, shot_num, query_num, emb_func, device)
-        self.atl_layer = ATLLayer(way_num, shot_num, query_num, feat_dim, scale_value,
+        self.atl_layer = ATL_Layer(way_num, shot_num, query_num, feat_dim, scale_value,
                                   atten_scale_value, from_value, value_interval)
         self.loss_func = nn.CrossEntropyLoss()
 

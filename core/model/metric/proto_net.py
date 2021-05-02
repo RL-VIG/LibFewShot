@@ -5,7 +5,7 @@ from core.utils import accuracy
 from .metric_model import MetricModel
 
 
-class ProtoLayer(nn.Module):
+class Proto_Layer(nn.Module):
     def __init__(self, way_num, shot_num, query_num):
         super(ProtoLayer, self).__init__()
         self.way_num = way_num

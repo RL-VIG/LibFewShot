@@ -110,9 +110,9 @@ class CAM(nn.Module):
         return f1.transpose(1, 2), f2.transpose(1, 2)
 
 
-class CAMLayer(nn.Module):
+class CAM_Layer(nn.Module):
     def __init__(self, scale_cls, iter_num_prob=35.0/75, num_classes=64, feat_dim=512, HW=5):
-        super(CAMLayer, self).__init__()
+        super(CAM_Layer, self).__init__()
         self.scale_cls = scale_cls
         self.cam = CAM(HW)
         self.iter_num_prob = iter_num_prob
@@ -225,7 +225,7 @@ class CAMLayer(nn.Module):
 class CAN(MetricModel):
     def __init__(self, way_num, shot_num, query_num, emb_func, device, scale_cls, iter_num_prob=35.0/75, num_classes=64, feat_dim=512, HW=5):
         super(CAN, self).__init__(way_num, shot_num, query_num, emb_func, device)
-        self.cam_layer = CAMLayer(scale_cls, iter_num_prob, num_classes, feat_dim, HW)
+        self.cam_layer = CAM_Layer(scale_cls, iter_num_prob, num_classes, feat_dim, HW)
         self.loss_func = nn.CrossEntropyLoss()
 
     def set_forward(self, batch, ):

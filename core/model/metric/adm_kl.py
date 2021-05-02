@@ -5,9 +5,9 @@ from core.utils import accuracy
 from .metric_model import MetricModel
 
 
-class KLLayer(nn.Module):
+class KL_Layer(nn.Module):
     def __init__(self,way_num, shot_num, query_num,n_k,device,CMS = False):
-        super(KLLayer, self).__init__()
+        super(KL_Layer, self).__init__()
         self.way_num = way_num
         self.shot_num = shot_num
         self.query_num = query_num
@@ -137,7 +137,7 @@ class ADM_KL(MetricModel):
     def __init__(self, way_num, shot_num, query_num, emb_func, device, n_k=3, CMS=False):
         super(ADM_KL, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.n_k = n_k
-        self.kl_layer = KLLayer(way_num, shot_num, query_num, n_k, device, CMS)
+        self.kl_layer = KL_Layer(way_num, shot_num, query_num, n_k, device, CMS)
         self.loss_func = nn.CrossEntropyLoss()
 
     def set_forward(self, batch, ):
