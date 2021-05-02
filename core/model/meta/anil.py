@@ -88,7 +88,6 @@ class ANIL(MetaModel):
 
         # self.classifier.set_optimizer_func(self.sub_optimizer, inner_optim)
         # self.classifier.set_loss(self.loss_func)
-        self._init_network()
 
     def set_forward(self, batch, ):
         images, global_targets = batch

@@ -108,7 +108,6 @@ class R2D2(MetaModel):
         self.classifier = R2D2Head(self.way_num, self.shot_num)
         # self.inner_optim = inner_optim
         # self.inner_train_iter = inner_train_iter
-        self._init_network()
 
     def set_forward(self, batch, ):
         images, global_targets = batch

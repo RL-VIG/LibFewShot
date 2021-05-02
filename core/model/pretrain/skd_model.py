@@ -69,7 +69,6 @@ class SKDModel(PretrainModel):
         self.l2_loss_func = L2DistLoss()
         self.kl_loss_func = DistillKLLoss(T=kd_T)
 
-        self._init_network()
 
         self.distill_layer = DistillLayer(self.model_func, self.cls_classifier,
                                           self.is_distill, model_func_path,

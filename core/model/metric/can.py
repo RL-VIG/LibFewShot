@@ -227,7 +227,6 @@ class CAN(MetricModel):
         super(CAN, self).__init__(way_num, shot_num, query_num, model_func, device)
         self.cam_layer = CAMLayer(scale_cls, iter_num_prob, num_classes, nFeat, HW)
         self.loss_func = nn.CrossEntropyLoss()
-        self._init_network()
 
     def set_forward(self, batch, ):
         """

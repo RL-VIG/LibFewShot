@@ -43,7 +43,6 @@ class MAML(MetaModel):
         self.classifier = Classifier(feat_dim, way_num=way_num)
         self.inner_optim = inner_optim
         self.inner_train_iter = inner_train_iter
-        self._init_network()
 
     def forward_output(self, x):
         out1 = self.model_func(x)

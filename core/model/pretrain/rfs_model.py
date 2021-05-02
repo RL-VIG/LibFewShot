@@ -52,8 +52,6 @@ class RFSModel(PretrainModel):
         self.ce_loss_func = nn.CrossEntropyLoss()
         self.kl_loss_func = DistillKLLoss(T=kd_T)
 
-        self._init_network()
-
         self.distill_layer = DistillLayer(self.model_func, self.classifier,
                                           self.is_distill, model_func_path, classifier_path)
 

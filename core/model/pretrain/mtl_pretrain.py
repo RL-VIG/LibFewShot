@@ -44,7 +44,6 @@ class MTLPretrain(PretrainModel): # use image-size=80 in repo
 
         self.loss_func = nn.CrossEntropyLoss()
 
-        self._init_network()
 
     def set_forward(self, batch, ):
         """

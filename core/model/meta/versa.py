@@ -69,8 +69,6 @@ class VERSA(MetaModel):
 
         self.head = VERSA_HEAD(way_num, sample_num)
 
-        self._init_network()
-
     def set_forward(self, batch, ):
         images, _ = batch
         images = images.to(self.device)

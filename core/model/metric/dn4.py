@@ -42,7 +42,6 @@ class DN4(MetricModel):
         super(DN4, self).__init__(way_num, shot_num, query_num, model_func, device)
         self.dn4_layer = DN4Layer(way_num, shot_num, query_num, n_k)
         self.loss_func = nn.CrossEntropyLoss()
-        self._init_network()
 
     def set_forward(self, batch, ):
         """

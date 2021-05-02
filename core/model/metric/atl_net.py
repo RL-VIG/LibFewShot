@@ -101,7 +101,6 @@ class ATLNet(MetricModel):
         self.atl_layer = ATLLayer(way_num, shot_num, query_num, inplanes, scale_value,
                                   atten_scale_value, from_value, value_interval)
         self.loss_func = nn.CrossEntropyLoss()
-        self._init_network()
 
     def set_forward(self, batch, ):
         """

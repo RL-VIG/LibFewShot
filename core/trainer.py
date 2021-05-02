@@ -203,7 +203,7 @@ class Trainer(object):
                              config['shot_num'] * config['augment_times'],
                              config['query_num'],
                              model_func, self.device)
-
+        model._init_network()
         self.logger.info(model)
         self.logger.info(count_parameters(model))
 

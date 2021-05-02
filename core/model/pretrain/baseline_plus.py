@@ -58,7 +58,6 @@ class BaselinePlus(PretrainModel):
 
         self.loss_func = nn.CrossEntropyLoss()
 
-        self._init_network()
 
         self.classifier = DistLinear(self.feat_dim, self.num_classes)
 

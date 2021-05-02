@@ -135,7 +135,6 @@ class ADM(MetricModel):
         self.n_k = n_k
         self.adm_layer = ADMLayer(way_num, shot_num, query_num,n_k,device)
         self.loss_func = nn.CrossEntropyLoss()
-        self._init_network()
 
     def set_forward(self, batch, ):
         """

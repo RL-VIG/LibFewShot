@@ -68,7 +68,6 @@ class ConvMNet(MetricModel):
         super(ConvMNet, self).__init__(way_num, shot_num, query_num, model_func, device)
         self.convm_layer = ConvMLayer(way_num, shot_num, query_num, n_local)
         self.loss_func = nn.CrossEntropyLoss()
-        self._init_network()
 
     def set_forward(self, batch, ):
         """

@@ -43,8 +43,6 @@ class MTL(MetaModel):
 
         self.loss_func = nn.CrossEntropyLoss()
 
-        self._init_network()
-
     def set_forward(self, batch, ):
         '''
         meta-validation

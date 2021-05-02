@@ -128,7 +128,6 @@ class LEO(MetaModel):
         self.orthogonality_penalty_weight = orthogonality_penalty_weight
 
         self.loss_func = nn.CrossEntropyLoss()
-        self._init_network()
 
     def set_forward(self, batch, ):
         images, global_targets = batch

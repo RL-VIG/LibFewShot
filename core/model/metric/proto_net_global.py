@@ -43,7 +43,6 @@ class ProtoNetGlobal(MetricModel):
         self.proto_layer = ProtoLayer()
         self.classifier = nn.Linear(self.feat_dim, self.num_classes)
         self.loss_func = nn.CrossEntropyLoss()
-        self._init_network()
 
     def set_forward(self, batch, ):
         """

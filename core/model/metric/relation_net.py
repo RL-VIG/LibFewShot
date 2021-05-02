@@ -44,8 +44,6 @@ class RelationNet(MetricModel):
                                             self.feat_width)
         self.loss_func = nn.CrossEntropyLoss()
 
-        self._init_network()
-
     def set_forward(self, batch, ):
         """
 

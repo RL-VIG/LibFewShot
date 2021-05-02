@@ -34,7 +34,6 @@ class ProtoNet(MetricModel):
         super(ProtoNet, self).__init__(way_num, shot_num, query_num, model_func, device)
         self.proto_layer = ProtoLayer(way_num, shot_num, query_num)
         self.loss_func = nn.CrossEntropyLoss()
-        self._init_network()
 
     def set_forward(self, batch, ):
         """
