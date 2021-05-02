@@ -4,9 +4,9 @@ from collections import Iterable
 import torch
 
 
-class GeneralCollateFn(object):
+class GeneralCollateFunction(object):
     def __init__(self, trfms, times):
-        super(GeneralCollateFn, self).__init__()
+        super(GeneralCollateFunction, self).__init__()
         self.trfms = trfms
         self.times = times  # 如果不做增广，设为1
 
@@ -36,13 +36,13 @@ class GeneralCollateFn(object):
         return self.method(batch)
 
 
-class FewShotAugCollateFn(object):
+class FewShotAugCollateFunction(object):
     """
     增广5次的样例: 01234 -> 0000011111222223333344444
     """
 
     def __init__(self, trfms, times, way_num, shot_num, query_num, episode_size):
-        super(FewShotAugCollateFn, self).__init__()
+        super(FewShotAugCollateFunction, self).__init__()
         self.trfms = trfms
         self.times = 1 if times == 0 else times  # 暂时兼容times=0的写法
         self.way_num = way_num

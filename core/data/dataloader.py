@@ -2,7 +2,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 
 from core.data.dataset import GeneralDataset
-from .collates import get_collate_fn, get_augment_method
+from .collates import get_collate_function, get_augment_method
 from .samplers import CategoriesSampler
 from ..utils import ModelType
 
@@ -61,12 +61,12 @@ def get_dataloader(config, mode, model_type):
     dataset = GeneralDataset(data_root=config['data_root'], mode=mode,
                              use_memory=config['use_memory'], )
 
-    collate_fn = get_collate_fn(config, trfms, mode, model_type, )
+    collate_function = get_collate_function(config, trfms, mode, model_type, )
 
     if mode == 'train' and model_type == ModelType.PRETRAIN:
         dataloader = DataLoader(dataset, batch_size=config['batch_size'], shuffle=True,
                                 num_workers=config['n_gpu'] * 4, drop_last=True,
-                                pin_memory=True, collate_fn=collate_fn)
+                                pin_memory=True, collate_fn=collate_function)
     else:
         sampler = CategoriesSampler(label_list=dataset.label_list,
                                     label_num=dataset.label_num,
@@ -80,6 +80,6 @@ def get_dataloader(config, mode, model_type):
                                     else config['test_shot'] + config['test_query'])
         dataloader = DataLoader(dataset, batch_sampler=sampler,
                                 num_workers=config['n_gpu'] * 4, pin_memory=True,
-                                collate_fn=collate_fn)
+                                collate_fn=collate_function)
 
     return dataloader
