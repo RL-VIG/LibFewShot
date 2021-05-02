@@ -1,9 +1,9 @@
 data_name: miniImageNet
 
 # base info
-way_num: 5
-shot_num: 1
-query_num: 15
+train_way: 5
+train_shot: 1
+train_query: 15
 batch_size: 1
 episode_size: 1
 
@@ -29,7 +29,7 @@ classifier:
    name: MTL
    kwargs:
      feat_dim: 640
-     num_classes: 64
+     num_class: 64
      inner_para:
        iter: 10
 

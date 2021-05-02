@@ -5,6 +5,9 @@ from core.utils import accuracy
 from .pretrain_model import PretrainModel
 import torch.nn.functional as F
 
+# FIXME ways改为train_way
+# FIXME 加上多GPU
+
 # FIXME ways改为way_num
 # adapted from https://github.com/yaoyao-liu/meta-transfer-learning
 class MTLBaseLearner(nn.Module):
@@ -33,14 +36,14 @@ class MTLBaseLearner(nn.Module):
         
 
 class MTLPretrain(PretrainModel): # use image-size=80 in repo
-    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim,
+    def __init__(self, train_way, train_shot, train_query, emb_func, device, feat_dim,
                  num_class,inner_train_iter):
-        super(MTLPretrain, self).__init__(way_num, shot_num, query_num, emb_func, device)
+        super(MTLPretrain, self).__init__(train_way, train_shot, train_query, emb_func, device)
         self.feat_dim = feat_dim
         self.num_class = num_class
 
         self.pre_fc = nn.Sequential(nn.Linear(self.feat_dim, 1000), nn.ReLU(), nn.Linear(1000, self.num_class))
-        self.base_learner = MTLBaseLearner(way_num,z_dim=self.feat_dim)
+        self.base_learner = MTLBaseLearner(train_way,z_dim=self.feat_dim)
         self.inner_train_iter=inner_train_iter
 
         self.loss_func = nn.CrossEntropyLoss()
@@ -65,7 +68,7 @@ class MTLPretrain(PretrainModel): # use image-size=80 in repo
 
         output = classifier(query_feat,fast_weight)
 
-        acc, _ = accuracy(output, query_target, topk=(1, 3))
+        acc = accuracy(output, query_target)
 
         return output, acc
 
@@ -84,7 +87,7 @@ class MTLPretrain(PretrainModel): # use image-size=80 in repo
         output = self.pre_fc(feat).contiguous()
 
         loss = self.loss_func(output, global_target)
-        acc, _ = accuracy(output, global_target, topk=(1, 3))
+        acc = accuracy(output, global_target)
         return output, acc, loss
 
     def test_loop(self, support_feat, support_target):

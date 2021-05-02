@@ -64,9 +64,9 @@ class Config(object):
 
     def _load_console_dict(self):
         parser = argparse.ArgumentParser()
-        parser.add_argument('-w', '--way_num', type=int, help='way num')
-        parser.add_argument('-s', '--shot_num', type=int, help='shot num')
-        parser.add_argument('-q', '--query_num', type=int, help='query num')
+        parser.add_argument('-w', '--train_way', type=int, help='way num')
+        parser.add_argument('-s', '--train_shot', type=int, help='shot num')
+        parser.add_argument('-q', '--train_query', type=int, help='query num')
         parser.add_argument('-bs', '--batch_size', type=int, help='batch_size')
         parser.add_argument('-es', '--episode_size',
                             type=int, help='episode_size')
@@ -113,11 +113,11 @@ class Config(object):
         # config_dict.update(self.console_dict)
 
         if config_dict['test_way'] is None:
-            config_dict['test_way'] = config_dict['way_num']
+            config_dict['test_way'] = config_dict['train_way']
         if config_dict['test_shot'] is None:
-            config_dict['test_shot'] = config_dict['shot_num']
+            config_dict['test_shot'] = config_dict['train_shot']
         if config_dict['test_query'] is None:
-            config_dict['test_query'] = config_dict['query_num']
+            config_dict['test_query'] = config_dict['train_query']
 
         # modify or add some configs
         config_dict['resume'] = self.is_resume

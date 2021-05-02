@@ -6,10 +6,12 @@ from .pretrain_model import PretrainModel
 
 # FIXME test_loop和train_loop形式要一样
 # https://github.com/wyharveychen/CloserLookFewShot.git
+# FIXME 加上多GPU
+
 class Baseline(PretrainModel):
-    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim,
+    def __init__(self, train_way, train_shot, train_query, emb_func, device, feat_dim,
                  num_class, inner_optim=None, inner_batch_size=4, inner_train_iter=20):
-        super(Baseline, self).__init__(way_num, shot_num, query_num, emb_func, device)
+        super(Baseline, self).__init__(train_way, train_shot, train_query, emb_func, device)
         self.feat_dim = feat_dim
         self.num_class = num_class
         self.inner_optim = inner_optim
@@ -34,7 +36,7 @@ class Baseline(PretrainModel):
         classifier = self.test_loop(support_feat, support_target)
 
         output = classifier(query_feat)
-        acc, _ = accuracy(output, query_target, topk=(1, 3))
+        acc = accuracy(output, query_target)
 
         return output, acc
 
@@ -50,14 +52,14 @@ class Baseline(PretrainModel):
         feat = self.emb_func(image)
         output = self.classifier(feat)
         loss = self.loss_func(output, target)
-        acc, _ = accuracy(output, target, topk=(1, 3))
+        acc = accuracy(output, target)
         return output, acc, loss
 
     def test_loop(self, support_feat, support_target):
         return self.set_forward_adaptation(support_feat, support_target)
 
     def set_forward_adaptation(self, support_feat, support_target):
-        classifier = nn.Linear(self.feat_dim, self.way_num)
+        classifier = nn.Linear(self.feat_dim, self.train_way)
         optimizer = self.sub_optimizer(classifier, self.inner_optim)
 
         classifier = classifier.to(self.device)

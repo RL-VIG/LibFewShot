@@ -138,7 +138,7 @@ class CAM_Layer(nn.Module):
         batch_size = support_feat.size(0)
         n_support = support_feat.size(1)
         n_query = query_feat.size(1)
-        way_num = support_target.size(-1)
+        train_way = support_target.size(-1)
         # feat = support_feat.size(-1)
 
         # flatten feature
@@ -164,7 +164,7 @@ class CAM_Layer(nn.Module):
         cls_score = self.scale_cls * torch.sum(query_norm * proto_norm, dim=3)
         cls_score = cls_score.view(batch_size * n_query, *cls_score.size()[2:])
 
-        query_feat = query_feat.view(batch_size, n_query, way_num, -1)
+        query_feat = query_feat.view(batch_size, n_query, train_way, -1)
         query_feat = query_feat.transpose(2, 3)
         query_target = query_target.unsqueeze(3)
         query_feat = torch.matmul(query_feat, query_target)
@@ -223,8 +223,8 @@ class CAM_Layer(nn.Module):
 
 
 class CAN(MetricModel):
-    def __init__(self, way_num, shot_num, query_num, emb_func, device, scale_cls, iter_num_prob=35.0/75, num_classes=64, feat_dim=512, HW=5):
-        super(CAN, self).__init__(way_num, shot_num, query_num, emb_func, device)
+    def __init__(self, train_way, train_shot, train_query, emb_func, device, scale_cls, iter_num_prob=35.0/75, num_classes=64, feat_dim=512, HW=5):
+        super(CAN, self).__init__(train_way, train_shot, train_query, emb_func, device)
         self.cam_layer = CAM_Layer(scale_cls, iter_num_prob, num_classes, feat_dim, HW)
         self.loss_func = nn.CrossEntropyLoss()
 
@@ -235,20 +235,20 @@ class CAN(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (self.train_way * (self.train_shot + self.train_query))
         feat = self.emb_func(image)
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
 
         # convert to one-hot
-        support_target_one_hot = one_hot(support_target.view(episode_size*self.way_num*self.shot_num), self.way_num)
-        support_target_one_hot = support_target_one_hot.view(episode_size, self.way_num*self.shot_num, self.way_num)
-        query_target_one_hot = one_hot(query_target.view(episode_size*self.way_num*self.query_num), self.way_num)
-        query_target_one_hot = query_target_one_hot.view(episode_size, self.way_num*self.query_num, self.way_num)
+        support_target_one_hot = one_hot(support_target.view(episode_size*self.train_way*self.train_shot), self.train_way)
+        support_target_one_hot = support_target_one_hot.view(episode_size, self.train_way*self.train_shot, self.train_way)
+        query_target_one_hot = one_hot(query_target.view(episode_size*self.train_way*self.train_query), self.train_way)
+        query_target_one_hot = query_target_one_hot.view(episode_size, self.train_way*self.train_query, self.train_way)
         output = self.cam_layer(support_feat, query_feat, support_target_one_hot, query_target_one_hot)
         # output = self.cam_layer.val_transductive(support_feat, query_feat, support_target_one_hot, query_target_one_hot)
 
-        output = output.view(episode_size * self.way_num*self.query_num, -1)
-        acc, _ = accuracy(output, query_target, topk=(1, 3))
+        output = output.view(episode_size * self.train_way*self.train_query, -1)
+        acc = accuracy(output, query_target)
         return output, acc
 
     def set_forward_loss(self, batch):
@@ -258,25 +258,25 @@ class CAN(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (self.train_way * (self.train_shot + self.train_query))
         feat = self.emb_func(image)  # [80, 640]
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)  # [4,5,512,6,6] [4, 75, 512,6,6] [4, 5] [300]
-        support_global_targets, query_global_targets = global_target[:, :, :self.shot_num], global_target[:, :, self.shot_num:]
+        support_global_targets, query_global_targets = global_target[:, :, :self.train_shot], global_target[:, :, self.train_shot:]
         # # TODO: Shuffle label index
         # support_feat, support_target, support_global_targets = shuffle(support_feat, support_target, support_global_targets.reshape(*support_target.size()))
         # query_feat, query_target, query_global_targets = shuffle(query_feat, query_target.reshape(*query_feat.size()[:2]), query_global_targets.reshape(*query_feat.size()[:2]))
 
         # convert to one-hot
-        support_target_one_hot = one_hot(support_target.view(episode_size*self.way_num*self.shot_num), self.way_num)
-        support_target_one_hot = support_target_one_hot.view(episode_size, self.way_num*self.shot_num, self.way_num)
-        query_target_one_hot = one_hot(query_target.view(episode_size*self.way_num*self.query_num), self.way_num)
-        query_target_one_hot = query_target_one_hot.view(episode_size, self.way_num*self.query_num, self.way_num)
+        support_target_one_hot = one_hot(support_target.view(episode_size*self.train_way*self.train_shot), self.train_way)
+        support_target_one_hot = support_target_one_hot.view(episode_size, self.train_way*self.train_shot, self.train_way)
+        query_target_one_hot = one_hot(query_target.view(episode_size*self.train_way*self.train_query), self.train_way)
+        query_target_one_hot = query_target_one_hot.view(episode_size, self.train_way*self.train_query, self.train_way)
         # [75, 64, 6, 6], [75, 5, 6, 6]
         output, output = self.cam_layer(support_feat, query_feat, support_target_one_hot, query_target_one_hot)
         loss1 = self.loss_func(output, query_global_targets.contiguous().view(-1))
         loss2 = self.loss_func(output, query_target.view(-1))
         loss = loss1 + 0.5 * loss2
         output = torch.sum(output.view(*output.size()[:2], -1), dim=-1)  # [300, 5]
-        acc, _ = accuracy(output, query_target.view(-1), topk=(1, 3))
+        acc = accuracy(output, query_target.view(-1))
         return output, acc, loss
 

@@ -106,12 +106,12 @@ class Test(object):
         if self.result_path is not None:
             result_path = self.result_path
         else:
-            result_dir = '{}-{}-{}-{}-{}-{}' \
+            result_dir = '{}-{}-{}-{}-{}' \
                 .format(config['classifier']['name'],
                         # you should ensure that data_root name contains its true name
                         config['data_root'].split('/')[-1],
                         config['backbone']['name'],
-                        config['way_num'], config['shot_num'], get_local_time())
+                        config['train_way'], config['train_shot'])
             result_path = os.path.join(config['result_root'], result_dir)
 
         log_path = os.path.join(result_path, 'log_files')
@@ -134,9 +134,9 @@ class Test(object):
     def _init_model(self, config):
         emb_func = get_instance(arch, 'backbone', config)
         model = get_instance(arch, 'classifier', config,
-                             config['way_num'],
-                             config['shot_num'] * config['augment_times'],
-                             config['query_num'],
+                             config['train_way'],
+                             config['train_shot'] * config['augment_times'],
+                             config['train_query'],
                              emb_func, self.device)
 
         self.logger.info(model)

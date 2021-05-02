@@ -4,7 +4,8 @@ from torch.nn.utils import weight_norm
 
 from core.utils import accuracy
 from .pretrain_model import PretrainModel
-#
+
+# FIXME 加上多GPU
 
 class DistLinear(nn.Module):
     """
@@ -46,9 +47,9 @@ class DistLinear(nn.Module):
 
 
 class BaselinePlus(PretrainModel):
-    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim,
+    def __init__(self, train_way, train_shot, train_query, emb_func, device, feat_dim,
                  num_class, inner_optim=None, inner_train_iter=20):
-        super(BaselinePlus, self).__init__(way_num, shot_num, query_num, emb_func,
+        super(BaselinePlus, self).__init__(train_way, train_shot, train_query, emb_func,
                                            device)
 
         self.feat_dim = feat_dim
@@ -77,7 +78,7 @@ class BaselinePlus(PretrainModel):
         classifier = self.test_loop(support_feat, support_target)
 
         output = classifier(query_feat)
-        acc, _ = accuracy(output, query_target, topk=(1, 3))
+        acc = accuracy(output, query_target)
 
         return output, acc
 
@@ -94,14 +95,14 @@ class BaselinePlus(PretrainModel):
         feat = self.emb_func(image)
         output = self.classifier(feat)
         loss = self.loss_func(output, target)
-        acc, _ = accuracy(output, target, topk=(1, 3))
+        acc = accuracy(output, target)
         return output, acc, loss
 
     def test_loop(self, support_feat, support_target):
         return self.set_forward_adaptation(support_feat, support_target)
 
     def set_forward_adaptation(self, support_feat, support_target):
-        classifier = DistLinear(self.feat_dim, self.way_num)
+        classifier = DistLinear(self.feat_dim, self.train_way)
         optimizer = self.sub_optimizer(classifier, self.inner_optim)
 
         classifier = classifier.to(self.device)

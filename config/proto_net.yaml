@@ -1,8 +1,8 @@
 train_episode: 10000
 test_episode: 600
-way_num: 5
-shot_num: 1
-query_num: 10
+train_way: 5
+train_shot: 1
+train_query: 10
 batch_size: 1
 episode_size: 1
 augment_times: 3

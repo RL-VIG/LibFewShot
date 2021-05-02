@@ -17,9 +17,9 @@ class ProtoLayer(nn.Module):
         _, ws, _ = support_feat.size()
 
         # t, wq, c
-        query_feat = query_feat.view(t, self.way_num * self.query_num, c)
+        query_feat = query_feat.view(t, self.train_way * self.train_query, c)
         # t, w, c
-        support_feat = support_feat.view(t, self.way_num, self.shot_num, c)
+        support_feat = support_feat.view(t, self.train_way, self.train_shot, c)
         proto_feat = torch.mean(support_feat, dim=2)
 
         # t, wq, 1, c - t, 1, w, c -> t, wq, w
@@ -30,9 +30,9 @@ class ProtoLayer(nn.Module):
 
 
 class ProtoNet(MetricModel):
-    def __init__(self, way_num, shot_num, query_num, emb_func, device):
-        super(ProtoNet, self).__init__(way_num, shot_num, query_num, emb_func, device)
-        self.proto_layer = ProtoLayer(way_num, shot_num, query_num)
+    def __init__(self, train_way, train_shot, train_query, emb_func, device):
+        super(ProtoNet, self).__init__(train_way, train_shot, train_query, emb_func, device)
+        self.proto_layer = Proto_Layer(train_way, train_shot, train_query)
         self.loss_func = nn.CrossEntropyLoss()
 
     def set_forward(self, batch, ):
@@ -43,13 +43,13 @@ class ProtoNet(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (self.train_way * (self.train_shot + self.train_query))
         feat = self.emb_func(image)
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat,mode=1)
 
         output = self.proto_layer(query_feat, support_feat) \
-            .view(episode_size * self.way_num * self.query_num, self.way_num)
-        acc, _ = accuracy(output, query_target, topk=(1, 3))
+            .view(episode_size * self.train_way * self.train_query, self.train_way)
+        acc = accuracy(output, query_target)
 
         return output, acc
 
@@ -61,13 +61,13 @@ class ProtoNet(MetricModel):
         """
         images, global_targets = batch
         images = images.to(self.device)
-        episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = images.size(0) // (self.train_way * (self.train_shot + self.train_query))
         emb = self.emb_func(images)
         support_feat, query_feat, support_target, query_target = self.split_by_episode(emb,mode=1)
 
         output = self.proto_layer(query_feat, support_feat) \
-            .view(episode_size * self.way_num * self.query_num, self.way_num)
+            .view(episode_size * self.train_way * self.train_query, self.train_way)
         loss = self.loss_func(output, query_target)
-        acc, _ = accuracy(output, query_target, topk=(1, 3))
+        acc = accuracy(output, query_target)
 
         return output, acc, loss

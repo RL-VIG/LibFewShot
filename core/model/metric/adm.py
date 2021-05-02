@@ -7,14 +7,14 @@ from .metric_model import MetricModel
 # https://github.com/WenbinLee/ADM
 
 class ADM_Layer(nn.Module):
-    def __init__(self,way_num, shot_num, query_num,n_k,device):
+    def __init__(self,train_way, train_shot, train_query,n_k,device):
         super(ADM_Layer, self).__init__()
-        self.way_num = way_num
-        self.shot_num = shot_num
-        self.query_num = query_num
+        self.train_way = train_way
+        self.train_shot = train_shot
+        self.train_query = train_query
         self.n_k= n_k
         self.device = device
-        self.norm_layer = nn.BatchNorm1d(self.way_num * 2, affine=True)
+        self.norm_layer = nn.BatchNorm1d(self.train_way * 2, affine=True)
         self.fc_layer = nn.Conv1d(1, 1, kernel_size=2, stride=1, dilation=5, bias=False)
 
     def _cal_cov_matrix_batch(self, feat):  # feature: e *  Batch * descriptor_num * 64
@@ -92,7 +92,7 @@ class ADM_Layer(nn.Module):
 
         # Calculate the mean and covariance of the support set
         support_feat = support_feat.view(e, s, c, -1).permute(0, 1, 3, 2).contiguous()
-        support_set = support_feat.view(e, self.way_num, self.shot_num * h * w, c)
+        support_set = support_feat.view(e, self.train_way, self.train_shot * h * w, c)
 
         # s_mean: e * 5 * 1 * 64  s_cov: e * 5 * 64 * 64
         s_mean, s_cov = self._cal_cov_matrix_batch(support_set)
@@ -103,7 +103,7 @@ class ADM_Layer(nn.Module):
         # Calculate the Image-to-Class Similarity
         query_norm = F.normalize(query_feat, p=2, dim=3)
         support_norm = F.normalize(support_feat, p=2, dim=3)
-        support_norm = support_norm.view(e, self.way_num, self.shot_num * h * w, c)
+        support_norm = support_norm.view(e, self.train_way, self.train_shot * h * w, c)
 
         # cosine similarity between a query set and a support set
         # e * 75 * 5 * 441 * 2205
@@ -130,10 +130,10 @@ class ADM_Layer(nn.Module):
 
 
 class ADM(MetricModel):
-    def __init__(self, way_num, shot_num, query_num, emb_func, device, n_k=3):
-        super(ADM, self).__init__(way_num, shot_num, query_num, emb_func, device)
+    def __init__(self, train_way, train_shot, train_query, emb_func, device, n_k=3):
+        super(ADM, self).__init__(train_way, train_shot, train_query, emb_func, device)
         self.n_k = n_k
-        self.adm_layer = ADM_Layer(way_num, shot_num, query_num,n_k,device)
+        self.adm_layer = ADM_Layer(train_way, train_shot, train_query,n_k,device)
         self.loss_func = nn.CrossEntropyLoss()
 
     def set_forward(self, batch, ):
@@ -144,12 +144,12 @@ class ADM(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (self.train_way * (self.train_shot + self.train_query))
         feat = self.emb_func(image)
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
 
-        output = self.adm_layer(query_feat, support_feat).view(episode_size*self.way_num*self.query_num,-1)
-        acc, _ = accuracy(output, query_target, topk=(1, 3))
+        output = self.adm_layer(query_feat, support_feat).view(episode_size*self.train_way*self.train_query,-1)
+        acc = accuracy(output, query_target)
         return output, acc
 
     def set_forward_loss(self, batch):
@@ -160,11 +160,11 @@ class ADM(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (self.train_way * (self.train_shot + self.train_query))
         feat = self.emb_func(image)
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
         # assume here we will get n_dim=5
-        output = self.adm_layer(query_feat, support_feat).view(episode_size*self.way_num*self.query_num,-1)
+        output = self.adm_layer(query_feat, support_feat).view(episode_size*self.train_way*self.train_query,-1)
         loss = self.loss_func(output, query_target)
-        acc, _ = accuracy(output, query_target, topk=(1, 3))
+        acc = accuracy(output, query_target)
         return output, acc, loss

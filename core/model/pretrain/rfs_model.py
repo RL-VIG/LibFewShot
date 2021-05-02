@@ -11,6 +11,8 @@ from core.utils import accuracy
 from .pretrain_model import PretrainModel
 from .. import DistillKLLoss
 
+# FIXME 加上多GPU
+
 #https://github.com/WangYueFt/rfs
 class DistillLayer(nn.Module):
     def __init__(self, emb_func, classifier, is_distill, emb_func_path=None, classifier_path=None):
@@ -36,10 +38,10 @@ class DistillLayer(nn.Module):
 
 
 class RFSModel(PretrainModel):
-    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim,
+    def __init__(self, train_way, train_shot, train_query, emb_func, device, feat_dim,
                  num_class, gamma=1, alpha=0, is_distill=False, kd_T=4,
                  emb_func_path=None, classifier_path=None):
-        super(RFSModel, self).__init__(way_num, shot_num, query_num, emb_func, device)
+        super(RFSModel, self).__init__(train_way, train_shot, train_query, emb_func, device)
 
         self.feat_dim = feat_dim
         self.num_class = num_class
@@ -64,7 +66,7 @@ class RFSModel(PretrainModel):
         :return:
         """
         image, global_target = batch
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (self.train_way * (self.train_shot + self.train_query))
         image = image.to(self.device)
         with torch.no_grad():
             feat = self.emb_func(image)
@@ -111,7 +113,7 @@ class RFSModel(PretrainModel):
         alpha_loss = self.kl_loss_func(output, distill_output)
         loss = gamma_loss * self.gamma + alpha_loss * self.alpha
 
-        acc, _ = accuracy(output, global_target, topk=(1, 3))
+        acc = accuracy(output, global_target)
 
         return output, acc, loss
 

@@ -32,13 +32,13 @@ class MTLBaseLearner(nn.Module):
         return self.vars
 
 class MTL(MetaModel):
-    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim,
+    def __init__(self, train_way, train_shot, train_query, emb_func, device, feat_dim,
                  num_classes, inner_para):
-        super(MTL, self).__init__(way_num, shot_num, query_num, emb_func, device)
+        super(MTL, self).__init__(train_way, train_shot, train_query, emb_func, device)
         self.feat_dim = feat_dim
         self.num_classes = num_classes
 
-        self.base_learner = MTLBaseLearner(way_num, z_dim=self.feat_dim).to(device)
+        self.base_learner = MTLBaseLearner(train_way, z_dim=self.feat_dim).to(device)
         self.inner_para = inner_para
 
         self.loss_func = nn.CrossEntropyLoss()
@@ -60,7 +60,7 @@ class MTL(MetaModel):
 
         output = classifier(query_feat, base_learner_weight)
 
-        acc, _ = accuracy(output, query_target, topk=(1, 3))
+        acc = accuracy(output, query_target)
 
         return output, acc
 
@@ -80,11 +80,17 @@ class MTL(MetaModel):
 
         output = classifier(query_feat, base_learner_weight)
         loss = self.loss_func(output,query_target)
-        acc, _ = accuracy(output, query_target, topk=(1, 3))
+        acc = accuracy(output, query_target)
 
         return output, acc, loss
 
     def train_loop(self, support_feat, support_target):
+        return self.set_forward_adaptation(support_feat, support_target)
+
+    def test_loop(self, support_feat, support_target):
+        return self.set_forward_adaptation(support_feat, support_target)
+
+    def set_forward_adaptation(self, support_feat, support_target):
         classifier = self.base_learner
         logit = self.base_learner(support_feat)
         loss = self.loss_func(logit, support_target)
@@ -98,9 +104,3 @@ class MTL(MetaModel):
             fast_parameters = list(map(lambda p: p[1] - 0.01 * p[0], zip(grad, fast_parameters)))
 
         return classifier, fast_parameters
-
-    def test_loop(self, *args, **kwargs):
-        raise NotImplementedError
-
-    def set_forward_adaptation(self, *args, **kwargs):
-        raise NotImplementedError
