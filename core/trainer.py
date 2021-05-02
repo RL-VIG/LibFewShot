@@ -79,6 +79,12 @@ class Trainer(object):
             self.writer.set_step(epoch_idx * len(self.train_loader)
                                  + batch_idx * episode_size)
 
+            # visualize the weight
+            for i, (name, param) in enumerate(self.model.named_parameters()):
+                if 'bn' not in name:
+                    save_name = name.replace('.', '/')
+                    self.writer.add_histogram(save_name, param)
+
             meter.update('data_time', time() - end)
 
             # calculate the output
