@@ -244,12 +244,12 @@ class CAN(MetricModel):
         support_target_one_hot = support_target_one_hot.view(episode_size, self.way_num*self.shot_num, self.way_num)
         query_target_one_hot = one_hot(query_target.view(episode_size*self.way_num*self.query_num), self.way_num)
         query_target_one_hot = query_target_one_hot.view(episode_size, self.way_num*self.query_num, self.way_num)
-        cls_scores = self.cam_layer(support_feat, query_feat, support_target_one_hot, query_target_one_hot)
-        # cls_scores = self.cam_layer.val_transductive(support_feat, query_feat, support_target_one_hot, query_target_one_hot)
+        output = self.cam_layer(support_feat, query_feat, support_target_one_hot, query_target_one_hot)
+        # output = self.cam_layer.val_transductive(support_feat, query_feat, support_target_one_hot, query_target_one_hot)
 
-        cls_scores = cls_scores.view(episode_size * self.way_num*self.query_num, -1)
-        prec1, _ = accuracy(cls_scores, query_target, topk=(1, 3))
-        return cls_scores, prec1
+        output = output.view(episode_size * self.way_num*self.query_num, -1)
+        prec1, _ = accuracy(output, query_target, topk=(1, 3))
+        return output, prec1
 
     def set_forward_loss(self, batch):
         """
@@ -272,12 +272,12 @@ class CAN(MetricModel):
         query_target_one_hot = one_hot(query_target.view(episode_size*self.way_num*self.query_num), self.way_num)
         query_target_one_hot = query_target_one_hot.view(episode_size, self.way_num*self.query_num, self.way_num)
         # [75, 64, 6, 6], [75, 5, 6, 6]
-        output, cls_scores = self.cam_layer(support_feat, query_feat, support_target_one_hot, query_target_one_hot)
+        output, output = self.cam_layer(support_feat, query_feat, support_target_one_hot, query_target_one_hot)
         loss1 = self.loss_func(output, query_global_targets.contiguous().view(-1))
-        loss2 = self.loss_func(cls_scores, query_target.view(-1))
+        loss2 = self.loss_func(output, query_target.view(-1))
         loss = loss1 + 0.5 * loss2
-        cls_scores = torch.sum(cls_scores.view(*cls_scores.size()[:2], -1), dim=-1)  # [300, 5]
-        prec1, _ = accuracy(cls_scores, query_target.view(-1), topk=(1, 3))
+        output = torch.sum(output.view(*output.size()[:2], -1), dim=-1)  # [300, 5]
+        prec1, _ = accuracy(output, query_target.view(-1), topk=(1, 3))
         return output, prec1, loss
 
 

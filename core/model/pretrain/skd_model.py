@@ -115,24 +115,24 @@ class SKDModel(PretrainModel):
         generated_images, generated_targets, rot_targets   = self.rot_image_generation(image, target)
 
         feat = self.emb_func(generated_images)
-        cls_output = self.cls_classifier(feat)
+        output = self.cls_classifier(feat)
         distill_output = self.distill_layer(image)
 
         if self.is_distill:
-            gamma_loss = self.kl_loss_func(cls_output[:batch_size], distill_output)
-            alpha_loss = self.l2_loss_func(cls_output[batch_size:],
-                                           cls_output[:batch_size]) / 3
+            gamma_loss = self.kl_loss_func(output[:batch_size], distill_output)
+            alpha_loss = self.l2_loss_func(output[batch_size:],
+                                           output[:batch_size]) / 3
         else:
-            rot_output = self.rot_classifier(cls_output)
-            gamma_loss = self.ce_loss_func(cls_output, generated_targets)
+            rot_output = self.rot_classifier(output)
+            gamma_loss = self.ce_loss_func(output, generated_targets)
             alpha_loss = torch.sum(
                 F.binary_cross_entropy_with_logits(rot_output, rot_targets))
 
         loss = gamma_loss * self.gamma + alpha_loss * self.alpha
 
-        prec1, _ = accuracy(cls_output, generated_targets, topk=(1, 3))
+        prec1, _ = accuracy(output, generated_targets, topk=(1, 3))
 
-        return cls_output, prec1, loss
+        return output, prec1, loss
 
     def test_loop(self, support_feat, support_target):
         return self.set_forward_adaptation(support_feat, support_target)

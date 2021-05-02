@@ -86,10 +86,10 @@ class VERSA(MetaModel):
         bias_means = self.bias_means(class_feat).permute((0, 2, 1))
         bias_logvars = self.bias_logvars(class_feat).permute((0, 2, 1))
 
-        averaged_predictions, _ = self.head(query_feat, query_target, weight_means, weight_logvars,
+        output, _ = self.head(query_feat, query_target, weight_means, weight_logvars,
                                             bias_means, bias_logvars)
-        prec1, _ = accuracy(averaged_predictions, query_target.reshape(-1), topk=(1, 3))
-        return averaged_predictions, prec1
+        prec1, _ = accuracy(output, query_target.reshape(-1), topk=(1, 3))
+        return output, prec1
 
     def set_forward_loss(self, batch, ):
         image, global_target= batch
@@ -108,11 +108,11 @@ class VERSA(MetaModel):
         bias_means = self.bias_means(class_feat).permute((0, 2, 1))
         bias_logvars = self.bias_logvars(class_feat).permute((0, 2, 1))
 
-        averaged_predictions, task_score = self.head(query_feat, query_target, weight_means, weight_logvars,
+        output, task_score = self.head(query_feat, query_target, weight_means, weight_logvars,
                                                      bias_means, bias_logvars)
-        prec1, _ = accuracy(averaged_predictions, query_target.reshape(-1), topk=(1, 3))
+        prec1, _ = accuracy(output, query_target.reshape(-1), topk=(1, 3))
         loss = -torch.mean(task_score, dim=0)
-        return averaged_predictions, prec1, loss
+        return output, prec1, loss
 
     def train_loop(self, *args, **kwargs):
         raise NotImplementedError
