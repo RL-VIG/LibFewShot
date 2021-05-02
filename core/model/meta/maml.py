@@ -12,10 +12,10 @@ from ..backbone.maml_backbone import Linear_fw
 # TODO, refer
 
 class MAML_Layer(nn.Module):
-    def __init__(self, feat_dim=64, train_way=5) -> None:
+    def __init__(self, feat_dim=64, way_num=5) -> None:
         super(MAML_Layer, self).__init__()
         self.layers = nn.Sequential(
-            Linear_fw(feat_dim, train_way)
+            Linear_fw(feat_dim, way_num)
         )
 
     def forward(self, x):
@@ -23,11 +23,11 @@ class MAML_Layer(nn.Module):
 
 
 class MAML(MetaModel):
-    def __init__(self, train_way, train_shot, train_query, feature, device, inner_para, feat_dim):
-        super(MAML, self).__init__(train_way, train_shot, train_query, feature, device)
+    def __init__(self, way_num, shot_num, query_num, feature, device, inner_para, feat_dim):
+        super(MAML, self).__init__(way_num, shot_num, query_num, feature, device)
         self.feat_dim = feat_dim
         self.loss_func = nn.CrossEntropyLoss()
-        self.classifier = MAML_Layer(feat_dim, train_way=train_way)
+        self.classifier = MAML_Layer(feat_dim, way_num=way_num)
         self.inner_para = inner_para
 
     def forward_output(self, x):

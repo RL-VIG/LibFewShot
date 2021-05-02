@@ -23,9 +23,9 @@ class Predictor(nn.Module):
 
 
 class VERSA_Layer(nn.Module):
-    def __init__(self, train_way, sample_num):
+    def __init__(self, way_num, sample_num):
         super(VERSA_Layer, self).__init__()
-        self.train_way = train_way
+        self.way_num = way_num
         self.sample_num = sample_num
         self.loss_func = nn.CrossEntropyLoss(reduction='none')
 
@@ -36,7 +36,7 @@ class VERSA_Layer(nn.Module):
         logits_log_var_query = torch.log(
             torch.matmul(query_feat ** 2, torch.exp(weight_logvar)) + torch.exp(bias_logvar))
         logits_sample_query = self.sample_normal(logits_mean_query, logits_log_var_query,
-                                                 self.sample_num).contiguous().reshape(-1, self.train_way)
+                                                 self.sample_num).contiguous().reshape(-1, self.way_num)
 
         query_label_tiled = query_target.repeat(self.sample_num)
         loss = -self.loss_func(logits_sample_query, query_label_tiled)
@@ -46,7 +46,7 @@ class VERSA_Layer(nn.Module):
         task_score = torch.logsumexp(loss, dim=0) - torch.log(
             torch.as_tensor(self.sample_num, dtype=torch.float).to(query_feat.device))
         # loss = -torch.mean(task_score, dim=0)
-        logits_sample_query = logits_sample_query.contiguous().reshape(self.sample_num, -1, self.train_way)
+        logits_sample_query = logits_sample_query.contiguous().reshape(self.sample_num, -1, self.way_num)
         averaged_prediction = torch.logsumexp(logits_sample_query, dim=0) - torch.log(
             torch.as_tensor(self.sample_num, dtype=torch.float).to(query_feat.device))
         return averaged_prediction, task_score
@@ -58,8 +58,8 @@ class VERSA_Layer(nn.Module):
 
 
 class VERSA(MetaModel):
-    def __init__(self, train_way, train_shot, train_query, emb_func, device, feat_dim, hid_dim, sample_num):
-        super(VERSA, self).__init__(train_way, train_shot, train_query, emb_func, device)
+    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim, hid_dim, sample_num):
+        super(VERSA, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.feat_dim = feat_dim
         self.hid_dim = hid_dim
         self.sample_num = sample_num
@@ -68,7 +68,7 @@ class VERSA(MetaModel):
         self.bias_mean = Predictor(self.feat_dim, self.hid_dim, 1)
         self.bias_logvar = Predictor(self.feat_dim, self.hid_dim, 1)
 
-        self.head = VERSA_Layer(train_way, sample_num)
+        self.head = VERSA_Layer(way_num, sample_num)
 
     def set_forward(self, batch, ):
         image, global_target = batch
@@ -79,7 +79,7 @@ class VERSA(MetaModel):
         episode_size = support_target.size(0)
         query_target = query_target.contiguous().reshape(episode_size, -1)
 
-        class_feat = torch.mean(support_feat.contiguous().reshape(episode_size, self.train_way, self.train_shot, -1),
+        class_feat = torch.mean(support_feat.contiguous().reshape(episode_size, self.way_num, self.shot_num, -1),
                                 dim=2, keepdim=False)
 
         weight_mean = self.weight_mean(class_feat).permute((0, 2, 1))
@@ -101,7 +101,7 @@ class VERSA(MetaModel):
         episode_size = support_target.size(0)
         query_target = query_target.contiguous().reshape(episode_size, -1)
 
-        class_feat = torch.mean(support_feat.contiguous().reshape(episode_size, self.train_way, self.train_shot, -1),
+        class_feat = torch.mean(support_feat.contiguous().reshape(episode_size, self.way_num, self.shot_num, -1),
                                 dim=2, keepdim=False)
 
         weight_mean = self.weight_mean(class_feat).permute((0, 2, 1))

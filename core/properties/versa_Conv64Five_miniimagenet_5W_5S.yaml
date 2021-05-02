@@ -1,9 +1,9 @@
 data_name: miniImageNet
 
 # base info
-train_way: 5
-train_shot: 5
-train_query: 15
+way_num: 5
+shot_num: 5
+query_num: 15
 batch_size: 128
 episode_size: 4
 

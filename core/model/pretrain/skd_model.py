@@ -42,10 +42,10 @@ class DistillLayer(nn.Module):
 
 
 class SKDModel(PretrainModel):
-    def __init__(self, train_way, train_shot, train_query, emb_func, device, feat_dim,
+    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim,
                  num_class, gamma=1, alpha=1, is_distill=False, kd_T=4,
                  emb_func_path=None, cls_classifier_path=None, ):
-        super(SKDModel, self).__init__(train_way, train_shot, train_query, emb_func, device, )
+        super(SKDModel, self).__init__(way_num, shot_num, query_num, emb_func, device, )
 
         self.feat_dim = feat_dim
         self.num_class = num_class
@@ -73,7 +73,7 @@ class SKDModel(PretrainModel):
         :return:
         """
         image, global_target = batch
-        episode_size = image.size(0) // (self.train_way * (self.train_shot + self.train_query))
+        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
         image = image.to(self.device)
         with torch.no_grad():
             feat = self.emb_func(image)

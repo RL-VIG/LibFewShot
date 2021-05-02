@@ -32,13 +32,13 @@ class MTLBaseLearner(nn.Module):
         return self.vars
 
 class MTL(MetaModel):
-    def __init__(self, train_way, train_shot, train_query, emb_func, device, feat_dim,
+    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim,
                  num_classes, inner_para):
-        super(MTL, self).__init__(train_way, train_shot, train_query, emb_func, device)
+        super(MTL, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.feat_dim = feat_dim
         self.num_classes = num_classes
 
-        self.base_learner = MTLBaseLearner(train_way, z_dim=self.feat_dim).to(device)
+        self.base_learner = MTLBaseLearner(way_num, z_dim=self.feat_dim).to(device)
         self.inner_para = inner_para
 
         self.loss_func = nn.CrossEntropyLoss()

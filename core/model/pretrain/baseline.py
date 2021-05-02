@@ -9,9 +9,9 @@ from .pretrain_model import PretrainModel
 # FIXME 加上多GPU
 
 class Baseline(PretrainModel):
-    def __init__(self, train_way, train_shot, train_query, emb_func, device, feat_dim,
+    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim,
                  num_class, inner_optim=None, inner_batch_size=4, inner_train_iter=20):
-        super(Baseline, self).__init__(train_way, train_shot, train_query, emb_func, device)
+        super(Baseline, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.feat_dim = feat_dim
         self.num_class = num_class
         self.inner_optim = inner_optim
@@ -59,7 +59,7 @@ class Baseline(PretrainModel):
         return self.set_forward_adaptation(support_feat, support_target)
 
     def set_forward_adaptation(self, support_feat, support_target):
-        classifier = nn.Linear(self.feat_dim, self.train_way)
+        classifier = nn.Linear(self.feat_dim, self.way_num)
         optimizer = self.sub_optimizer(classifier, self.inner_optim)
 
         classifier = classifier.to(self.device)

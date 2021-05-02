@@ -11,9 +11,9 @@ save_part:
   - cam_layer
 
 epoch: 90
-train_way: 5
-train_shot: 5
-train_query: 15
+way_num: 5
+shot_num: 5
+query_num: 15
 
 
 # arch info

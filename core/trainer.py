@@ -194,7 +194,7 @@ class Trainer(object):
             .format(config['classifier']['name'],
                     config['data_root'].split('/')[-1],
                     config['backbone']['name'],
-                    config['train_way'], config['train_shot'])
+                    config['way_num'], config['shot_num'])
         result_dir = symlink_dir + "-{}".format(get_local_time()) \
             if config['log_name'] is None \
             else config['log_name']
@@ -227,9 +227,9 @@ class Trainer(object):
     def _init_model(self, config):
         emb_func = get_instance(arch, 'backbone', config)
         model = get_instance(arch, 'classifier', config,
-                             config['train_way'],
-                             config['train_shot'] * config['augment_times'],
-                             config['train_query'],
+                             config['way_num'],
+                             config['shot_num'] * config['augment_times'],
+                             config['query_num'],
                              emb_func, self.device)
 
         self.logger.info(model)

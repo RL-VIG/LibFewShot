@@ -9,11 +9,11 @@ def get_collate_function(config, trfms, mode, model_type, ):
         collate_function = GeneralCollateFunction(trfms, config['augment_times'])
     else:
         collate_function = FewShotAugCollateFunction(trfms, config['augment_times'],
-                                                     config['train_way'] if mode == 'train'
+                                                     config['way_num'] if mode == 'train'
                                          else config['test_way'],
-                                                     config['train_shot'] if mode == 'train'
+                                                     config['shot_num'] if mode == 'train'
                                          else config['test_shot'],
-                                                     config['train_query'] if mode == 'train'
+                                                     config['query_num'] if mode == 'train'
                                          else config['test_query'],
                                                      config['episode_size'])
 

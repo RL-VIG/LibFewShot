@@ -75,9 +75,9 @@ def get_dataloader(config, mode, model_type):
                                     episode_size=config['episode_size'],
                                     episode_num=config['train_episode']
                                     if mode == 'train' else config['test_episode'],
-                                    train_way=config['train_way']
+                                    way_num=config['way_num']
                                     if mode == 'train' else config['test_way'],
-                                    image_num=config['train_shot'] + config['train_query']
+                                    image_num=config['shot_num'] + config['query_num']
                                     if mode == 'train'
                                     else config['test_shot'] + config['test_query'])
         dataloader = DataLoader(dataset, batch_sampler=sampler,
