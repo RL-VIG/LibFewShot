@@ -4,6 +4,7 @@ from torch import nn
 from core.utils import accuracy
 from .metric_model import MetricModel
 
+# FIXME 改为定义Flatten操作，而不是记录宽和高
 
 class RelationLayer(nn.Module):
     def __init__(self, feat_dim=64, feat_height=3, feat_width=3):
@@ -52,17 +53,17 @@ class RelationNet(MetricModel):
         :param batch:
         :return:
         """
-        images, global_targets = batch
-        images = images.to(self.device)
+        image, global_target = batch
+        image = image.to(self.device)
 
-        feat = self.emb_func(images)
-        support_feat, query_feat, support_targets, query_targets \
+        feat = self.emb_func(image)
+        support_feat, query_feat, support_target, query_target \
             = self.split_by_episode(feat, mode=2)
 
-        relation_pairs = self._calc_pairs(query_feat, support_feat)
-        output = self.relation_layer(relation_pairs).view(-1, self.way_num)
+        relation_pair = self._calc_pairs(query_feat, support_feat)
+        output = self.relation_layer(relation_pair).view(-1, self.way_num)
 
-        prec1, _ = accuracy(output, query_targets, topk=(1, 3))
+        prec1, _ = accuracy(output, query_target, topk=(1, 3))
         return output, prec1
 
     def set_forward_loss(self, batch):
@@ -71,18 +72,18 @@ class RelationNet(MetricModel):
         :param batch:
         :return:
         """
-        images, global_targets = batch
-        images = images.to(self.device)
+        image, global_target = batch
+        image = image.to(self.device)
 
-        feat = self.emb_func(images)
-        support_feat, query_feat, support_targets, query_targets \
+        feat = self.emb_func(image)
+        support_feat, query_feat, support_target, query_target \
             = self.split_by_episode(feat, mode=2)
 
-        relation_pairs = self._calc_pairs(query_feat, support_feat)
-        output = self.relation_layer(relation_pairs).view(-1, self.way_num)
+        relation_pair = self._calc_pairs(query_feat, support_feat)
+        output = self.relation_layer(relation_pair).view(-1, self.way_num)
 
-        loss = self.loss_func(output, query_targets)
-        prec1, _ = accuracy(output, query_targets, topk=(1, 3))
+        loss = self.loss_func(output, query_target)
+        prec1, _ = accuracy(output, query_target, topk=(1, 3))
         return output, prec1, loss
 
     def _calc_pairs(self, query_feat, support_feat):
@@ -103,5 +104,5 @@ class RelationNet(MetricModel):
             .repeat(1, self.way_num * self.query_num, 1, 1, 1, 1)
 
         # t, wq, w, 2c, h, w -> twqw, 2c, h, w
-        relation_pairs = torch.cat((query_feat, support_feat), dim=3).view(-1, c * 2, h, w)
-        return relation_pairs
+        relation_pair = torch.cat((query_feat, support_feat), dim=3).view(-1, c * 2, h, w)
+        return relation_pair

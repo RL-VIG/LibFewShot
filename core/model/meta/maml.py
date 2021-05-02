@@ -38,48 +38,48 @@ class MAML(MetaModel):
         return out2
 
     def set_forward(self, batch, ):
-        images, _ = batch
-        images = images.to(self.device)
-        support_images, query_images, support_targets, query_targets = self.split_by_episode(images, mode=2)
-        episode_size, _, c, h, w = support_images.size()
+        image, global_target = batch
+        image = image.to(self.device)
+        support_image, query_image, support_target, query_target = self.split_by_episode(image, mode=2)
+        episode_size, _, c, h, w = support_image.size()
 
         output_list = []
         for i in range(episode_size):
-            episode_support_images = support_images[i].contiguous().reshape(-1, c, h, w)
-            episode_query_images = query_images[i].contiguous().reshape(-1, c, h, w)
-            episode_support_targets = support_targets[i].reshape(-1)
-            # episode_query_targets = query_targets[i].reshape(-1)
-            self.train_loop(episode_support_images, episode_support_targets)
+            episode_support_image = support_image[i].contiguous().reshape(-1, c, h, w)
+            episode_query_image = query_image[i].contiguous().reshape(-1, c, h, w)
+            episode_support_target = support_target[i].reshape(-1)
+            # episode_query_target = query_target[i].reshape(-1)
+            self.train_loop(episode_support_image, episode_support_target)
 
-            output = self.forward_output(episode_query_images)
+            output = self.forward_output(episode_query_image)
 
             output_list.append(output)
 
         output = torch.cat(output_list, dim=0)
-        prec1, _ = accuracy(output, query_targets.contiguous().view(-1), topk=(1, 3))
+        prec1, _ = accuracy(output, query_target.contiguous().view(-1), topk=(1, 3))
         return output, prec1
 
     def set_forward_loss(self, batch, ):
-        images, _ = batch
-        images = images.to(self.device)
-        support_images, query_images, support_targets, query_targets = self.split_by_episode(images, mode=2)
-        episode_size, _, c, h, w = support_images.size()
+        image, _global_target= batch
+        image = image.to(self.device)
+        support_image, query_image, support_target, query_target = self.split_by_episode(image, mode=2)
+        episode_size, _, c, h, w = support_image.size()
 
         output_list = []
         for i in range(episode_size):
-            episode_support_images = support_images[i].contiguous().reshape(-1, c, h, w)
-            episode_query_images = query_images[i].contiguous().reshape(-1, c, h, w)
-            episode_support_targets = support_targets[i].reshape(-1)
+            episode_support_image = support_image[i].contiguous().reshape(-1, c, h, w)
+            episode_query_image = query_image[i].contiguous().reshape(-1, c, h, w)
+            episode_support_target = support_target[i].reshape(-1)
             # episode_query_targets = query_targets[i].reshape(-1)
-            self.train_loop(episode_support_images, episode_support_targets)
+            self.train_loop(episode_support_image, episode_support_target)
 
-            output = self.forward_output(episode_query_images)
+            output = self.forward_output(episode_query_image)
 
             output_list.append(output)
 
         output = torch.cat(output_list, dim=0)
-        loss = self.loss_func(output, query_targets.contiguous().view(-1))
-        prec1, _ = accuracy(output, query_targets.contiguous().view(-1), topk=(1, 3))
+        loss = self.loss_func(output, query_target.contiguous().view(-1))
+        prec1, _ = accuracy(output, query_target.contiguous().view(-1), topk=(1, 3))
         return output, prec1, loss
 
     def train_loop(self, support_set, support_targets):

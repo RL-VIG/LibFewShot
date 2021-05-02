@@ -40,19 +40,19 @@ class DistLinear(nn.Module):
         # matrix product by forward function, but when using WeightNorm,
         # this also multiply the cosine distance by a class-wise learnable norm
         cos_dist = self.fc(x_normalized)
-        scores = self.scale_factor * cos_dist
+        score = self.scale_factor * cos_dist
 
-        return scores
+        return score
 
 
 class BaselinePlus(PretrainModel):
     def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim,
-                 num_classes, inner_optim=None, inner_train_iter=20):
+                 num_class, inner_optim=None, inner_train_iter=20):
         super(BaselinePlus, self).__init__(way_num, shot_num, query_num, emb_func,
                                            device)
 
         self.feat_dim = feat_dim
-        self.num_classes = num_classes
+        self.num_class = num_class
         self.inner_optim = inner_optim
         self.inner_train_iter = inner_train_iter
 
@@ -60,7 +60,7 @@ class BaselinePlus(PretrainModel):
 
         self._init_network()
 
-        self.classifier = DistLinear(self.feat_dim, self.num_classes)
+        self.classifier = DistLinear(self.feat_dim, self.num_class)
 
     def set_forward(self, batch, ):
         """
@@ -68,17 +68,17 @@ class BaselinePlus(PretrainModel):
         :param batch:
         :return:
         """
-        images, global_targets = batch
-        images = images.to(self.device)
+        image, global_target = batch
+        image = image.to(self.device)
         with torch.no_grad():
-            emb = self.emb_func(images)
+            emb = self.emb_func(image)
 
-        support_feat, query_feat, support_targets, query_targets = self.split_by_episode(emb,mode=4)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(emb,mode=4)
 
-        classifier = self.test_loop(support_feat, support_targets)
+        classifier = self.test_loop(support_feat, support_target)
 
         output = classifier(query_feat)
-        prec1, _ = accuracy(output, query_targets, topk=(1, 3))
+        prec1, _ = accuracy(output, query_target, topk=(1, 3))
 
         return output, prec1
 
@@ -88,20 +88,20 @@ class BaselinePlus(PretrainModel):
         :param batch:
         :return:
         """
-        images, targets = batch
-        images = images.to(self.device)
-        targets = targets.to(self.device)
+        image, global_target = batch
+        image = image.to(self.device)
+        global_target = global_target.to(self.device)
 
-        feat = self.emb_func(images)
+        feat = self.emb_func(image)
         output = self.classifier(feat)
-        loss = self.loss_func(output, targets)
-        prec1, _ = accuracy(output, targets, topk=(1, 3))
+        loss = self.loss_func(output, global_target)
+        prec1, _ = accuracy(output, global_target, topk=(1, 3))
         return output, prec1, loss
 
-    def test_loop(self, support_feat, support_targets):
-        return self.set_forward_adaptation(support_feat, support_targets)
+    def test_loop(self, support_feat, support_target):
+        return self.set_forward_adaptation(support_feat, support_target)
 
-    def set_forward_adaptation(self, support_feat, support_targets):
+    def set_forward_adaptation(self, support_feat, support_target):
         classifier = DistLinear(self.feat_dim, self.way_num)
         optimizer = self.sub_optimizer(classifier, self.inner_optim)
 
@@ -114,7 +114,7 @@ class BaselinePlus(PretrainModel):
             for i in range(0, support_size, self.inner_batch_size):
                 select_id = rand_id[i:min(i + self.inner_batch_size, support_size)]
                 batch = support_feat[select_id]
-                target = support_targets[select_id]
+                target = support_target[select_id]
 
                 output = classifier(batch)
 

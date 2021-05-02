@@ -37,18 +37,18 @@ class DistillLayer(nn.Module):
 
 class RFSModel(PretrainModel):
     def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim,
-                 num_classes, gamma=1, alpha=0, is_distill=False, kd_T=4,
+                 num_class, gamma=1, alpha=0, is_distill=False, kd_T=4,
                  emb_func_path=None, classifier_path=None):
         super(RFSModel, self).__init__(way_num, shot_num, query_num, emb_func, device)
 
         self.feat_dim = feat_dim
-        self.num_classes = num_classes
+        self.num_class = num_class
 
         self.is_distill = is_distill
         self.gamma = gamma
         self.alpha = alpha
 
-        self.classifier = nn.Linear(self.feat_dim, self.num_classes)
+        self.classifier = nn.Linear(self.feat_dim, self.num_class)
         self.ce_loss_func = nn.CrossEntropyLoss()
         self.kl_loss_func = DistillKLLoss(T=kd_T)
 
@@ -63,20 +63,20 @@ class RFSModel(PretrainModel):
         :param batch:
         :return:
         """
-        images, global_targets = batch
-        episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
-        images = images.to(self.device)
+        image, global_target = batch
+        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        images = image.to(self.device)
         with torch.no_grad():
             feat = self.emb_func(images)
-        support_feats, query_feats, support_targets, query_targets = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
 
-        outputs = []
-        prec1s = []
+        output_list = []
+        prec1_list = []
         for idx in range(episode_size):
-            support_feat = support_feats[idx]
-            query_feat = query_feats[idx]
-            support_target = support_targets[idx]
-            query_target = query_targets[idx]
+            support_feat = support_feat[idx]
+            query_feat = query_feat[idx]
+            support_target = support_target[idx]
+            query_target = query_target[idx]
 
             classifier = self.test_loop(support_feat, support_target)
 
@@ -86,11 +86,11 @@ class RFSModel(PretrainModel):
             output = classifier.predict(query_feat)
             prec1 = metrics.accuracy_score(query_target, output) * 100
 
-            outputs.append(output)
-            prec1s.append(prec1)
+            output_list.append(output)
+            prec1_list.append(prec1)
 
-        output = np.stack(outputs, axis=0)
-        prec1 = sum(prec1s) / episode_size
+        output = np.stack(output_list, axis=0)
+        prec1 = sum(prec1_list) / episode_size
         return output, prec1
 
     def set_forward_loss(self, batch):
@@ -99,26 +99,26 @@ class RFSModel(PretrainModel):
         :param batch:
         :return:
         """
-        images, targets = batch
-        images = images.to(self.device)
-        targets = targets.to(self.device)
+        image, global_target = batch
+        image = image.to(self.device)
+        global_target = global_target.to(self.device)
 
-        feat = self.emb_func(images)
+        feat = self.emb_func(image)
         output = self.classifier(feat)
-        distill_output = self.distill_layer(images)
+        distill_output = self.distill_layer(image)
 
-        gamma_loss = self.ce_loss_func(output, targets)
+        gamma_loss = self.ce_loss_func(output, global_target)
         alpha_loss = self.kl_loss_func(output, distill_output)
         loss = gamma_loss * self.gamma + alpha_loss * self.alpha
 
-        prec1, _ = accuracy(output, targets, topk=(1, 3))
+        prec1, _ = accuracy(output, global_target, topk=(1, 3))
 
         return output, prec1, loss
 
-    def test_loop(self, support_feat, support_targets):
-        return self.set_forward_adaptation(support_feat, support_targets)
+    def test_loop(self, support_feat, support_target):
+        return self.set_forward_adaptation(support_feat, support_target)
 
-    def set_forward_adaptation(self, support_feat, support_targets):
+    def set_forward_adaptation(self, support_feat, support_target):
         classifier = LogisticRegression(penalty='l2',
                                         random_state=0,
                                         C=1.0,
@@ -127,9 +127,9 @@ class RFSModel(PretrainModel):
                                         multi_class='multinomial')
 
         support_feat = F.normalize(support_feat, p=2, dim=1).detach().cpu().numpy()
-        support_targets = support_targets.detach().cpu().numpy()
+        support_target = support_target.detach().cpu().numpy()
 
-        classifier.fit(support_feat, support_targets)
+        classifier.fit(support_feat, support_target)
 
         return classifier
 

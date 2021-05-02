@@ -51,11 +51,11 @@ def one_hot(indices, depth):
     Returns: a (n_batch, m, depth) Tensor or (m, depth) Tensor.
     """
 
-    encoded_indicies = torch.zeros(indices.size() + torch.Size([depth])).to(indices.device)
+    encoded_indicie = torch.zeros(indices.size() + torch.Size([depth])).to(indices.device)
     index = indices.view(indices.size() + torch.Size([1]))
-    encoded_indicies = encoded_indicies.scatter_(1, index, 1)
+    encoded_indicie = encoded_indicie.scatter_(1, index, 1)
 
-    return encoded_indicies
+    return encoded_indicie
 
 
 class R2D2Head(nn.Module):
@@ -72,17 +72,17 @@ class R2D2Head(nn.Module):
         self.register_parameter('beta', nn.Parameter(torch.tensor([0.])))
         self.register_parameter('gamma', nn.Parameter(torch.tensor([50.])))
 
-    def forward(self, query, support, support_labels):
+    def forward(self, query, support, support_target):
         tasks_per_batch = query.size(0)
         n_support = support.size(1)
-        support_labels = support_labels.squeeze()
+        support_target = support_target.squeeze()
 
         assert (query.dim() == 3)
         assert (support.dim() == 3)
         assert (query.size(0) == support.size(0) and query.size(2) == support.size(2))
         assert (n_support == self.way_num * self.shot_num)  # n_support must equal to n_way * n_shot
 
-        support_labels_one_hot = one_hot(support_labels.view(tasks_per_batch * n_support), self.way_num)
+        support_labels_one_hot = one_hot(support_target.view(tasks_per_batch * n_support), self.way_num)
         support_labels_one_hot = support_labels_one_hot.view(tasks_per_batch, n_support, self.way_num)
 
         id_matrix = torch.eye(n_support).expand(tasks_per_batch, n_support, n_support).to(query.device)
@@ -96,9 +96,9 @@ class R2D2Head(nn.Module):
 
         # Compute the classification score.
         # score = W X
-        logits = torch.bmm(query, ridge_sol)
-        logits = self.alpha * logits + self.beta
-        return logits, ridge_sol
+        logit = torch.bmm(query, ridge_sol)
+        logit = self.alpha * logit + self.beta
+        return logit, ridge_sol
 
 
 class R2D2(MetaModel):
@@ -106,39 +106,31 @@ class R2D2(MetaModel):
         super(R2D2, self).__init__(way_num, shot_num, query_num, feature, device)
         self.loss_func = nn.CrossEntropyLoss()
         self.classifier = R2D2Head(self.way_num, self.shot_num)
-        # self.inner_optim = inner_optim
-        # self.inner_train_iter = inner_train_iter
         self._init_network()
 
     def set_forward(self, batch, ):
-        images, global_targets = batch
-        images = images.to(self.device)
+        image, global_target = batch
+        image = image.to(self.device)
 
-        emb = self.emb_func(images)
-        emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb, mode=1)
-        output, W = self.classifier(emb_query, emb_support, support_targets)
-
-        # self.train_loop(emb_support, support_targets, W)
-        # output = self.alpha * output + self.beta
+        emb = self.emb_func(image)
+        emb_support, emb_query, support_target, query_target = self.split_by_episode(emb, mode=1)
+        output, weight = self.classifier(emb_query, emb_support, support_target)
 
         output = output.contiguous().view(-1, self.way_num)
-        prec1, _ = accuracy(output.squeeze(), query_targets.contiguous().reshape(-1), topk=(1, 3))
+        prec1, _ = accuracy(output.squeeze(), query_target.contiguous().reshape(-1), topk=(1, 3))
         return output, prec1
 
     def set_forward_loss(self, batch, ):
-        images, global_targets = batch
-        images = images.to(self.device)
+        image, global_target = batch
+        image = image.to(self.device)
 
-        emb = self.emb_func(images)
-        emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb, mode=1)
-        output, W = self.classifier(emb_query, emb_support, support_targets)
-
-        # self.train_loop(emb_support, support_targets, W)
-        # output = self.alpha * output + self.beta
+        emb = self.emb_func(image)
+        emb_support, emb_query, support_target, query_target = self.split_by_episode(emb, mode=1)
+        output, weight = self.classifier(emb_query, emb_support, support_target)
 
         output = output.contiguous().view(-1, self.way_num)
-        loss = self.loss_func(output, query_targets.contiguous().reshape(-1))
-        prec1, _ = accuracy(output.squeeze(), query_targets.contiguous().reshape(-1), topk=(1, 3))
+        loss = self.loss_func(output, query_target.contiguous().reshape(-1))
+        prec1, _ = accuracy(output.squeeze(), query_target.contiguous().reshape(-1), topk=(1, 3))
         return output, prec1, loss
 
     def train_loop(self, emb_support, support_targets, W):

@@ -6,9 +6,9 @@ from core.utils import accuracy
 from .meta_model import MetaModel
 
 
-def sample(weights, size):
-    mean, var = weights[:, :, :size], weights[:, :, size:]
-    z = torch.normal(0.0, 1.0, mean.size()).to(weights.device)
+def sample(weight, size):
+    mean, var = weight[:, :, :size], weight[:, :, size:]
+    z = torch.normal(0.0, 1.0, mean.size()).to(weight.device)
     return mean + var * z
 
 
@@ -20,10 +20,9 @@ def cal_log_prob(x, mean, var):
     return log_unnormalized - log_normalization
 
 
-def cal_kl_div(latents, mean, var):
+def cal_kl_div(latent, mean, var):
     return torch.mean(
-        cal_log_prob(latents, mean, var) - cal_log_prob(latents, torch.zeros(mean.size()).to(latents.device),
-                                                        torch.ones(var.size()).to(latents.device)))
+        cal_log_prob(latent, mean, var) - cal_log_prob(latent, torch.zeros(mean.size()).to(latent.device), torch.ones(var.size()).to(latent.device)))
 
 
 def orthogonality(weight):
@@ -69,11 +68,11 @@ class Encoder(nn.Module):
         x = x.reshape(episode_size, self.way_num, self.way_num * self.shot_num * self.shot_num, -1)
         x = torch.mean(x, dim=2)
 
-        latents = sample(x, self.hid_dim)
+        latent = sample(x, self.hid_dim)
         mean, var = x[:, :, :self.hid_dim], x[:, :, self.hid_dim:]
-        kl_div = cal_kl_div(latents, mean, var)
+        kl_div = cal_kl_div(latent, mean, var)
 
-        return latents, kl_div
+        return latent, kl_div
 
 
 class Decoder(nn.Module):
@@ -83,32 +82,6 @@ class Decoder(nn.Module):
 
     def forward(self, x):
         return self.decoder_func(x)
-
-
-#
-# class LEO_HEAD(nn.Module):
-#     def __init__(self, way_num, shot_num, feat_dim, hid_dim):
-#         super(LEO_HEAD, self).__init__()
-#         self.way_num = way_num
-#         self.shot_num = shot_num
-#         self.feat_dim = feat_dim
-#         self.hid_dim = hid_dim
-#         self.encoder_func = nn.Linear(self.feat_dim, self.hid_dim)
-#         self.relation_net = nn.Sequential(
-#             nn.Linear(2 * self.hid_dim, 2 * self.hid_dim, bias=False),
-#             nn.ReLU(),
-#             nn.Linear(2 * self.hid_dim, 2 * self.hid_dim, bias=False),
-#             nn.ReLU(),
-#             nn.Linear(2 * self.hid_dim, 2 * self.hid_dim, bias=False),
-#             nn.ReLU()
-#         )
-#         self.decoder_func = nn.Linear(self.hid_dim, 2 * self.feat_dim)
-#
-#     def encoder(self, x):
-#         return self.encoder_func(x)
-#
-#     def decoder(self, x):
-#         return self.decoder_func(x)
 
 
 class LEO(MetaModel):
@@ -131,61 +104,61 @@ class LEO(MetaModel):
         self._init_network()
 
     def set_forward(self, batch, ):
-        images, global_targets = batch
-        images = images.to(self.device)
+        image, global_target = batch
+        image = image.to(self.device)
 
         with torch.no_grad():
-            emb = self.emb_func(images)
-        emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb, mode=1)
+            emb = self.emb_func(image)
+        emb_support, emb_query, support_target, query_target = self.split_by_episode(emb, mode=1)
         episode_size = emb_support.size(0)
 
-        latents, kl_div, encoder_penalty = self.train_loop(emb_support, support_targets, episode_size)
+        latent, kl_div, encoder_penalty = self.train_loop(emb_support, support_target, episode_size)
 
-        classifier_weights = self.decoder(latents)
-        classifier_weights = sample(classifier_weights, self.feat_dim)
-        classifier_weights = classifier_weights.permute([0, 2, 1])
+        classifier_weight = self.decoder(latent)
+        classifier_weight = sample(classifier_weight, self.feat_dim)
+        classifier_weight = classifier_weight.permute([0, 2, 1])
 
-        classifier_weights = self.finetune(classifier_weights, emb_support, support_targets)
+        classifier_weight = self.finetune(classifier_weight, emb_support, support_target)
 
-        output = torch.bmm(emb_query, classifier_weights)
+        output = torch.bmm(emb_query, classifier_weight)
         output = output.contiguous().reshape(-1, self.way_num)
 
-        prec1, _ = accuracy(output, query_targets.contiguous().reshape(-1), topk=(1, 3))
+        prec1, _ = accuracy(output, query_target.contiguous().reshape(-1), topk=(1, 3))
         return output, prec1
 
     def set_forward_loss(self, batch, ):
-        images, global_targets = batch
-        images = images.to(self.device)
+        image, global_target = batch
+        images = image.to(self.device)
 
         with torch.no_grad():
-            emb = self.emb_func(images)
-        emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb, mode=1)
+            emb = self.emb_func(image)
+        emb_support, emb_query, support_target, query_target = self.split_by_episode(emb, mode=1)
         episode_size = emb_support.size(0)
 
-        latents, kl_div, encoder_penalty = self.train_loop(emb_support, support_targets, episode_size)
+        latent, kl_div, encoder_penalty = self.train_loop(emb_support, support_target, episode_size)
 
-        classifier_weights = self.decoder(latents)
-        classifier_weights = sample(classifier_weights, self.feat_dim)
-        classifier_weights = classifier_weights.permute([0, 2, 1])
+        classifier_weight = self.decoder(latent)
+        classifier_weight = sample(classifier_weight, self.feat_dim)
+        classifier_weight = classifier_weight.permute([0, 2, 1])
 
-        classifier_weights = self.finetune(classifier_weights, emb_support, support_targets)
+        classifier_weight = self.finetune(classifier_weight, emb_support, support_target)
 
-        output = torch.bmm(emb_query, classifier_weights)
+        output = torch.bmm(emb_query, classifier_weight)
         output = output.contiguous().reshape(-1, self.way_num)
-        pred_loss = self.loss_func(output, query_targets.contiguous().reshape(-1))
+        pred_loss = self.loss_func(output, query_target.contiguous().reshape(-1))
 
         orthogonality_penalty = orthogonality(list(self.decoder.parameters())[0])
 
         total_loss = pred_loss + self.kl_weight * kl_div + self.encoder_penalty_weight * encoder_penalty + self.orthogonality_penalty_weight * orthogonality_penalty
-        prec1, _ = accuracy(output, query_targets.contiguous().reshape(-1), topk=(1, 3))
+        prec1, _ = accuracy(output, query_target.contiguous().reshape(-1), topk=(1, 3))
         return output, prec1, total_loss
 
     def train_loop(self, emb_support, support_targets, episode_size):
-        latents, kl_div = self.encoder(emb_support)
-        latents_init = latents
+        latent, kl_div = self.encoder(emb_support)
+        latent_init = latent
         for i in range(self.inner_train_iter):
-            latents.retain_grad()
-            classifier_weight = self.decoder(latents)
+            latent.retain_grad()
+            classifier_weight = self.decoder(latent)
             classifier_weight = sample(classifier_weight, self.feat_dim)
             classifier_weight = classifier_weight.permute([0, 2, 1])
             output = torch.bmm(emb_support, classifier_weight)
@@ -195,10 +168,10 @@ class LEO(MetaModel):
 
             loss.backward(retain_graph=True)
 
-            latents = latents - self.inner_optim['inner_lr'] * latents.grad
+            latents = latent - self.inner_optim['inner_lr'] * latent.grad
 
-        encoder_penalty = torch.mean((latents_init - latents) ** 2)
-        return latents, kl_div, encoder_penalty
+        encoder_penalty = torch.mean((latent_init - latent) ** 2)
+        return latent, kl_div, encoder_penalty
 
     def test_loop(self, *args, **kwargs):
         raise NotImplementedError
@@ -206,21 +179,21 @@ class LEO(MetaModel):
     def set_forward_adaptation(self, *args, **kwargs):
         raise NotImplementedError
 
-    def finetune(self, classifier_weights, emb_support, support_targets):
-        classifier_weights.retain_grad()
-        output = torch.bmm(emb_support, classifier_weights)
+    def finetune(self, classifier_weight, emb_support, support_targets):
+        classifier_weight.retain_grad()
+        output = torch.bmm(emb_support, classifier_weight)
         output = output.contiguous().reshape(-1, self.way_num)
-        targets = support_targets.contiguous().reshape(-1)
-        pred_loss = self.loss_func(output, targets)
+        target = support_targets.contiguous().reshape(-1)
+        pred_loss = self.loss_func(output, target)
 
         for j in range(self.finetune_iter):
             pred_loss.backward(retain_graph=True)
-            classifier_weights = classifier_weights - self.inner_optim['finetune_lr'] * classifier_weights.grad
-            classifier_weights.retain_grad()
+            classifier_weight = classifier_weight - self.inner_optim['finetune_lr'] * classifier_weight.grad
+            classifier_weight.retain_grad()
 
-            output = torch.bmm(emb_support, classifier_weights)
+            output = torch.bmm(emb_support, classifier_weight)
             output = output.contiguous().reshape(-1, self.way_num)
             targets = support_targets.contiguous().reshape(-1)
             pred_loss = self.loss_func(output, targets)
 
-        return classifier_weights
+        return classifier_weight

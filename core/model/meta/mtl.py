@@ -49,20 +49,20 @@ class MTL(MetaModel):
         '''
         meta-validation
         '''
-        images, targets = batch
-        images = images.to(self.device)
-        targets = targets.to(self.device)
+        image, global_target = batch
+        image = image.to(self.device)
+        global_target = global_target.to(self.device)
 
         with torch.no_grad():
-            feat = self.emb_func(images)
+            feat = self.emb_func(image)
 
-        support_feat, query_feat, support_targets, query_targets = self.split_by_episode(feat, mode=4)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=4)
 
-        classifier, fast_weights = self.train_loop(support_feat, support_targets)
+        classifier, fast_weight = self.train_loop(support_feat, support_target)
 
-        output = classifier(query_feat, fast_weights)
+        output = classifier(query_feat, fast_weight)
 
-        prec1, _ = accuracy(output, query_targets, topk=(1, 3))
+        prec1, _ = accuracy(output, query_target, topk=(1, 3))
 
         return output, prec1
 
@@ -70,36 +70,36 @@ class MTL(MetaModel):
         '''
         meta-train
         '''
-        images, targets = batch
-        images = images.to(self.device)
-        targets = targets.to(self.device)
+        image, global_target = batch
+        image = image.to(self.device)
+        global_target = global_target.to(self.device)
 
-        feat = self.emb_func(images)
+        feat = self.emb_func(image)
 
-        support_feat, query_feat, support_targets, query_targets = self.split_by_episode(feat, mode=4)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=4)
 
-        classifier, fast_weights = self.train_loop(support_feat, support_targets)
+        classifier, fast_weight = self.train_loop(support_feat, support_target)
 
-        output = classifier(query_feat, fast_weights)
-        loss = self.loss_func(output,query_targets)
-        prec1, _ = accuracy(output, query_targets, topk=(1, 3))
+        output = classifier(query_feat, fast_weight)
+        loss = self.loss_func(output,query_target)
+        prec1, _ = accuracy(output, query_target, topk=(1, 3))
 
         return output, prec1, loss
 
-    def train_loop(self, support_feat, support_targets):
+    def train_loop(self, support_feat, support_target):
         classifier = self.base_learner
-        logits = self.base_learner(support_feat)
-        loss = self.loss_func(logits, support_targets)
+        logit = self.base_learner(support_feat)
+        loss = self.loss_func(logit, support_target)
         grad = torch.autograd.grad(loss, self.base_learner.parameters())
-        fast_weights = list(map(lambda p: p[1] - 0.01 * p[0], zip(grad, self.base_learner.parameters())))
+        fast_parameters = list(map(lambda p: p[1] - 0.01 * p[0], zip(grad, self.base_learner.parameters())))
 
         for _ in range(1, self.inner_train_iter):
-            logits = self.base_learner(support_feat, fast_weights)
-            loss = F.cross_entropy(logits, support_targets)
-            grad = torch.autograd.grad(loss, fast_weights)
-            fast_weights = list(map(lambda p: p[1] - 0.01 * p[0], zip(grad, fast_weights)))
+            logit = self.base_learner(support_feat, fast_parameters)
+            loss = F.cross_entropy(logit, support_target)
+            grad = torch.autograd.grad(loss, fast_parameters)
+            fast_parameters = list(map(lambda p: p[1] - 0.01 * p[0], zip(grad, fast_parameters)))
 
-        return classifier, fast_weights
+        return classifier, fast_parameters
 
     def test_loop(self, *args, **kwargs):
         raise NotImplementedError
