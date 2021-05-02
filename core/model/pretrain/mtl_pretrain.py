@@ -45,7 +45,6 @@ class MTLPretrain(PretrainModel): # use image-size=80 in repo
 
         self.loss_func = nn.CrossEntropyLoss()
 
-        self._init_network()
 
     def set_forward(self, batch, ):
         """
@@ -66,9 +65,9 @@ class MTLPretrain(PretrainModel): # use image-size=80 in repo
 
         output = classifier(query_feat,fast_weight)
 
-        prec1, _ = accuracy(output, query_target, topk=(1, 3))
+        acc, _ = accuracy(output, query_target, topk=(1, 3))
 
-        return output, prec1
+        return output, acc
 
     def set_forward_loss(self, batch):
         """
@@ -85,8 +84,8 @@ class MTLPretrain(PretrainModel): # use image-size=80 in repo
         output = self.pre_fc(feat).contiguous()
 
         loss = self.loss_func(output, global_target)
-        prec1, _ = accuracy(output, global_target, topk=(1, 3))
-        return output, prec1, loss
+        acc, _ = accuracy(output, global_target, topk=(1, 3))
+        return output, acc, loss
 
     def test_loop(self, support_feat, support_target):
         return self.set_forward_adaptation(support_feat, support_target)
@@ -101,8 +100,8 @@ class MTLPretrain(PretrainModel): # use image-size=80 in repo
         fast_parameters = list(map(lambda p: p[1] - 0.01 * p[0], zip(grad, self.base_learner.parameters())))
 
         for _ in range(1, self.inner_train_iter):
-            logits = self.base_learner(support_feat, fast_parameters)
-            loss = F.cross_entropy(logits, support_target)
+            logit = self.base_learner(support_feat, fast_parameters)
+            loss = F.cross_entropy(logit, support_target)
             grad = torch.autograd.grad(loss, fast_parameters)
             fast_parameters = list(map(lambda p: p[1] - 0.01 * p[0], zip(grad, fast_parameters)))
 

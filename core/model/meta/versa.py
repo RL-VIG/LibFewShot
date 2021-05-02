@@ -69,8 +69,6 @@ class VERSA(MetaModel):
 
         self.head = VERSA_HEAD(way_num, sample_num)
 
-        self._init_network()
-
     def set_forward(self, batch, ):
         image, global_target = batch
         image = image.to(self.device)
@@ -88,13 +86,13 @@ class VERSA(MetaModel):
         bias_mean = self.bias_mean(class_feat).permute((0, 2, 1))
         bias_logvar = self.bias_logvar(class_feat).permute((0, 2, 1))
 
-        averaged_prediction, _ = self.head(query_feat, query_target, weight_mean, weight_logvar,
+        output, _ = self.head(query_feat, query_target, weight_mean, weight_logvar,
                                             bias_mean, bias_logvar)
-        prec1, _ = accuracy(averaged_prediction, query_target.reshape(-1), topk=(1, 3))
-        return averaged_prediction, prec1
+        acc, _ = accuracy(output, query_target.reshape(-1), topk=(1, 3))
+        return output, acc
 
     def set_forward_loss(self, batch, ):
-        image, global_target = batch
+        image, global_target= batch
         image = image.to(self.device)
 
         feat = self.emb_func(image)
@@ -110,11 +108,11 @@ class VERSA(MetaModel):
         bias_mean = self.bias_mean(class_feat).permute((0, 2, 1))
         bias_logvar = self.bias_logvar(class_feat).permute((0, 2, 1))
 
-        averaged_prediction, task_score = self.head(query_feat, query_target, weight_mean, weight_logvar,
+        output, task_score = self.head(query_feat, query_target, weight_mean, weight_logvar,
                                                      bias_mean, bias_logvar)
-        prec1, _ = accuracy(averaged_prediction, query_target.reshape(-1), topk=(1, 3))
+        acc, _ = accuracy(output, query_target.reshape(-1), topk=(1, 3))
         loss = -torch.mean(task_score, dim=0)
-        return averaged_prediction, prec1, loss
+        return output, acc, loss
 
     def train_loop(self, *args, **kwargs):
         raise NotImplementedError

@@ -10,17 +10,7 @@ from torch.nn import functional as F
 from core.utils import accuracy
 from .pretrain_model import PretrainModel
 from .. import DistillKLLoss
-
-
-class L2DistLoss(nn.Module):
-    def __init__(self):
-        super(L2DistLoss, self).__init__()
-
-    def forward(self, feat1, feat2):
-        loss = torch.mean(torch.sqrt(torch.sum((feat1 - feat2) ** 2, dim=1)))
-        if torch.isnan(loss).any():
-            loss = 0.0
-        return loss
+from core.model.loss import L2DistLoss
 
 
 class DistillLayer(nn.Module):
@@ -69,7 +59,6 @@ class SKDModel(PretrainModel):
         self.l2_loss_func = L2DistLoss()
         self.kl_loss_func = DistillKLLoss(T=kd_T)
 
-        self._init_network()
 
         self.distill_layer = DistillLayer(self.emb_func, self.cls_classifier,
                                           self.is_distill, emb_func_path,
@@ -90,7 +79,7 @@ class SKDModel(PretrainModel):
             = self.split_by_episode(feat, mode=1)
 
         output_list = []
-        prec1_list = []
+        acc_list = []
         for idx in range(episode_size):
             support_feat = support_feat[idx]
             query_feat = query_feat[idx]
@@ -103,14 +92,14 @@ class SKDModel(PretrainModel):
             query_target = query_target.detach().cpu().numpy()
 
             output = classifier.predict(query_feat)
-            prec1 = metrics.accuracy_score(query_target, output) * 100
+            acc = metrics.accuracy_score(query_target, output) * 100
 
             output_list.append(output)
-            prec1_list.append(prec1)
+            acc_list.append(acc)
 
         output = np.stack(output_list, axis=0)
-        prec1 = sum(prec1_list) / episode_size
-        return output, prec1
+        acc = sum(acc_list) / episode_size
+        return output, acc
 
     def set_forward_loss(self, batch):
         """
@@ -128,24 +117,24 @@ class SKDModel(PretrainModel):
             = self.rot_image_generation(image, target)
 
         feat = self.emb_func(generated_image)
-        cls_output = self.cls_classifier(feat)
+        output = self.cls_classifier(feat)
         distill_output = self.distill_layer(image)
 
         if self.is_distill:
-            gamma_loss = self.kl_loss_func(cls_output[:batch_size], distill_output)
-            alpha_loss = self.l2_loss_func(cls_output[batch_size:],
-                                           cls_output[:batch_size]) / 3
+            gamma_loss = self.kl_loss_func(output[:batch_size], distill_output)
+            alpha_loss = self.l2_loss_func(output[batch_size:],
+                                           output[:batch_size]) / 3
         else:
-            rot_output = self.rot_classifier(cls_output)
-            gamma_loss = self.ce_loss_func(cls_output, generated_target)
+            rot_output = self.rot_classifier(output)
+            gamma_loss = self.ce_loss_func(output, generated_target)
             alpha_loss = torch.sum(
                 F.binary_cross_entropy_with_logits(rot_output, rot_target))
 
         loss = gamma_loss * self.gamma + alpha_loss * self.alpha
 
-        prec1, _ = accuracy(cls_output, generated_target, topk=(1, 3))
+        acc, _ = accuracy(output, generated_target, topk=(1, 3))
 
-        return cls_output, prec1, loss
+        return output, acc, loss
 
     def test_loop(self, support_feat, support_target):
         return self.set_forward_adaptation(support_feat, support_target)

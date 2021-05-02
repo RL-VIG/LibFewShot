@@ -58,7 +58,6 @@ class BaselinePlus(PretrainModel):
 
         self.loss_func = nn.CrossEntropyLoss()
 
-        self._init_network()
 
         self.classifier = DistLinear(self.feat_dim, self.num_class)
 
@@ -71,16 +70,16 @@ class BaselinePlus(PretrainModel):
         image, global_target = batch
         image = image.to(self.device)
         with torch.no_grad():
-            emb = self.emb_func(image)
+            feat = self.emb_func(image)
 
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(emb,mode=4)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat,mode=4)
 
         classifier = self.test_loop(support_feat, support_target)
 
         output = classifier(query_feat)
-        prec1, _ = accuracy(output, query_target, topk=(1, 3))
+        acc, _ = accuracy(output, query_target, topk=(1, 3))
 
-        return output, prec1
+        return output, acc
 
     def set_forward_loss(self, batch):
         """
@@ -88,15 +87,15 @@ class BaselinePlus(PretrainModel):
         :param batch:
         :return:
         """
-        image, global_target = batch
+        image, target = batch
         image = image.to(self.device)
-        global_target = global_target.to(self.device)
+        target = target.to(self.device)
 
         feat = self.emb_func(image)
         output = self.classifier(feat)
-        loss = self.loss_func(output, global_target)
-        prec1, _ = accuracy(output, global_target, topk=(1, 3))
-        return output, prec1, loss
+        loss = self.loss_func(output, target)
+        acc, _ = accuracy(output, target, topk=(1, 3))
+        return output, acc, loss
 
     def test_loop(self, support_feat, support_target):
         return self.set_forward_adaptation(support_feat, support_target)

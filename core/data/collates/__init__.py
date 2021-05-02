@@ -1,20 +1,20 @@
-from .collate_fns import *
+from .collate_functions import *
 from .contrib import get_augment_method
 from ...utils import ModelType
 
 
-def get_collate_fn(config, trfms, mode, model_type, ):
+def get_collate_function(config, trfms, mode, model_type, ):
     assert model_type != ModelType.ABSTRACT
     if mode == 'train' and model_type == ModelType.PRETRAIN:
-        collate_fn = GeneralCollateFn(trfms, config['augment_times'])
+        collate_function = GeneralCollateFunction(trfms, config['augment_times'])
     else:
-        collate_fn = FewShotAugCollateFn(trfms, config['augment_times'],
-                                         config['way_num'] if mode == 'train'
+        collate_function = FewShotAugCollateFunction(trfms, config['augment_times'],
+                                                     config['way_num'] if mode == 'train'
                                          else config['test_way'],
-                                         config['shot_num'] if mode == 'train'
+                                                     config['shot_num'] if mode == 'train'
                                          else config['test_shot'],
-                                         config['query_num'] if mode == 'train'
+                                                     config['query_num'] if mode == 'train'
                                          else config['test_query'],
-                                         config['episode_size'])
+                                                     config['episode_size'])
 
-    return collate_fn
+    return collate_function

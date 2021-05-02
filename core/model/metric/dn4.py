@@ -42,7 +42,6 @@ class DN4(MetricModel):
         super(DN4, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.dn4_layer = DN4Layer(way_num, shot_num, query_num, n_k)
         self.loss_func = nn.CrossEntropyLoss()
-        self._init_network()
 
     def set_forward(self, batch, ):
         """
@@ -53,14 +52,14 @@ class DN4(MetricModel):
         image, global_target = batch
         image = image.to(self.device)
         episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
-        emb = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(emb,mode=2)
+        feat = self.emb_func(image)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat,mode=2)
 
         output = self.dn4_layer(query_feat, support_feat) \
             .view(episode_size * self.way_num * self.query_num, self.way_num)
-        prec1, _ = accuracy(output, query_target, topk=(1, 3))
+        acc, _ = accuracy(output, query_target, topk=(1, 3))
 
-        return output, prec1
+        return output, acc
 
     def set_forward_loss(self, batch):
         """
@@ -77,6 +76,6 @@ class DN4(MetricModel):
         output = self.dn4_layer(query_feat, support_feat) \
             .view(episode_size * self.way_num * self.query_num, self.way_num)
         loss = self.loss_func(output, query_target)
-        prec1, _ = accuracy(output, query_target, topk=(1, 3))
+        acc, _ = accuracy(output, query_target, topk=(1, 3))
 
-        return output, prec1, loss
+        return output, acc, loss

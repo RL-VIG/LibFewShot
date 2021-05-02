@@ -45,8 +45,6 @@ class RelationNet(MetricModel):
                                             self.feat_width)
         self.loss_func = nn.CrossEntropyLoss()
 
-        self._init_network()
-
     def set_forward(self, batch, ):
         """
 
@@ -57,14 +55,13 @@ class RelationNet(MetricModel):
         image = image.to(self.device)
 
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target \
-            = self.split_by_episode(feat, mode=2)
+        support_feat, query_feat, support_target, query_target  = self.split_by_episode(feat, mode=2)
 
         relation_pair = self._calc_pairs(query_feat, support_feat)
         output = self.relation_layer(relation_pair).view(-1, self.way_num)
 
-        prec1, _ = accuracy(output, query_target, topk=(1, 3))
-        return output, prec1
+        acc, _ = accuracy(output, query_target, topk=(1, 3))
+        return output, acc
 
     def set_forward_loss(self, batch):
         """
@@ -76,15 +73,14 @@ class RelationNet(MetricModel):
         image = image.to(self.device)
 
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target \
-            = self.split_by_episode(feat, mode=2)
+        support_feat, query_feat, support_target, query_target   = self.split_by_episode(feat, mode=2)
 
         relation_pair = self._calc_pairs(query_feat, support_feat)
         output = self.relation_layer(relation_pair).view(-1, self.way_num)
 
         loss = self.loss_func(output, query_target)
-        prec1, _ = accuracy(output, query_target, topk=(1, 3))
-        return output, prec1, loss
+        acc, _ = accuracy(output, query_target, topk=(1, 3))
+        return output, acc, loss
 
     def _calc_pairs(self, query_feat, support_feat):
         """

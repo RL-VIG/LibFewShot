@@ -76,10 +76,10 @@ class Test(object):
                 meter.update('data_time', time() - end)
 
                 # calculate the output
-                output, prec1 = self.model.set_forward(batch)
-                accuracies.append(prec1)
+                output, acc = self.model.set_forward(batch)
+                accuracies.append(acc)
                 # measure accuracy and record loss
-                meter.update('prec1', prec1)
+                meter.update('acc', acc)
 
                 # measure elapsed time
                 meter.update('batch_time', time() - end)
@@ -96,11 +96,11 @@ class Test(object):
                                         meter.avg('batch_time'),
                                         meter.last('data_time'),
                                         meter.avg('data_time'),
-                                        meter.last('prec1'),
-                                        meter.avg('prec1'), ))
+                                        meter.last('acc'),
+                                        meter.avg('acc'), ))
                     self.logger.info(info_str)
 
-        return meter.avg('prec1'), accuracies
+        return meter.avg('acc'), accuracies
 
     def _init_files(self, config):
         if self.result_path is not None:
@@ -166,7 +166,7 @@ class Test(object):
         return device, list_ids
 
     def _init_meter(self):
-        test_meter = AverageMeter('test', ['batch_time', 'data_time', 'prec1'],
+        test_meter = AverageMeter('test', ['batch_time', 'data_time', 'acc'],
                                   self.writer)
 
         return test_meter

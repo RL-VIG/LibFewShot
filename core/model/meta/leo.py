@@ -101,59 +101,58 @@ class LEO(MetaModel):
         self.orthogonality_penalty_weight = orthogonality_penalty_weight
 
         self.loss_func = nn.CrossEntropyLoss()
-        self._init_network()
 
     def set_forward(self, batch, ):
         image, global_target = batch
         image = image.to(self.device)
 
         with torch.no_grad():
-            emb = self.emb_func(image)
-        emb_support, emb_query, support_target, query_target = self.split_by_episode(emb, mode=1)
-        episode_size = emb_support.size(0)
+            feat = self.emb_func(image)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        episode_size = support_feat.size(0)
 
-        latent, kl_div, encoder_penalty = self.train_loop(emb_support, support_target, episode_size)
+        latents, kl_div, encoder_penalty = self.train_loop(support_feat, support_target, episode_size)
 
-        classifier_weight = self.decoder(latent)
-        classifier_weight = sample(classifier_weight, self.feat_dim)
-        classifier_weight = classifier_weight.permute([0, 2, 1])
+        leo_weight = self.decoder(latents)
+        leo_weight = sample(leo_weight, self.feat_dim)
+        leo_weight = leo_weight.permute([0, 2, 1])
 
-        classifier_weight = self.finetune(classifier_weight, emb_support, support_target)
+        leo_weight = self.finetune(leo_weight, support_feat, support_target)
 
-        output = torch.bmm(emb_query, classifier_weight)
+        output = torch.bmm(query_feat, leo_weight)
         output = output.contiguous().reshape(-1, self.way_num)
 
-        prec1, _ = accuracy(output, query_target.contiguous().reshape(-1), topk=(1, 3))
-        return output, prec1
+        acc, _ = accuracy(output, query_target.contiguous().reshape(-1), topk=(1, 3))
+        return output, acc
 
     def set_forward_loss(self, batch, ):
         image, global_target = batch
-        images = image.to(self.device)
+        image = image.to(self.device)
 
         with torch.no_grad():
-            emb = self.emb_func(image)
-        emb_support, emb_query, support_target, query_target = self.split_by_episode(emb, mode=1)
-        episode_size = emb_support.size(0)
+            feat = self.emb_func(image)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        episode_size = support_feat.size(0)
 
-        latent, kl_div, encoder_penalty = self.train_loop(emb_support, support_target, episode_size)
+        latent, kl_div, encoder_penalty = self.train_loop(support_feat, support_target, episode_size)
 
         classifier_weight = self.decoder(latent)
         classifier_weight = sample(classifier_weight, self.feat_dim)
         classifier_weight = classifier_weight.permute([0, 2, 1])
 
-        classifier_weight = self.finetune(classifier_weight, emb_support, support_target)
+        classifier_weight = self.finetune(classifier_weight, support_feat, support_target)
 
-        output = torch.bmm(emb_query, classifier_weight)
+        output = torch.bmm(query_feat, classifier_weight)
         output = output.contiguous().reshape(-1, self.way_num)
         pred_loss = self.loss_func(output, query_target.contiguous().reshape(-1))
 
         orthogonality_penalty = orthogonality(list(self.decoder.parameters())[0])
 
         total_loss = pred_loss + self.kl_weight * kl_div + self.encoder_penalty_weight * encoder_penalty + self.orthogonality_penalty_weight * orthogonality_penalty
-        prec1, _ = accuracy(output, query_target.contiguous().reshape(-1), topk=(1, 3))
-        return output, prec1, total_loss
+        acc, _ = accuracy(output, query_target.contiguous().reshape(-1), topk=(1, 3))
+        return output, acc, total_loss
 
-    def train_loop(self, emb_support, support_targets, episode_size):
+    def train_loop(self, emb_support, support_target, episode_size):
         latent, kl_div = self.encoder(emb_support)
         latent_init = latent
         for i in range(self.inner_train_iter):
@@ -163,12 +162,12 @@ class LEO(MetaModel):
             classifier_weight = classifier_weight.permute([0, 2, 1])
             output = torch.bmm(emb_support, classifier_weight)
             output = output.contiguous().reshape(-1, self.way_num)
-            targets = support_targets.contiguous().reshape(-1)
+            targets = support_target.contiguous().reshape(-1)
             loss = self.loss_func(output, targets)
 
             loss.backward(retain_graph=True)
 
-            latents = latent - self.inner_optim['inner_lr'] * latent.grad
+            latent = latent - self.inner_optim['inner_lr'] * latent.grad
 
         encoder_penalty = torch.mean((latent_init - latent) ** 2)
         return latent, kl_div, encoder_penalty
@@ -179,11 +178,11 @@ class LEO(MetaModel):
     def set_forward_adaptation(self, *args, **kwargs):
         raise NotImplementedError
 
-    def finetune(self, classifier_weight, emb_support, support_targets):
+    def finetune(self, classifier_weight, emb_support, support_target):
         classifier_weight.retain_grad()
         output = torch.bmm(emb_support, classifier_weight)
         output = output.contiguous().reshape(-1, self.way_num)
-        target = support_targets.contiguous().reshape(-1)
+        target = support_target.contiguous().reshape(-1)
         pred_loss = self.loss_func(output, target)
 
         for j in range(self.finetune_iter):
@@ -193,7 +192,7 @@ class LEO(MetaModel):
 
             output = torch.bmm(emb_support, classifier_weight)
             output = output.contiguous().reshape(-1, self.way_num)
-            targets = support_targets.contiguous().reshape(-1)
+            targets = support_target.contiguous().reshape(-1)
             pred_loss = self.loss_func(output, targets)
 
         return classifier_weight

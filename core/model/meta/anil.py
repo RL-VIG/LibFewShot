@@ -37,38 +37,38 @@ class ANIL(MetaModel):
         image, global_target = batch
         image = image.to(self.device)
 
-        emb = self.emb_func(image)
-        emb_support, emb_query, support_target, query_target = self.split_by_episode(emb, mode=1)
-        episode_size = emb_support.size(0)
+        feat = self.emb_func(image)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        episode_size = support_feat.size(0)
 
         output_list = []
         for i in range(episode_size):
-            self.train_loop(emb_support[i], support_target[i])
-            output = self.classifier(emb_query[i])
+            self.train_loop(support_feat[i], support_target[i])
+            output = self.classifier(query_feat[i])
             output_list.append(output)
 
         output = torch.cat(output_list, dim=0)
-        prec1, _ = accuracy(output.squeeze(), query_target.contiguous().reshape(-1), topk=(1, 3))
-        return output, prec1
+        acc, _ = accuracy(output.squeeze(), query_target.contiguous().reshape(-1), topk=(1, 3))
+        return output, acc
 
     def set_forward_loss(self, batch, ):
         image, global_target = batch
         image = image.to(self.device)
 
-        emb = self.emb_func(image)
-        emb_support, emb_query, support_target, query_target = self.split_by_episode(emb, mode=1)
-        episode_size = emb_support.size(0)
+        feat = self.emb_func(image)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        episode_size = support_feat.size(0)
 
         output_list = []
         for i in range(episode_size):
-            self.train_loop(emb_support[i], support_target[i])
-            output = self.classifier(emb_query[i])
+            self.train_loop(support_feat[i], support_target[i])
+            output = self.classifier(query_feat[i])
             output_list.append(output)
 
         output = torch.cat(output_list, dim=0)
         loss = self.loss_func(output, query_target.contiguous().reshape(-1))
-        prec1, _ = accuracy(output.squeeze(), query_target.contiguous().reshape(-1), topk=(1, 3))
-        return output, prec1, loss
+        acc, _ = accuracy(output.squeeze(), query_target.contiguous().reshape(-1), topk=(1, 3))
+        return output, acc, loss
 
     def train_loop(self, support_feat, support_target):
         lr = self.inner_optim['lr']

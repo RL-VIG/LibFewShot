@@ -135,7 +135,6 @@ class ADM(MetricModel):
         self.n_k = n_k
         self.adm_layer = ADMLayer(way_num, shot_num, query_num,n_k,device)
         self.loss_func = nn.CrossEntropyLoss()
-        self._init_network()
 
     def set_forward(self, batch, ):
         """
@@ -146,12 +145,12 @@ class ADM(MetricModel):
         image, global_target = batch
         image = image.to(self.device)
         episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
-        emb = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(emb, mode=2)
+        feat = self.emb_func(image)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
 
         output = self.adm_layer(query_feat, support_feat).view(episode_size*self.way_num*self.query_num,-1)
-        prec1, _ = accuracy(output, query_target, topk=(1, 3))
-        return output, prec1
+        acc, _ = accuracy(output, query_target, topk=(1, 3))
+        return output, acc
 
     def set_forward_loss(self, batch):
         """
@@ -162,10 +161,10 @@ class ADM(MetricModel):
         image, global_target = batch
         image = image.to(self.device)
         episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
-        emb = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(emb, mode=2)
+        feat = self.emb_func(image)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
         # assume here we will get n_dim=5
         output = self.adm_layer(query_feat, support_feat).view(episode_size*self.way_num*self.query_num,-1)
         loss = self.loss_func(output, query_target)
-        prec1, _ = accuracy(output, query_target, topk=(1, 3))
-        return output, prec1, loss
+        acc, _ = accuracy(output, query_target, topk=(1, 3))
+        return output, acc, loss

@@ -131,8 +131,8 @@ class CAMLayer(nn.Module):
         """
         support_feat: [4, 5, 512, 6, 6]
         query_feat: [4, 75, 512, 6, 6]
-        support_targets: [4, 5, 5] one-hot
-        query_targets: [4, 75, 5] one-hot
+        support_target: [4, 5, 5] one-hot
+        query_target: [4, 75, 5] one-hot
         """
         original_feat_shape = support_feat.size()
         batch_size = support_feat.size(0)
@@ -175,7 +175,7 @@ class CAMLayer(nn.Module):
 
     def helper(self, support_feat, query_feat, support_target):
         """
-        support_targets_transposed: one-hot
+        support_target_transposed: one-hot
         """
         b, n, c, h, w = support_feat.size()
         k = support_target.size(2)
@@ -227,7 +227,6 @@ class CAN(MetricModel):
         super(CAN, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.cam_layer = CAMLayer(scale_cls, iter_num_prob, num_classes, feat_dim, HW)
         self.loss_func = nn.CrossEntropyLoss()
-        self._init_network()
 
     def set_forward(self, batch, ):
         """
@@ -237,20 +236,20 @@ class CAN(MetricModel):
         image, global_target = batch
         image = image.to(self.device)
         episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
-        emb = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(emb, mode=2)
+        feat = self.emb_func(image)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
 
         # convert to one-hot
         support_target_one_hot = one_hot(support_target.view(episode_size*self.way_num*self.shot_num), self.way_num)
         support_target_one_hot = support_target_one_hot.view(episode_size, self.way_num*self.shot_num, self.way_num)
         query_target_one_hot = one_hot(query_target.view(episode_size*self.way_num*self.query_num), self.way_num)
         query_target_one_hot = query_target_one_hot.view(episode_size, self.way_num*self.query_num, self.way_num)
-        cls_score = self.cam_layer(support_feat, query_feat, support_target_one_hot, query_target_one_hot)
-        # cls_scores = self.cam_layer.val_transductive(support_feat, query_feat, support_targets_one_hot, query_targets_one_hot)
+        output = self.cam_layer(support_feat, query_feat, support_target_one_hot, query_target_one_hot)
+        # output = self.cam_layer.val_transductive(support_feat, query_feat, support_target_one_hot, query_target_one_hot)
 
-        cls_score = cls_score.view(episode_size * self.way_num*self.query_num, -1)
-        prec1, _ = accuracy(cls_score, query_target, topk=(1, 3))
-        return cls_score, prec1
+        output = output.view(episode_size * self.way_num*self.query_num, -1)
+        acc, _ = accuracy(output, query_target, topk=(1, 3))
+        return output, acc
 
     def set_forward_loss(self, batch):
         """
@@ -260,12 +259,12 @@ class CAN(MetricModel):
         image, global_target = batch
         image = image.to(self.device)
         episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
-        emb = self.emb_func(image)  # [80, 640]
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(emb, mode=2)  # [4,5,512,6,6] [4, 75, 512,6,6] [4, 5] [300]
-        support_global_target, query_global_target = global_target[:, :, :self.shot_num], global_target[:, :, self.shot_num:]
+        feat = self.emb_func(image)  # [80, 640]
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)  # [4,5,512,6,6] [4, 75, 512,6,6] [4, 5] [300]
+        support_global_targets, query_global_targets = global_target[:, :, :self.shot_num], global_target[:, :, self.shot_num:]
         # # TODO: Shuffle label index
-        # support_feat, support_targets, support_global_targets = shuffle(support_feat, support_targets, support_global_targets.reshape(*support_targets.size()))
-        # query_feat, query_targets, query_global_targets = shuffle(query_feat, query_targets.reshape(*query_feat.size()[:2]), query_global_targets.reshape(*query_feat.size()[:2]))
+        # support_feat, support_target, support_global_targets = shuffle(support_feat, support_target, support_global_targets.reshape(*support_target.size()))
+        # query_feat, query_target, query_global_targets = shuffle(query_feat, query_target.reshape(*query_feat.size()[:2]), query_global_targets.reshape(*query_feat.size()[:2]))
 
         # convert to one-hot
         support_target_one_hot = one_hot(support_target.view(episode_size*self.way_num*self.shot_num), self.way_num)
@@ -273,11 +272,11 @@ class CAN(MetricModel):
         query_target_one_hot = one_hot(query_target.view(episode_size*self.way_num*self.query_num), self.way_num)
         query_target_one_hot = query_target_one_hot.view(episode_size, self.way_num*self.query_num, self.way_num)
         # [75, 64, 6, 6], [75, 5, 6, 6]
-        output, cls_score = self.cam_layer(support_feat, query_feat, support_target_one_hot, query_target_one_hot)
-        loss1 = self.loss_func(output, query_global_target.contiguous().view(-1))
-        loss2 = self.loss_func(cls_score, query_target.view(-1))
+        output, output = self.cam_layer(support_feat, query_feat, support_target_one_hot, query_target_one_hot)
+        loss1 = self.loss_func(output, query_global_targets.contiguous().view(-1))
+        loss2 = self.loss_func(output, query_target.view(-1))
         loss = loss1 + 0.5 * loss2
-        cls_score = torch.sum(cls_score.view(*cls_score.size()[:2], -1), dim=-1)  # [300, 5]
-        prec1, _ = accuracy(cls_score, query_target.view(-1), topk=(1, 3))
-        return output, prec1, loss
+        output = torch.sum(output.view(*output.size()[:2], -1), dim=-1)  # [300, 5]
+        acc, _ = accuracy(output, query_target.view(-1), topk=(1, 3))
+        return output, acc, loss
 

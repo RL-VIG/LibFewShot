@@ -1,19 +1,36 @@
 train_episode: 10000
 test_episode: 600
-episode_size: 32
+way_num: 5
+shot_num: 1
+query_num: 10
+batch_size: 1
+episode_size: 1
+augment_times: 3
+augment_times_query: 6
+
+image_size: 84
+augment: True
+
+# train info
+epoch: 50
+
+includes:
+  - headers/yaml_import_test.yaml
+  - headers/base_info.yaml
+
 
 save_part:
   - emb_func
 
-device_ids: 0,1,2,3
-n_gpu: 4
+device_ids: 0,1
+n_gpu: 2
 parallel_part:
   - emb_func
   - proto_layer
 
 # arch info
 backbone:
-  name: Conv64FLeakyReLU
+  name: Conv64F
   kwargs:
     is_flatten: True
 

@@ -65,13 +65,13 @@ class RFSModel(PretrainModel):
         """
         image, global_target = batch
         episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
-        images = image.to(self.device)
+        image = image.to(self.device)
         with torch.no_grad():
-            feat = self.emb_func(images)
+            feat = self.emb_func(image)
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
 
         output_list = []
-        prec1_list = []
+        acc_list = []
         for idx in range(episode_size):
             support_feat = support_feat[idx]
             query_feat = query_feat[idx]
@@ -84,14 +84,14 @@ class RFSModel(PretrainModel):
             query_target = query_target.detach().cpu().numpy()
 
             output = classifier.predict(query_feat)
-            prec1 = metrics.accuracy_score(query_target, output) * 100
+            acc = metrics.accuracy_score(query_target, output) * 100
 
             output_list.append(output)
-            prec1_list.append(prec1)
+            acc_list.append(acc)
 
         output = np.stack(output_list, axis=0)
-        prec1 = sum(prec1_list) / episode_size
-        return output, prec1
+        acc = sum(acc_list) / episode_size
+        return output, acc
 
     def set_forward_loss(self, batch):
         """
@@ -111,9 +111,9 @@ class RFSModel(PretrainModel):
         alpha_loss = self.kl_loss_func(output, distill_output)
         loss = gamma_loss * self.gamma + alpha_loss * self.alpha
 
-        prec1, _ = accuracy(output, global_target, topk=(1, 3))
+        acc, _ = accuracy(output, global_target, topk=(1, 3))
 
-        return output, prec1, loss
+        return output, acc, loss
 
     def test_loop(self, support_feat, support_target):
         return self.set_forward_adaptation(support_feat, support_target)

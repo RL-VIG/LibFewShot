@@ -43,8 +43,6 @@ class MTL(MetaModel):
 
         self.loss_func = nn.CrossEntropyLoss()
 
-        self._init_network()
-
     def set_forward(self, batch, ):
         '''
         meta-validation
@@ -58,13 +56,13 @@ class MTL(MetaModel):
 
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=4)
 
-        classifier, fast_weight = self.train_loop(support_feat, support_target)
+        classifier, base_learner_weight = self.train_loop(support_feat, support_target)
 
-        output = classifier(query_feat, fast_weight)
+        output = classifier(query_feat, base_learner_weight)
 
-        prec1, _ = accuracy(output, query_target, topk=(1, 3))
+        acc, _ = accuracy(output, query_target, topk=(1, 3))
 
-        return output, prec1
+        return output, acc
 
     def set_forward_loss(self, batch, ):
         '''
@@ -78,13 +76,13 @@ class MTL(MetaModel):
 
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=4)
 
-        classifier, fast_weight = self.train_loop(support_feat, support_target)
+        classifier, base_learner_weight = self.train_loop(support_feat, support_target)
 
-        output = classifier(query_feat, fast_weight)
+        output = classifier(query_feat, base_learner_weight)
         loss = self.loss_func(output,query_target)
-        prec1, _ = accuracy(output, query_target, topk=(1, 3))
+        acc, _ = accuracy(output, query_target, topk=(1, 3))
 
-        return output, prec1, loss
+        return output, acc, loss
 
     def train_loop(self, support_feat, support_target):
         classifier = self.base_learner

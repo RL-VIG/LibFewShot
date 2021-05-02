@@ -30,7 +30,6 @@ class MAML(MetaModel):
         self.classifier = Classifier(feat_dim, way_num=way_num)
         self.inner_optim = inner_optim
         self.inner_train_iter = inner_train_iter
-        self._init_network()
 
     def forward_output(self, x):
         out1 = self.emb_func(x)
@@ -38,7 +37,7 @@ class MAML(MetaModel):
         return out2
 
     def set_forward(self, batch, ):
-        image, global_target = batch
+        image, global_target = batch # unused global_target
         image = image.to(self.device)
         support_image, query_image, support_target, query_target = self.split_by_episode(image, mode=2)
         episode_size, _, c, h, w = support_image.size()
@@ -56,11 +55,11 @@ class MAML(MetaModel):
             output_list.append(output)
 
         output = torch.cat(output_list, dim=0)
-        prec1, _ = accuracy(output, query_target.contiguous().view(-1), topk=(1, 3))
-        return output, prec1
+        acc, _ = accuracy(output, query_target.contiguous().view(-1), topk=(1, 3))
+        return output, acc
 
     def set_forward_loss(self, batch, ):
-        image, _global_target= batch
+        image, global_target = batch # unused global_target
         image = image.to(self.device)
         support_image, query_image, support_target, query_target = self.split_by_episode(image, mode=2)
         episode_size, _, c, h, w = support_image.size()
@@ -79,10 +78,10 @@ class MAML(MetaModel):
 
         output = torch.cat(output_list, dim=0)
         loss = self.loss_func(output, query_target.contiguous().view(-1))
-        prec1, _ = accuracy(output, query_target.contiguous().view(-1), topk=(1, 3))
-        return output, prec1, loss
+        acc, _ = accuracy(output, query_target.contiguous().view(-1), topk=(1, 3))
+        return output, acc, loss
 
-    def train_loop(self, support_set, support_targets):
+    def train_loop(self, support_set, support_target):
         lr = self.inner_optim['lr']
         fast_parameters = list(self.parameters())
         for parameter in self.parameters():
@@ -92,7 +91,7 @@ class MAML(MetaModel):
         self.classifier.train()
         for i in range(self.inner_train_iter):
             output = self.forward_output(support_set)
-            loss = self.loss_func(output, support_targets)
+            loss = self.loss_func(output, support_target)
             grad = torch.autograd.grad(loss, fast_parameters, create_graph=True)
             fast_parameters = []
 
