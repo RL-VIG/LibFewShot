@@ -1,72 +1,10 @@
-log_name: ~
-
-
-# base info
-way_num: 5
-shot_num: 5
-query_num: 15
-batch_size: 128
-episode_size: 1
-
-test_way: ~
-test_shot: ~
-test_query: ~
-
-# data info
-data_root: /data/student/miniImageNet--ravi
-image_size: 84
-use_memory: False
-augment: True
-augment_times: 1
-augment_times_query: 1
-train_episode: 10000
-test_episode: 1000
-
 includes:
-  - headers/yaml_import_test.yaml
-  - headers/base_info.yaml
-
-# train info
-epoch: 50
-test_epoch: 5
-resume: False
-
-# optimizer info
-optimizer:
-  name: Adam
-  kwargs:
-    lr: 0.001
-  other:
-    emb_func: 0.001 # define lr OR
-#    another_part:    # define multi params
-#      lr: 0.1
-#      weight_decay: 0.5
+  - headers/data.yaml
+  - headers/device.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
 
 
-# lr_scheduler info
-lr_scheduler:
-  name: StepLR
-  kwargs:
-    gamma: 0.5
-    step_size: 10
 
-
-# result info
-result_root: ./results
-save_interval: 10
-save_part:
-  - emb_func
-pretrain_path: ~
-
-# log info
-log_level: info
-log_interval: 100
-
-# gpu info
-device_ids: 1
-n_gpu: 1
-parallel_part:
-  - emb_func
-seed: 0
-deterministic: True
 
