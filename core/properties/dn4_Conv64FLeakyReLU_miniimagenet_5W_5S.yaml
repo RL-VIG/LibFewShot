@@ -39,7 +39,7 @@ optimizer:
       - 0.5
       - 0.9
   other:
-    model_func: 0.001
+    emb_func: 0.001
 
 # lr_scheduler info
 lr_scheduler:

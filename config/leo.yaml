@@ -21,8 +21,8 @@ test_episode: 1000
 epoch: 50
 
 # arch info
-pretrain_path: ./results/Baseline-miniImageNet-resnet12-5-1/checkpoints/model_func_best.pth
-#pretrain_path: ./results/Baseline-tieredImageNet-resnet18-5-1/checkpoints/model_func_best.pth
+pretrain_path: ./results/Baseline-miniImageNet-resnet12-5-1/checkpoints/emb_func_best.pth
+#pretrain_path: ./results/Baseline-tieredImageNet-resnet18-5-1/checkpoints/emb_func_best.pth
 
 #backbone:
 #  name: WRN
@@ -55,7 +55,7 @@ optimizer:
     lr: 0.001
     momentum: 0.9
   other:
-    model_func: 0.001
+    emb_func: 0.001
 
 # lr_scheduler info
 lr_scheduler:

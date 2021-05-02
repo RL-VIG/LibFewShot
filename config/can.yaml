@@ -40,7 +40,7 @@ optimizer:
     weight_decay: 5e-4
     nesterov: True
   other:
-    model_func: 0.01
+    emb_func: 0.01
     cam_layer: 0.01
 
 # lr_scheduler info

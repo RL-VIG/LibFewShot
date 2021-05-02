@@ -38,7 +38,7 @@ optimizer:
   kwargs:
     lr: 0.001
   other:
-    model_func: 0.001
+    emb_func: 0.001
 
 # lr_scheduler info
 lr_scheduler:

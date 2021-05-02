@@ -14,8 +14,8 @@ def get_backbone(config):
     kwargs = dict()
     kwargs.update(config['backbone']['kwargs'])
     try:
-        model_func = eval(config['backbone']['name'])(**kwargs)
+        emb_func = eval(config['backbone']['name'])(**kwargs)
     except NameError:
         raise("{} is not implemented".format(config['backbone']['name']))
 
-    return model_func
+    return emb_func

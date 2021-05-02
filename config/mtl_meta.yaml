@@ -39,7 +39,7 @@ optimizer:
   kwargs:
     lr: 0.0001
   other:
-    model_func: 0.0001
+    emb_func: 0.0001
     base_learner: 0.001
 
 # lr_scheduler info
@@ -54,7 +54,7 @@ result_root: ./results
 save_interval: 10
 save_part:
   - emb_func
-pretrain_path: /home/wzy/LibFewShot/results/MTLPretrain-resnet12MTL-5-1/checkpoints/model_func_best.pth
+pretrain_path: /home/wzy/LibFewShot/results/MTLPretrain-resnet12MTL-5-1/checkpoints/emb_func_best.pth
 
 # log info
 log_level: info
