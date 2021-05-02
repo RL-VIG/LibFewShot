@@ -13,6 +13,7 @@ from .. import DistillKLLoss
 from core.model.loss import L2DistLoss
 
 # FIXME 加上多GPU
+# https://github.com/brjathu/SKD
 
 class DistillLayer(nn.Module):
     def __init__(self, emb_func, cls_classifier, is_distill,

@@ -4,13 +4,13 @@ from torch import nn
 from core.utils import accuracy
 from .metric_model import MetricModel
 
-
-class Proto_Layer(nn.Module):
-    def __init__(self, train_way, train_shot, train_query):
-        super(Proto_Layer, self).__init__()
-        self.train_way = train_way
-        self.train_shot = train_shot
-        self.train_query = train_query
+# https://github.com/orobix/Prototypical-Networks-for-Few-shot-Learning-PyTorch
+class ProtoLayer(nn.Module):
+    def __init__(self, way_num, shot_num, query_num):
+        super(ProtoLayer, self).__init__()
+        self.way_num = way_num
+        self.shot_num = shot_num
+        self.query_num = query_num
 
     def forward(self, query_feat, support_feat):
         t, wq, c = query_feat.size()

@@ -6,7 +6,7 @@ import copy
 from core.model.abstract_model import AbstractModel
 from core.utils import accuracy
 from .meta_model import MetaModel
-
+# adapted from https://github.com/yaoyao-liu/meta-transfer-learning
 class MTLBaseLearner(nn.Module):
     """The class for inner loop."""
     def __init__(self, ways, z_dim):

@@ -4,6 +4,7 @@ import torch.nn as nn
 from core.utils import accuracy
 from .meta_model import MetaModel
 
+# adapted from offical tf codes: https://github.com/Gordonjo/versas
 
 class Predictor(nn.Module):
     def __init__(self, feat_dim, hid_dim, out_dim):

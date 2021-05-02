@@ -1,5 +1,5 @@
-# Copyright © https://github.com/uoguelph-mlrg/Cutout
-# Modify Cutout for adjust this framework's transforms
+# Origin Implements https://github.com/uoguelph-mlrg/Cutout
+# Modified for adjust this framework's transforms
 import torch
 import numpy as np
 

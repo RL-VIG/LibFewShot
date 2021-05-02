@@ -13,6 +13,7 @@ from .. import DistillKLLoss
 
 # FIXME 加上多GPU
 
+#https://github.com/WangYueFt/rfs
 class DistillLayer(nn.Module):
     def __init__(self, emb_func, classifier, is_distill, emb_func_path=None, classifier_path=None):
         super(DistillLayer, self).__init__()

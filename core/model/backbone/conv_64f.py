@@ -167,6 +167,9 @@ def R2D2_conv_block(in_channels, out_channels, retain_activation=True, keep_prob
 
 
 class R2D2Embedding(nn.Module):
+    '''
+    https://github.com/kjunelee/MetaOptNet/blob/master/models/R2D2_embedding.py
+    '''
     def __init__(self, x_dim=3, h1_dim=96, h2_dim=192, h3_dim=384, z_dim=512,
                  retain_last_activation=False):
         super(R2D2Embedding, self).__init__()

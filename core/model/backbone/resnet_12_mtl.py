@@ -10,6 +10,7 @@ from core.model.backbone.dropblock import DropBlock
 # origin resnet12. this backbone is used in table.2, tabel.3 and tabel.4 for equal comparisons.
 
 # resnet_12 backbone for 'Meta-Transfer Learning for Few-Shot Learning' with learnable scale and shift
+# 基于resnet12，我们自己修改的代码
 
 import math
 from torch.nn.parameter import Parameter

@@ -6,6 +6,7 @@ from core.model.backbone.dropblock import DropBlock
 
 
 # resnet_12 backbone for 'Meta-Transfer Learning for Few-Shot Learning' with learnable scale and shift
+# MTL官方代码pytorch版本
 
 import math
 from torch.nn.parameter import Parameter

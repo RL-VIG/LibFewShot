@@ -8,6 +8,8 @@ import torch.nn.functional as F
 # FIXME ways改为train_way
 # FIXME 加上多GPU
 
+# FIXME ways改为way_num
+# adapted from https://github.com/yaoyao-liu/meta-transfer-learning
 class MTLBaseLearner(nn.Module):
     """The class for inner loop."""
     def __init__(self, ways, z_dim):

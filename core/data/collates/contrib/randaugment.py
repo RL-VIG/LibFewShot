@@ -1,9 +1,6 @@
-# Copyright © https://github.com/ildoonet/pytorch-randaugment
-# code in this file is adpated from rpmcruz/autoaugment
+# Origin Implements  https://github.com/ildoonet/pytorch-randaugment
+# Origin Comments: code in this file is adpated from rpmcruz/autoaugment
 # https://github.com/rpmcruz/autoaugment/blob/master/transformations.py
-
-
-
 
 import random
 

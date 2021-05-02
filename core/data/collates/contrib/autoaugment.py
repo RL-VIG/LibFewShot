@@ -1,4 +1,4 @@
-# Copyright © https://github.com/DeepVoltaire/AutoAugment
+# Origin Implements https://github.com/DeepVoltaire/AutoAugment
 
 
 from PIL import Image, ImageEnhance, ImageOps

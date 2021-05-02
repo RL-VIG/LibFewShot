@@ -4,7 +4,7 @@ from torch.nn import functional as F
 
 from core.utils import accuracy
 from .metric_model import MetricModel
-
+# https://github.com/WenbinLee/DN4
 
 class DN4_Layer(nn.Module):
     def __init__(self, train_way, train_shot, train_query, n_k):
