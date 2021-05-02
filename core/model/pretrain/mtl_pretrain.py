@@ -65,7 +65,7 @@ class MTLPretrain(PretrainModel): # use image-size=80 in repo
 
         output = classifier(query_feat,fast_weight)
 
-        acc, _ = accuracy(output, query_target, topk=(1, 3))
+        acc = accuracy(output, query_target)
 
         return output, acc
 
@@ -84,7 +84,7 @@ class MTLPretrain(PretrainModel): # use image-size=80 in repo
         output = self.pre_fc(feat).contiguous()
 
         loss = self.loss_func(output, global_target)
-        acc, _ = accuracy(output, global_target, topk=(1, 3))
+        acc = accuracy(output, global_target)
         return output, acc, loss
 
     def test_loop(self, support_feat, support_target):

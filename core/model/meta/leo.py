@@ -118,7 +118,7 @@ class LEO(MetaModel):
         output = torch.bmm(query_feat, leo_weight)
         output = output.contiguous().reshape(-1, self.way_num)
 
-        acc, _ = accuracy(output, query_target.contiguous().reshape(-1), topk=(1, 3))
+        acc = accuracy(output, query_target.contiguous().reshape(-1))
         return output, acc
 
     def set_forward_loss(self, batch, ):
@@ -145,7 +145,7 @@ class LEO(MetaModel):
         orthogonality_penalty = orthogonality(list(self.decoder.parameters())[0])
 
         total_loss = pred_loss + self.kl_weight * kl_div + self.encoder_penalty_weight * encoder_penalty + self.orthogonality_penalty_weight * orthogonality_penalty
-        acc, _ = accuracy(output, query_target.contiguous().reshape(-1), topk=(1, 3))
+        acc = accuracy(output, query_target.contiguous().reshape(-1))
         return output, acc, total_loss
 
     def train_loop(self, emb_support, support_target, episode_size):

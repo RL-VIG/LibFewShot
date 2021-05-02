@@ -60,7 +60,7 @@ class MTL(MetaModel):
 
         output = classifier(query_feat, base_learner_weight)
 
-        acc, _ = accuracy(output, query_target, topk=(1, 3))
+        acc = accuracy(output, query_target)
 
         return output, acc
 
@@ -80,7 +80,7 @@ class MTL(MetaModel):
 
         output = classifier(query_feat, base_learner_weight)
         loss = self.loss_func(output,query_target)
-        acc, _ = accuracy(output, query_target, topk=(1, 3))
+        acc = accuracy(output, query_target)
 
         return output, acc, loss
 

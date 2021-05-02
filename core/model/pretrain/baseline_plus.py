@@ -77,7 +77,7 @@ class BaselinePlus(PretrainModel):
         classifier = self.test_loop(support_feat, support_target)
 
         output = classifier(query_feat)
-        acc, _ = accuracy(output, query_target, topk=(1, 3))
+        acc = accuracy(output, query_target)
 
         return output, acc
 
@@ -94,7 +94,7 @@ class BaselinePlus(PretrainModel):
         feat = self.emb_func(image)
         output = self.classifier(feat)
         loss = self.loss_func(output, target)
-        acc, _ = accuracy(output, target, topk=(1, 3))
+        acc = accuracy(output, target)
         return output, acc, loss
 
     def test_loop(self, support_feat, support_target):

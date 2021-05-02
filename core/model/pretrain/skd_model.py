@@ -132,7 +132,7 @@ class SKDModel(PretrainModel):
 
         loss = gamma_loss * self.gamma + alpha_loss * self.alpha
 
-        acc, _ = accuracy(output, generated_target, topk=(1, 3))
+        acc = accuracy(output, generated_target)
 
         return output, acc, loss
 

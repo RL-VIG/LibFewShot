@@ -111,7 +111,7 @@ class RFSModel(PretrainModel):
         alpha_loss = self.kl_loss_func(output, distill_output)
         loss = gamma_loss * self.gamma + alpha_loss * self.alpha
 
-        acc, _ = accuracy(output, global_target, topk=(1, 3))
+        acc = accuracy(output, global_target)
 
         return output, acc, loss
 

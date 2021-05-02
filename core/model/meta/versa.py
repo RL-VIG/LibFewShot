@@ -88,7 +88,7 @@ class VERSA(MetaModel):
 
         output, _ = self.head(query_feat, query_target, weight_mean, weight_logvar,
                                             bias_mean, bias_logvar)
-        acc, _ = accuracy(output, query_target.reshape(-1), topk=(1, 3))
+        acc = accuracy(output, query_target.reshape(-1))
         return output, acc
 
     def set_forward_loss(self, batch, ):
@@ -110,7 +110,7 @@ class VERSA(MetaModel):
 
         output, task_score = self.head(query_feat, query_target, weight_mean, weight_logvar,
                                                      bias_mean, bias_logvar)
-        acc, _ = accuracy(output, query_target.reshape(-1), topk=(1, 3))
+        acc = accuracy(output, query_target.reshape(-1))
         loss = -torch.mean(task_score, dim=0)
         return output, acc, loss
 

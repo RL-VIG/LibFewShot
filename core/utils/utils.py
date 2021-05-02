@@ -69,7 +69,7 @@ def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
-def accuracy(output, target, topk=(1,)):
+def accuracy(output, target, topk=1):
     """
 
     :param output:
@@ -78,21 +78,19 @@ def accuracy(output, target, topk=(1,)):
     :return:
     """
     with torch.no_grad():
-        maxk = max(topk)
         batch_size = target.size(0)
 
         _, pred = {
             'Tensor' : torch.topk,
             'ndarray': lambda output, maxk, axis: (None, torch.from_numpy(topk_(output, maxk, axis)[1]).to(target.device)),
-        }[output.__class__.__name__](output, maxk, 1)
+        }[output.__class__.__name__](output, topk, 1)
 
         pred = pred.t()
         correct = pred.eq(target.view(1, -1).expand_as(pred))
 
-        res = []
-        for k in topk:
-            correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
-            res.append(correct_k.mul_(100.0 / batch_size).item())
+
+        correct_k = correct[:topk].view(-1).float().sum(0, keepdim=True)
+        res = correct_k.mul_(100.0 / batch_size).item()
         return res
 
 

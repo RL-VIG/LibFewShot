@@ -53,7 +53,7 @@ class MAML(MetaModel):
             output_list.append(output)
 
         output = torch.cat(output_list, dim=0)
-        acc, _ = accuracy(output, query_target.contiguous().view(-1), topk=(1, 3))
+        acc = accuracy(output, query_target.contiguous().view(-1))
         return output, acc
 
     def set_forward_loss(self, batch, ):
@@ -76,7 +76,7 @@ class MAML(MetaModel):
 
         output = torch.cat(output_list, dim=0)
         loss = self.loss_func(output, query_target.contiguous().view(-1))
-        acc, _ = accuracy(output, query_target.contiguous().view(-1), topk=(1, 3))
+        acc = accuracy(output, query_target.contiguous().view(-1))
         return output, acc, loss
 
     def train_loop(self, support_set, support_target):

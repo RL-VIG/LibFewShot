@@ -248,7 +248,7 @@ class CAN(MetricModel):
         # output = self.cam_layer.val_transductive(support_feat, query_feat, support_target_one_hot, query_target_one_hot)
 
         output = output.view(episode_size * self.way_num*self.query_num, -1)
-        acc, _ = accuracy(output, query_target, topk=(1, 3))
+        acc = accuracy(output, query_target)
         return output, acc
 
     def set_forward_loss(self, batch):
@@ -277,6 +277,6 @@ class CAN(MetricModel):
         loss2 = self.loss_func(output, query_target.view(-1))
         loss = loss1 + 0.5 * loss2
         output = torch.sum(output.view(*output.size()[:2], -1), dim=-1)  # [300, 5]
-        acc, _ = accuracy(output, query_target.view(-1), topk=(1, 3))
+        acc = accuracy(output, query_target.view(-1))
         return output, acc, loss
 
