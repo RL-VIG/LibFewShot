@@ -1,0 +1,4 @@
+# demo for classifier
+classifier:
+  name: ProtoNet
+  kwargs: ~

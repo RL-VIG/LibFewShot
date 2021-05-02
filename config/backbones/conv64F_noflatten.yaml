@@ -1,0 +1,5 @@
+# demo for backbone
+backbone:
+  name: Conv64FLeakyReLU
+  kwargs:
+    is_flatten: False

@@ -4,6 +4,8 @@ includes:
   - headers/misc.yaml
   - headers/model.yaml
   - headers/optimizer.yaml
+  - backbones/conv64F_noflatten.yaml
+  - classifiers/proto_classifier.yaml
 
 
 
