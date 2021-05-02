@@ -2,7 +2,7 @@ train_episode: 1000
 test_episode: 200
 
 save_part:
-  - model_func
+  - emb_func
 device_ids: 0,1,2,3
 n_gpu: 4
 # arch info

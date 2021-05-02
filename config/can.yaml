@@ -7,7 +7,7 @@ test_episode: 1000
 episode_size: 1
 
 save_part:
-  - model_func
+  - emb_func
   - cam_layer
 
 epoch: 90
@@ -53,7 +53,7 @@ lr_scheduler:
 device_ids: 7
 n_gpu: 1
 parallel_part:
-  - model_func
+  - emb_func
   - cam_layer
 seed: 0
 deterministic: True

@@ -3,12 +3,12 @@ test_episode: 600
 episode_size: 32
 
 save_part:
-  - model_func
+  - emb_func
 
 device_ids: 0,1,2,3
 n_gpu: 4
 parallel_part:
-  - model_func
+  - emb_func
   - proto_layer
 
 # arch info

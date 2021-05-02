@@ -93,7 +93,7 @@ class ANIL(MetaModel):
         images, global_targets = batch
         images = images.to(self.device)
 
-        emb = self.model_func(images)
+        emb = self.emb_func(images)
         emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb, mode=1)
         episode_size = emb_support.size(0)
 
@@ -111,7 +111,7 @@ class ANIL(MetaModel):
         images, global_targets = batch
         images = images.to(self.device)
 
-        emb = self.model_func(images)
+        emb = self.emb_func(images)
         emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb, mode=1)
         episode_size = emb_support.size(0)
 
@@ -132,7 +132,7 @@ class ANIL(MetaModel):
         for parameter in self.classifier.parameters():
             parameter.fast = None
 
-        self.model_func.train()
+        self.emb_func.train()
         self.classifier.train()
 
         for i in range(self.inner_train_iter):

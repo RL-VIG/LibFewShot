@@ -4,13 +4,13 @@ test_episode: 1000
 episode_size: 1
 
 save_part:
-  - model_func
+  - emb_func
 save_interval: 5
 
 device_ids: 3
 n_gpu: 1
 parallel_part:
-  - model_func
+  - emb_func
   - proto_layer
 
 # arch info

@@ -60,7 +60,7 @@ class SKDModel(PretrainModel):
         self.kl_loss_func = DistillKLLoss(T=kd_T)
 
 
-        self.distill_layer = DistillLayer(self.model_func, self.cls_classifier,
+        self.distill_layer = DistillLayer(self.emb_func, self.cls_classifier,
                                           self.is_distill, model_func_path,
                                           cls_classifier_path, )
 
@@ -74,7 +74,7 @@ class SKDModel(PretrainModel):
         episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
         images = images.to(self.device)
         with torch.no_grad():
-            feat = self.model_func(images)
+            feat = self.emb_func(images)
         support_feats, query_feats, support_targets, query_targets \
             = self.split_by_episode(feat, mode=1)
 
@@ -116,7 +116,7 @@ class SKDModel(PretrainModel):
         generated_images, generated_targets, rot_targets \
             = self.rot_image_generation(images, targets)
 
-        feat = self.model_func(generated_images)
+        feat = self.emb_func(generated_images)
         cls_output = self.cls_classifier(feat)
         distill_output = self.distill_layer(images)
 
@@ -181,7 +181,7 @@ class SKDModel(PretrainModel):
         return generated_images, generated_targets, rot_targets
 
     def train(self, mode=True):
-        self.model_func.train(mode)
+        self.emb_func.train(mode)
         self.rot_classifier.train(mode)
         self.cls_classifier.train(mode)
         self.distill_layer.train(False)

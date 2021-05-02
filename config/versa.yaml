@@ -60,7 +60,7 @@ lr_scheduler:
 result_root: ./results
 save_interval: 10
 save_part:
-  - model_func
+  - emb_func
   - weight_means
   - weight_logvars
   - bias_means
@@ -74,7 +74,7 @@ log_interval: 100
 device_ids: 2
 n_gpu: 1
 parallel_part:
-  - model_func
+  - emb_func
   - weight_means
   - weight_logvars
   - bias_means

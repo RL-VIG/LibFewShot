@@ -14,7 +14,7 @@ class AbstractModel(nn.Module):
         self.way_num = way_num
         self.shot_num = shot_num
         self.query_num = query_num
-        self.model_func = model_func
+        self.emb_func = model_func
         self.device = device
         self.init_type = init_type
         self.model_type = model_type
@@ -28,7 +28,7 @@ class AbstractModel(nn.Module):
         pass
 
     def forward(self, x):
-        out = self.model_func(x)
+        out = self.emb_func(x)
         return out
 
     def train(self, mode=True):

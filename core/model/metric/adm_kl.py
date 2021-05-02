@@ -134,8 +134,8 @@ class KLLayer(nn.Module):
 
 
 class ADM_KL(MetricModel):
-    def __init__(self, way_num, shot_num, query_num, model_func, device, n_k=3,CMS=False):
-        super(ADM_KL, self).__init__(way_num, shot_num, query_num, model_func, device)
+    def __init__(self, way_num, shot_num, query_num, emb_func, device, n_k=3, CMS=False):
+        super(ADM_KL, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.n_k = n_k
         self.kl_layer = KLLayer(way_num, shot_num, query_num, n_k, device, CMS)
         self.loss_func = nn.CrossEntropyLoss()
@@ -149,7 +149,7 @@ class ADM_KL(MetricModel):
         images, global_targets = batch
         images = images.to(self.device)
         episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
-        emb = self.model_func(images)
+        emb = self.emb_func(images)
         support_feat, query_feat, support_targets, query_targets = self.split_by_episode(emb, mode=2)
 
         output = self.kl_layer(query_feat, support_feat).view(episode_size * self.way_num * self.query_num, -1)
@@ -165,7 +165,7 @@ class ADM_KL(MetricModel):
         images, global_targets = batch
         images = images.to(self.device)
         episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
-        emb = self.model_func(images)
+        emb = self.emb_func(images)
         support_feat, query_feat, support_targets, query_targets = self.split_by_episode(emb, mode=2)
         # assume here we will get n_dim=5
         output = self.kl_layer(query_feat, support_feat).view(episode_size * self.way_num * self.query_num, -1)

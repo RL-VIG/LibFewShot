@@ -132,12 +132,12 @@ class Test(object):
         return test_loader
 
     def _init_model(self, config):
-        model_func = get_instance(arch, 'backbone', config)
+        emb_func = get_instance(arch, 'backbone', config)
         model = get_instance(arch, 'classifier', config,
                              config['way_num'],
                              config['shot_num'] * config['augment_times'],
                              config['query_num'],
-                             model_func, self.device)
+                             emb_func, self.device)
 
         self.logger.info(model)
         self.logger.info(count_parameters(model))

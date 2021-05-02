@@ -53,7 +53,7 @@ lr_scheduler:
 result_root: ./results
 save_interval: 10
 save_part:
-  - model_func
+  - emb_func
   - dn4_layer
 
 # log info
@@ -64,7 +64,7 @@ log_interval: 100
 device_ids: 3
 n_gpu: 1
 parallel_part:
-  - model_func
+  - emb_func
 seed: 0
 deterministic: True
 

@@ -70,7 +70,7 @@ class BaselinePlus(PretrainModel):
         images, global_targets = batch
         images = images.to(self.device)
         with torch.no_grad():
-            emb = self.model_func(images)
+            emb = self.emb_func(images)
 
         support_feat, query_feat, support_targets, query_targets = self.split_by_episode(emb,mode=4)
 
@@ -91,7 +91,7 @@ class BaselinePlus(PretrainModel):
         images = images.to(self.device)
         targets = targets.to(self.device)
 
-        feat = self.model_func(images)
+        feat = self.emb_func(images)
         output = self.classifier(feat)
         loss = self.loss_func(output, targets)
         prec1, _ = accuracy(output, targets, topk=(1, 3))

@@ -134,7 +134,7 @@ class LEO(MetaModel):
         images = images.to(self.device)
 
         with torch.no_grad():
-            emb = self.model_func(images)
+            emb = self.emb_func(images)
         emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb, mode=1)
         episode_size = emb_support.size(0)
 
@@ -157,7 +157,7 @@ class LEO(MetaModel):
         images = images.to(self.device)
 
         with torch.no_grad():
-            emb = self.model_func(images)
+            emb = self.emb_func(images)
         emb_support, emb_query, support_targets, query_targets = self.split_by_episode(emb, mode=1)
         episode_size = emb_support.size(0)
 
