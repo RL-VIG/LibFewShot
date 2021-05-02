@@ -1,6 +1,15 @@
 from torch import nn
 from torch.nn import functional as F
+import torch
+class L2DistLoss(nn.Module):
+    def __init__(self):
+        super(L2DistLoss, self).__init__()
 
+    def forward(self, feat1, feat2):
+        loss = torch.mean(torch.sqrt(torch.sum((feat1 - feat2) ** 2, dim=1)))
+        if torch.isnan(loss).any():
+            loss = 0.0
+        return loss
 
 class LabelSmoothCELoss(nn.Module):
     def __init__(self, smoothing):
