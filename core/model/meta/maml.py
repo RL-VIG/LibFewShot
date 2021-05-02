@@ -80,6 +80,12 @@ class MAML(MetaModel):
         return output, acc, loss
 
     def train_loop(self, support_set, support_target):
+        return self.set_forward_adaptation(support_set, support_target)
+
+    def test_loop(self, support_set, support_target):
+        return self.set_forward_adaptation(support_set, support_target)
+
+    def set_forward_adaptation(self, support_set, support_target):
         lr = self.inner_para['lr']
         fast_parameters = list(self.parameters())
         for parameter in self.parameters():
@@ -99,9 +105,3 @@ class MAML(MetaModel):
                 else:
                     weight.fast = weight.fast - self.inner_para['lr'] * grad[k]
                 fast_parameters.append(weight.fast)
-
-    def test_loop(self, *args, **kwargs):
-        raise NotImplementedError
-
-    def set_forward_adaptation(self, *args, **kwargs):
-        raise NotImplementedError

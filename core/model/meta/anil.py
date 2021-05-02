@@ -42,7 +42,7 @@ class ANIL(MetaModel):
 
         output_list = []
         for i in range(episode_size):
-            self.train_loop(support_feat[i], support_target[i])
+            self.test_loop(support_feat[i], support_target[i])
             output = self.classifier(query_feat[i])
             output_list.append(output)
 
@@ -70,6 +70,12 @@ class ANIL(MetaModel):
         return output, acc, loss
 
     def train_loop(self, support_feat, support_target):
+        return self.set_forward_adaptation(support_feat, support_target)
+
+    def test_loop(self, support_feat, support_target):
+        return self.set_forward_adaptation(support_feat, support_target)
+
+    def set_forward_adaptation(self, support_feat, support_target):
         lr = self.inner_para['lr']
         fast_parameters = list(self.classifier.parameters())
         for parameter in self.classifier.parameters():
@@ -90,9 +96,3 @@ class ANIL(MetaModel):
                 else:
                     weight.fast = weight.fast - self.inner_para['lr'] * grad[k]
                 fast_parameters.append(weight.fast)
-
-    def test_loop(self, *args, **kwargs):
-        raise NotImplementedError
-
-    def set_forward_adaptation(self, *args, **kwargs):
-        raise NotImplementedError

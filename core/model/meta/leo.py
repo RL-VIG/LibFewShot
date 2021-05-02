@@ -149,6 +149,12 @@ class LEO(MetaModel):
         return output, acc, total_loss
 
     def train_loop(self, emb_support, support_target, episode_size):
+        return self.set_forward_adaptation(emb_support, support_target, episode_size)
+
+    def test_loop(self, emb_support, support_target, episode_size):
+        return self.set_forward_adaptation(emb_support, support_target, episode_size)
+
+    def set_forward_adaptation(self, emb_support, support_target, episode_size):
         latent, kl_div = self.encoder(emb_support)
         latent_init = latent
         for i in range(self.inner_para['iter']):
@@ -167,12 +173,6 @@ class LEO(MetaModel):
 
         encoder_penalty = torch.mean((latent_init - latent) ** 2)
         return latent, kl_div, encoder_penalty
-
-    def test_loop(self, *args, **kwargs):
-        raise NotImplementedError
-
-    def set_forward_adaptation(self, *args, **kwargs):
-        raise NotImplementedError
 
     def finetune(self, classifier_weight, emb_support, support_target):
         classifier_weight.retain_grad()

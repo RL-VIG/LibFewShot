@@ -85,6 +85,12 @@ class MTL(MetaModel):
         return output, acc, loss
 
     def train_loop(self, support_feat, support_target):
+        return self.set_forward_adaptation(support_feat, support_target)
+
+    def test_loop(self, support_feat, support_target):
+        return self.set_forward_adaptation(support_feat, support_target)
+
+    def set_forward_adaptation(self, support_feat, support_target):
         classifier = self.base_learner
         logit = self.base_learner(support_feat)
         loss = self.loss_func(logit, support_target)
@@ -98,9 +104,3 @@ class MTL(MetaModel):
             fast_parameters = list(map(lambda p: p[1] - 0.01 * p[0], zip(grad, fast_parameters)))
 
         return classifier, fast_parameters
-
-    def test_loop(self, *args, **kwargs):
-        raise NotImplementedError
-
-    def set_forward_adaptation(self, *args, **kwargs):
-        raise NotImplementedError
