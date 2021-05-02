@@ -5,6 +5,7 @@ from core.utils import accuracy
 from .pretrain_model import PretrainModel
 
 # FIXME test_loop和train_loop形式要一样
+# FIXME 加上多GPU
 
 class Baseline(PretrainModel):
     def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim,

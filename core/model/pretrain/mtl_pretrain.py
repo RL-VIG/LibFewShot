@@ -6,6 +6,7 @@ from .pretrain_model import PretrainModel
 import torch.nn.functional as F
 
 # FIXME ways改为way_num
+# FIXME 加上多GPU
 
 class MTLBaseLearner(nn.Module):
     """The class for inner loop."""

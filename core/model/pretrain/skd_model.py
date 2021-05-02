@@ -12,6 +12,7 @@ from .pretrain_model import PretrainModel
 from .. import DistillKLLoss
 from core.model.loss import L2DistLoss
 
+# FIXME 加上多GPU
 
 class DistillLayer(nn.Module):
     def __init__(self, emb_func, cls_classifier, is_distill,

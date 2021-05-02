@@ -11,6 +11,7 @@ from core.utils import accuracy
 from .pretrain_model import PretrainModel
 from .. import DistillKLLoss
 
+# FIXME 加上多GPU
 
 class DistillLayer(nn.Module):
     def __init__(self, emb_func, classifier, is_distill, emb_func_path=None, classifier_path=None):
