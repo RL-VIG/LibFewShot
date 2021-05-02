@@ -32,9 +32,9 @@ class MTLBaseLearner(nn.Module):
         
 
 class MTLPretrain(PretrainModel): # use image-size=80 in repo
-    def __init__(self, way_num, shot_num, query_num, model_func, device, feat_dim,
+    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim,
                  num_classes,inner_train_iter):
-        super(MTLPretrain, self).__init__(way_num, shot_num, query_num, model_func, device)
+        super(MTLPretrain, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.feat_dim = feat_dim
         self.num_classes = num_classes
 

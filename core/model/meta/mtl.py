@@ -32,9 +32,9 @@ class MTLBaseLearner(nn.Module):
         return self.vars
 
 class MTL(MetaModel):
-    def __init__(self, way_num, shot_num, query_num, model_func, device, feat_dim,
+    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim,
                  num_classes, inner_train_iter):
-        super(MTL, self).__init__(way_num, shot_num, query_num, model_func, device)
+        super(MTL, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.feat_dim = feat_dim
         self.num_classes = num_classes
 

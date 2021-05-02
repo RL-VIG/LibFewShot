@@ -130,8 +130,8 @@ class ADMLayer(nn.Module):
 
 
 class ADM(MetricModel):
-    def __init__(self, way_num, shot_num, query_num, model_func, device, n_k=3):
-        super(ADM, self).__init__(way_num, shot_num, query_num, model_func, device)
+    def __init__(self, way_num, shot_num, query_num, emb_func, device, n_k=3):
+        super(ADM, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.n_k = n_k
         self.adm_layer = ADMLayer(way_num, shot_num, query_num,n_k,device)
         self.loss_func = nn.CrossEntropyLoss()

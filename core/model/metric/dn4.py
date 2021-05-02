@@ -38,8 +38,8 @@ class DN4Layer(nn.Module):
 
 
 class DN4(MetricModel):
-    def __init__(self, way_num, shot_num, query_num, model_func, device, n_k=3):
-        super(DN4, self).__init__(way_num, shot_num, query_num, model_func, device)
+    def __init__(self, way_num, shot_num, query_num, emb_func, device, n_k=3):
+        super(DN4, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.dn4_layer = DN4Layer(way_num, shot_num, query_num, n_k)
         self.loss_func = nn.CrossEntropyLoss()
         self._init_network()

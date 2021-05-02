@@ -6,9 +6,9 @@ from core.utils import ModelType
 
 class MetricModel(AbstractModel):
 
-    def __init__(self, way_num, shot_num, query_num, model_func, device,
+    def __init__(self, way_num, shot_num, query_num, emb_func, device,
                  init_type='normal'):
-        super(MetricModel, self).__init__(way_num, shot_num, query_num, model_func,
+        super(MetricModel, self).__init__(way_num, shot_num, query_num, emb_func,
                                           device, init_type, ModelType.METRIC)
 
     @abstractmethod

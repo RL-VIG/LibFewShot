@@ -7,20 +7,7 @@ from core.model.abstract_model import AbstractModel
 from core.utils import accuracy
 from .meta_model import MetaModel
 
-
-class Linear_fw(nn.Linear):  # used in MAML to forward input with fast weight
-    def __init__(self, in_features, out_features):
-        super(Linear_fw, self).__init__(in_features, out_features)
-        self.weight.fast = None  # Lazy hack to add fast weight link
-        self.bias.fast = None
-
-    def forward(self, x):
-        if self.weight.fast is not None and self.bias.fast is not None:
-            out = F.linear(x, self.weight.fast,
-                           self.bias.fast)  # weight.fast (fast weight) is the temporaily adapted weight
-        else:
-            out = super(Linear_fw, self).forward(x)
-        return out
+from ..backbone.maml_backbone import Linear_fw
 
 
 class Classifier(nn.Module):

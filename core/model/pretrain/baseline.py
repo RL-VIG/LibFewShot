@@ -6,9 +6,9 @@ from .pretrain_model import PretrainModel
 
 
 class Baseline(PretrainModel):
-    def __init__(self, way_num, shot_num, query_num, model_func, device, feat_dim,
+    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim,
                  num_classes, inner_optim=None, inner_batch_size=4, inner_train_iter=20):
-        super(Baseline, self).__init__(way_num, shot_num, query_num, model_func, device)
+        super(Baseline, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.feat_dim = feat_dim
         self.num_classes = num_classes
         self.inner_optim = inner_optim

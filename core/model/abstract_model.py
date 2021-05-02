@@ -8,13 +8,13 @@ from .init import init_weights
 
 
 class AbstractModel(nn.Module):
-    def __init__(self, way_num, shot_num, query_num, model_func, device, init_type,
+    def __init__(self, way_num, shot_num, query_num, emb_func, device, init_type,
                  model_type=ModelType.ABSTRACT):
         super(AbstractModel, self).__init__()
         self.way_num = way_num
         self.shot_num = shot_num
         self.query_num = query_num
-        self.emb_func = model_func
+        self.emb_func = emb_func
         self.device = device
         self.init_type = init_type
         self.model_type = model_type

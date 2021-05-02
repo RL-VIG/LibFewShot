@@ -30,10 +30,10 @@ class ProtoLayer(nn.Module):
 
 
 class ProtoNetGlobal(MetricModel):
-    def __init__(self, way_num, shot_num, query_num, model_func, device, feat_dim,
+    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim,
                  num_classes, gamma=1.0, test_way=5, test_shot=1, test_query=15):
         super(ProtoNetGlobal, self).__init__(
-            way_num, shot_num, query_num, model_func, device)
+            way_num, shot_num, query_num, emb_func, device)
         self.feat_dim = feat_dim
         self.num_classes = num_classes
         self.gamma = gamma

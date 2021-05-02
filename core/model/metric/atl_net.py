@@ -7,18 +7,18 @@ from .metric_model import MetricModel
 
 
 class AEAModule(nn.Module):
-    def __init__(self, inplanes, scale_value, from_value, value_interval):
+    def __init__(self, feat_dim, scale_value, from_value, value_interval):
         super(AEAModule, self).__init__()
 
-        self.inplanes = inplanes
+        self.feat_dim = feat_dim
         self.scale_value = scale_value
         self.from_value = from_value
         self.value_interval = value_interval
 
         self.f_psi = nn.Sequential(
-            nn.Linear(self.inplanes, self.inplanes // 16),
+            nn.Linear(self.feat_dim, self.feat_dim // 16),
             nn.LeakyReLU(0.2, inplace=True),
-            nn.Linear(self.inplanes // 16, 1),
+            nn.Linear(self.feat_dim // 16, 1),
             nn.Sigmoid()
         )
 
@@ -36,25 +36,25 @@ class AEAModule(nn.Module):
 
 
 class ATLLayer(nn.Module):
-    def __init__(self, way_num, shot_num, query_num, inplanes,
+    def __init__(self, way_num, shot_num, query_num, feat_dim,
                  scale_value, atten_scale_value, from_value, value_interval):
         super(ATLLayer, self).__init__()
         self.way_num = way_num
         self.shot_num = shot_num
         self.query_num = query_num
-        self.inplanes = inplanes
+        self.feat_dim = feat_dim
         self.scale_value = scale_value
         self.atten_scale_value = atten_scale_value
         self.from_value = from_value
         self.value_interval = value_interval
 
         self.W = nn.Sequential(
-            nn.Conv2d(self.inplanes, self.inplanes, kernel_size=1, stride=1, bias=False),
-            nn.BatchNorm2d(self.inplanes),
+            nn.Conv2d(self.feat_dim, self.feat_dim, kernel_size=1, stride=1, bias=False),
+            nn.BatchNorm2d(self.feat_dim),
             nn.LeakyReLU(0.2, inplace=True)
         )
 
-        self.atten_layer = AEAModule(self.inplanes, self.atten_scale_value, self.from_value, self.value_interval)
+        self.atten_layer = AEAModule(self.feat_dim, self.atten_scale_value, self.from_value, self.value_interval)
 
     def forward(self, query_feat, support_feat):
         t, wq, c, h, w = query_feat.size()
@@ -95,10 +95,10 @@ class ATLLayer(nn.Module):
 
 # TODO a large gap in the 5-way 5-shot
 class ATLNet(MetricModel):
-    def __init__(self, way_num, shot_num, query_num, model_func, device, inplanes, scale_value=30,
+    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim, scale_value=30,
                  atten_scale_value=50, from_value=0.5, value_interval=0.3):
-        super(ATLNet, self).__init__(way_num, shot_num, query_num, model_func, device)
-        self.atl_layer = ATLLayer(way_num, shot_num, query_num, inplanes, scale_value,
+        super(ATLNet, self).__init__(way_num, shot_num, query_num, emb_func, device)
+        self.atl_layer = ATLLayer(way_num, shot_num, query_num, feat_dim, scale_value,
                                   atten_scale_value, from_value, value_interval)
         self.loss_func = nn.CrossEntropyLoss()
         self._init_network()

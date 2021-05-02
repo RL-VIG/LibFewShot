@@ -64,8 +64,8 @@ class ConvMLayer(nn.Module):
 
 
 class ConvMNet(MetricModel):
-    def __init__(self, way_num, shot_num, query_num, model_func, device, n_local=3):
-        super(ConvMNet, self).__init__(way_num, shot_num, query_num, model_func, device)
+    def __init__(self, way_num, shot_num, query_num, emb_func, device, n_local=3):
+        super(ConvMNet, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.convm_layer = ConvMLayer(way_num, shot_num, query_num, n_local)
         self.loss_func = nn.CrossEntropyLoss()
         self._init_network()

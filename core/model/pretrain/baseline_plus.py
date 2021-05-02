@@ -46,9 +46,9 @@ class DistLinear(nn.Module):
 
 
 class BaselinePlus(PretrainModel):
-    def __init__(self, way_num, shot_num, query_num, model_func, device, feat_dim,
+    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim,
                  num_classes, inner_optim=None, inner_train_iter=20):
-        super(BaselinePlus, self).__init__(way_num, shot_num, query_num, model_func,
+        super(BaselinePlus, self).__init__(way_num, shot_num, query_num, emb_func,
                                            device)
 
         self.feat_dim = feat_dim

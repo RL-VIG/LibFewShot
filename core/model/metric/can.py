@@ -111,13 +111,13 @@ class CAM(nn.Module):
 
 
 class CAMLayer(nn.Module):
-    def __init__(self, scale_cls, iter_num_prob=35.0/75, num_classes=64, nFeat=512, HW=5):
+    def __init__(self, scale_cls, iter_num_prob=35.0/75, num_classes=64, feat_dim=512, HW=5):
         super(CAMLayer, self).__init__()
         self.scale_cls = scale_cls
         self.cam = CAM(HW)
         self.iter_num_prob = iter_num_prob
-        self.nFeat = nFeat
-        self.classifier = nn.Conv2d(self.nFeat, num_classes, kernel_size=1)
+        self.feat_dim = feat_dim
+        self.classifier = nn.Conv2d(self.feat_dim, num_classes, kernel_size=1)
 
     def val(self, support_feat, query_feat):
         query_feat = query_feat.mean(4)
@@ -223,9 +223,9 @@ class CAMLayer(nn.Module):
 
 
 class CAN(MetricModel):
-    def __init__(self, way_num, shot_num, query_num, model_func, device, scale_cls, iter_num_prob=35.0/75, num_classes=64, nFeat=512, HW=5):
-        super(CAN, self).__init__(way_num, shot_num, query_num, model_func, device)
-        self.cam_layer = CAMLayer(scale_cls, iter_num_prob, num_classes, nFeat, HW)
+    def __init__(self, way_num, shot_num, query_num, emb_func, device, scale_cls, iter_num_prob=35.0/75, num_classes=64, feat_dim=512, HW=5):
+        super(CAN, self).__init__(way_num, shot_num, query_num, emb_func, device)
+        self.cam_layer = CAMLayer(scale_cls, iter_num_prob, num_classes, feat_dim, HW)
         self.loss_func = nn.CrossEntropyLoss()
         self._init_network()
 

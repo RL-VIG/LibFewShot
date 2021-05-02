@@ -33,9 +33,9 @@ class RelationLayer(nn.Module):
 
 
 class RelationNet(MetricModel):
-    def __init__(self, way_num, shot_num, query_num, model_func, device, feat_dim=64,
+    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim=64,
                  feat_height=3, feat_width=3):
-        super(RelationNet, self).__init__(way_num, shot_num, query_num, model_func,
+        super(RelationNet, self).__init__(way_num, shot_num, query_num, emb_func,
                                           device)
         self.feat_dim = feat_dim
         self.feat_height = feat_height

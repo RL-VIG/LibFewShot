@@ -30,8 +30,8 @@ class ProtoLayer(nn.Module):
 
 
 class ProtoNet(MetricModel):
-    def __init__(self, way_num, shot_num, query_num, model_func, device):
-        super(ProtoNet, self).__init__(way_num, shot_num, query_num, model_func, device)
+    def __init__(self, way_num, shot_num, query_num, emb_func, device):
+        super(ProtoNet, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.proto_layer = ProtoLayer(way_num, shot_num, query_num)
         self.loss_func = nn.CrossEntropyLoss()
         self._init_network()

@@ -13,9 +13,9 @@ from .. import DistillKLLoss
 
 
 class DistillLayer(nn.Module):
-    def __init__(self, model_func, classifier, is_distill, model_func_path=None, classifier_path=None):
+    def __init__(self, emb_func, classifier, is_distill, emb_func_path=None, classifier_path=None):
         super(DistillLayer, self).__init__()
-        self.model_func = self._load_state_dict(model_func, model_func_path, is_distill)
+        self.emb_func = self._load_state_dict(emb_func, emb_func_path, is_distill)
         self.classifier = self._load_state_dict(classifier, classifier_path, is_distill)
 
     def _load_state_dict(self, model, state_dict_path, is_distill):
@@ -29,17 +29,17 @@ class DistillLayer(nn.Module):
     @torch.no_grad()
     def forward(self, x):
         output = None
-        if self.model_func is not None and self.classifier is not None:
-            output = self.model_func(x)
+        if self.emb_func is not None and self.classifier is not None:
+            output = self.emb_func(x)
             output = self.classifier(output)
         return output
 
 
 class RFSModel(PretrainModel):
-    def __init__(self, way_num, shot_num, query_num, model_func, device, feat_dim,
+    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim,
                  num_classes, gamma=1, alpha=0, is_distill=False, kd_T=4,
-                 model_func_path=None, classifier_path=None):
-        super(RFSModel, self).__init__(way_num, shot_num, query_num, model_func, device)
+                 emb_func_path=None, classifier_path=None):
+        super(RFSModel, self).__init__(way_num, shot_num, query_num, emb_func, device)
 
         self.feat_dim = feat_dim
         self.num_classes = num_classes
@@ -55,7 +55,7 @@ class RFSModel(PretrainModel):
         self._init_network()
 
         self.distill_layer = DistillLayer(self.emb_func, self.classifier,
-                                          self.is_distill, model_func_path, classifier_path)
+                                          self.is_distill, emb_func_path, classifier_path)
 
     def set_forward(self, batch, ):
         """

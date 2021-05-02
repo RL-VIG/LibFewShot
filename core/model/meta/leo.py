@@ -112,10 +112,10 @@ class Decoder(nn.Module):
 
 
 class LEO(MetaModel):
-    def __init__(self, way_num, shot_num, query_num, model_func, device, feat_dim, hid_dim, inner_optim,
+    def __init__(self, way_num, shot_num, query_num, emb_func, device, feat_dim, hid_dim, inner_optim,
                  inner_train_iter=10, finetune_iter=10, kl_weight=1, encoder_penalty_weight=1,
                  orthogonality_penalty_weight=1):
-        super(LEO, self).__init__(way_num, shot_num, query_num, model_func, device)
+        super(LEO, self).__init__(way_num, shot_num, query_num, emb_func, device)
         self.feat_dim = feat_dim
         self.hid_dim = hid_dim
         self.encoder = Encoder(way_num, shot_num, feat_dim, hid_dim)
