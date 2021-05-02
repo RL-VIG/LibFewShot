@@ -4,7 +4,7 @@ from torch.nn import functional as F
 
 from core.utils import accuracy
 from .metric_model import MetricModel
-
+# https://github.com/LegenDong/ATL-Net
 
 class AEA_Module(nn.Module):
     def __init__(self, feat_dim, scale_value, from_value, value_interval):

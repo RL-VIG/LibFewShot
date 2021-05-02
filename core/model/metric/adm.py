@@ -4,7 +4,7 @@ from torch.nn import functional as F
 
 from core.utils import accuracy
 from .metric_model import MetricModel
-
+# https://github.com/WenbinLee/ADM
 
 class ADM_Layer(nn.Module):
     def __init__(self,way_num, shot_num, query_num,n_k,device):

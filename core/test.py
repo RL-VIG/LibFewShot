@@ -9,7 +9,7 @@ from torch import nn
 import core.model as arch
 from core.data import get_dataloader
 from core.utils import init_logger, prepare_device, init_seed, AverageMeter, \
-    count_parameters, ModelType, TensorboardWriter, mean_confidence_interval
+    count_parameters, ModelType, TensorboardWriter, mean_confidence_interval, get_local_time
 
 
 def get_instance(module, name, config, *args):

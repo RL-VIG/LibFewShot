@@ -11,7 +11,7 @@ from core.utils import accuracy
 from .pretrain_model import PretrainModel
 from .. import DistillKLLoss
 
-
+#https://github.com/WangYueFt/rfs
 class DistillLayer(nn.Module):
     def __init__(self, emb_func, classifier, is_distill, emb_func_path=None, classifier_path=None):
         super(DistillLayer, self).__init__()

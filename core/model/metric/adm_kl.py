@@ -3,7 +3,7 @@ from torch import nn
 
 from core.utils import accuracy
 from .metric_model import MetricModel
-
+# https://github.com/WenbinLee/ADM
 
 class KL_Layer(nn.Module):
     def __init__(self,way_num, shot_num, query_num,n_k,device,CMS = False):

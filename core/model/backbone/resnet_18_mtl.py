@@ -153,7 +153,9 @@ class BasicBlockMTL(nn.Module):
 
 
 class ResNetMTL(nn.Module):
-
+    '''
+    MTL backbone based on rensnet18
+    '''
     def __init__(self, block=BasicBlockMTL, layers=[2, 2, 2, 2], zero_init_residual=False,
                  is_feature=False,MTL=False):
         super(ResNetMTL, self).__init__()

@@ -108,12 +108,7 @@ class Conv2dMtl(_ConvNdMtl):
 
 class Conv64FMTL(nn.Module):
     """
-        Four convolutional blocks network, each of which consists of a Covolutional layer,
-        a Batch Normalizaiton layer, a ReLU layer and a Maxpooling layer.
-        Used in the original ProtoNet: https://github.com/jakesnell/prototypical-networks.git.
-
-        Input:  3 * 84 *84
-        Output: 64 * 5 * 5
+        MTL backbone based on Conv64F
     """
 
     def __init__(self, is_flatten=False, is_feature=False,MTL=False):

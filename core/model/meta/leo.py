@@ -5,6 +5,7 @@ import math
 from core.utils import accuracy
 from .meta_model import MetaModel
 
+# adapted from tensorflow codes of https://github.com/deepmind/leo
 
 def sample(weight, size):
     mean, var = weight[:, :, :size], weight[:, :, size:]

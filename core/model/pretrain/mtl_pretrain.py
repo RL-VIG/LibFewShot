@@ -6,7 +6,7 @@ from .pretrain_model import PretrainModel
 import torch.nn.functional as F
 
 # FIXME ways改为way_num
-
+# adapted from https://github.com/yaoyao-liu/meta-transfer-learning
 class MTLBaseLearner(nn.Module):
     """The class for inner loop."""
     def __init__(self, ways, z_dim):

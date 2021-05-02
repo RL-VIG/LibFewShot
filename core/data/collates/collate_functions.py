@@ -42,7 +42,7 @@ class FewShotAugCollateFunction(object):
     """
 
     def __init__(self, trfms, times, times_q, way_num, shot_num, query_num, episode_size):
-        super(FewShotAugCollateFn, self).__init__()
+        super(FewShotAugCollateFunction, self).__init__()
         try:
             self.trfms_support, self.trfms_query = trfms
         except Exception:
