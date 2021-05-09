@@ -6,6 +6,12 @@ import yaml
 
 
 def get_cur_path():
+    """Get the absolute path of this file.
+
+    Returns:
+        str: The absolute path of this file (Config.py).
+
+    """
     return os.path.dirname(__file__)
 
 
@@ -13,6 +19,19 @@ DEFAULT_FILE = os.path.join(get_cur_path(), "default.yaml")
 
 
 class Config(object):
+    """
+    A LibFewShot config parser.
+
+    `Config` 类用于处理符合LFS配置文件格式的配置文件（包含默认配置文件以及用户自定义的配置文件）或者字典文件.当它们合并的时候，需要注意以下两点：
+    1. 合并是递归的，如果没有指定覆盖，则会使用存在的设置
+    2. 合并按照：default.yaml-用户定义yaml-传入字典-命令行参数进行合并/覆盖
+
+    Args:
+        config_file (str, optional): 配置文件名（在config文件夹下）
+        variable_dict (dict): 指定覆盖字典
+        is_resume (bool) : 指定是否resume，默认为False。
+    """
+
     def __init__(self, config_file=None, variable_dict=None, is_resume=False):
         self.is_resume = is_resume
         self.console_dict = self._load_console_dict()
@@ -31,12 +50,12 @@ class Config(object):
             u"tag:yaml.org,2002:float",
             re.compile(
                 u"""^(?:
-             [-+]?(?:[0-9][0-9_]*)\\.[0-9_]*(?:[eE][-+]?[0-9]+)?
-            |[-+]?(?:[0-9][0-9_]*)(?:[eE][-+]?[0-9]+)
-            |\\.[0-9_]+(?:[eE][-+][0-9]+)?
-            |[-+]?[0-9][0-9_]*(?::[0-5]?[0-9])+\\.[0-9_]*
-            |[-+]?\\.(?:inf|Inf|INF)
-            |\\.(?:nan|NaN|NAN))$""",
+                     [-+]?(?:[0-9][0-9_]*)\\.[0-9_]*(?:[eE][-+]?[0-9]+)?
+                    |[-+]?(?:[0-9][0-9_]*)(?:[eE][-+]?[0-9]+)
+                    |\\.[0-9_]+(?:[eE][-+][0-9]+)?
+                    |[-+]?[0-9][0-9_]*(?::[0-5]?[0-9])+\\.[0-9_]*
+                    |[-+]?\\.(?:inf|Inf|INF)
+                    |\\.(?:nan|NaN|NAN))$""",
                 re.X,
             ),
             list(u"-+0123456789."),
@@ -47,7 +66,7 @@ class Config(object):
                 config_dict.update(yaml.load(fin.read(), Loader=loader))
 
         for include in config_dict.get(
-            "includes", []
+                "includes", []
         ):  # TODO: move included yaml files to a specific dir
             with open(os.path.join("./config/", include), "r", encoding="utf-8") as fin:
                 config_dict.update(yaml.load(fin.read(), Loader=loader))
@@ -76,7 +95,8 @@ class Config(object):
         parser.add_argument("-s", "--shot_num", type=int, help="shot num")
         parser.add_argument("-q", "--query_num", type=int, help="query num")
         parser.add_argument("-bs", "--batch_size", type=int, help="batch_size")
-        parser.add_argument("-es", "--episode_size", type=int, help="episode_size")
+        parser.add_argument("-es", "--episode_size",
+                            type=int, help="episode_size")
 
         parser.add_argument("-data", "--data_root", help="dataset path")
         parser.add_argument(
@@ -96,11 +116,13 @@ class Config(object):
             type=int,
             help="augment times for query in few-shot",
         )
-        parser.add_argument("-train_episode", type=int, help="train episode num")
+        parser.add_argument("-train_episode", type=int,
+                            help="train episode num")
         parser.add_argument("-test_episode", type=int, help="test episode num")
         parser.add_argument("-epochs", type=int, help="epoch num")
         parser.add_argument("-result", "--result_root", help="result path")
-        parser.add_argument("-save_interval", type=int, help="checkpoint save interval")
+        parser.add_argument("-save_interval", type=int,
+                            help="checkpoint save interval")
         parser.add_argument(
             "-log_level", help="log level in: debug, info, warning, error, critical"
         )
