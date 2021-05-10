@@ -12,11 +12,17 @@ STD = [70.68188272 / 255.0, 68.27635443 / 255.0, 72.54505529 / 255.0]
 
 def get_dataloader(config, mode, model_type):
     """
+    获取与模型类型和训练阶段的对应dataloader
 
-    :param config:
-    :param mode:
-    :param model_type:
-    :return:
+    根据配置文件以及传入的训练阶段、模型类别，选择适合的transforms、设置对应的sampler和collate_fn，返回相应的dataloader
+
+    Args:
+        config (dict): A LFS setting dict
+        mode (str): mode in train/test/val
+        model_type (ModelType): model type in meta/metric//pretrain
+
+    Returns:
+        Dataloader: 对应的dataloader
     """
     assert model_type != ModelType.ABSTRACT
 

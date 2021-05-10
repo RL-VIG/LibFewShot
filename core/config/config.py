@@ -26,13 +26,21 @@ class Config(object):
     1. 合并是递归的，如果没有指定覆盖，则会使用存在的设置
     2. 合并按照：default.yaml-用户定义yaml-传入字典-命令行参数进行合并/覆盖
 
-    Args:
-        config_file (str, optional): 配置文件名（在config文件夹下）
-        variable_dict (dict): 指定覆盖字典
-        is_resume (bool) : 指定是否resume，默认为False。
+    Attributes:
+        config_dict (dict): A LFS setting dict.
     """
 
     def __init__(self, config_file=None, variable_dict=None, is_resume=False):
+        """
+        `Config` 类初始化函数。
+
+        `Config`类支持合并四个设置文件，分别是：位于`<LFS>/core/comfig/default.yaml`，`<LFS>/config/user.yaml`，通过`run_trainer`和`run_test`传入的参数字典以及通过命令行传入的参数。对于配置文件的覆盖也按照以上顺序，即后者可覆盖前者相同key。
+
+        Args:
+            config_file (str, optional): 配置文件名（在config文件夹下）
+            variable_dict (dict): 指定覆盖字典
+            is_resume (bool) : 指定是否resume，默认为False。
+        """
         self.is_resume = is_resume
         self.console_dict = self._load_console_dict()
         self.default_dict = self._load_config_files(DEFAULT_FILE)
@@ -41,9 +49,26 @@ class Config(object):
         self.config_dict = self._merge_config_dict()
 
     def get_config_dict(self):
+        """
+        返回合并后的配置文件。
+
+        Returns:
+            dict: A dict of LibFewShot setting.
+        """
         return self.config_dict
 
     def _load_config_files(self, config_file):
+        """
+        解析一个`*.yaml`配置文件。
+
+        可用于解析`default.yaml`和用户自定义配置文件。
+
+        Args:
+            config_file (str): Path to yaml file.
+
+        Returns:
+            dict: A dict of LibFewShot setting.
+        """
         config_dict = dict()
         loader = yaml.SafeLoader
         loader.add_implicit_resolver(
@@ -73,11 +98,32 @@ class Config(object):
         return config_dict
 
     def _load_variable_dict(self, variable_dict):
+        """
+        载入通过`run_xxx`传入的配置字典。
+
+        Args:
+            variable_dict (dict): 按照yaml解析后的格式传入的字典
+
+        Returns:
+            dict: A dict of LFS setting.
+        """
         config_dict = dict()
         config_dict.update(variable_dict if variable_dict is not None else {})
         return config_dict
 
     def _recur_update(self, dic1, dic2):
+        """
+        递归地合并字典
+
+        用于递归合并两个字典（配置文件），`dic2`将会覆盖`dic1`中相同分key的value。
+
+        Args:
+            dic1 (dict): 被覆盖字典
+            dic2 (dict): 覆盖字典
+
+        Returns:
+            dict: 递归合并后字典
+        """
         if dic1 is None:
             dic1 = dict()
         for k in dic2.keys():
@@ -90,6 +136,14 @@ class Config(object):
         return dic1
 
     def _load_console_dict(self):
+        """
+        解析命令行参数字典
+
+        以LFS配置文件格式传入命令行参数，并使用该函数进行解析（？要不要详细将参数，还是在文档里写）
+
+        Returns:
+            dict: A dict of LFS console setting.
+        """
         parser = argparse.ArgumentParser()
         parser.add_argument("-w", "--way_num", type=int, help="way num")
         parser.add_argument("-s", "--shot_num", type=int, help="shot num")
@@ -139,6 +193,14 @@ class Config(object):
         return {k: v for k, v in vars(args).items() if v is not None}
 
     def _merge_config_dict(self):
+        """
+        合并配置文件
+
+        递归地合并配置文件dict，将会按照`default.yaml`，`user-define.yaml，`run_xxx`传入字典和命令行参数依次进行合并，其中相同最底层key-value将会以最后一次出现为标准。
+
+        Returns:
+            dict: A LFS setting dict.
+        """
         config_dict = dict()
         config_dict = self._recur_update(config_dict, self.default_dict)
         config_dict = self._recur_update(config_dict, self.file_dict)

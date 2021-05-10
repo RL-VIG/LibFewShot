@@ -41,6 +41,12 @@ def default_loader(path):
 
 
 class GeneralDataset(Dataset):
+    """
+    A general dataset class.
+
+    实现了use_memory的dataset
+    """
+
     def __init__(
         self,
         data_root="",
@@ -49,6 +55,18 @@ class GeneralDataset(Dataset):
         use_memory=True,
         trfms=None,
     ):
+        """
+        GeneralDataset初始化函数
+
+        根据参数配置一些Dataset信息，例如cache，数据列表，标签列表以及对应的类别标签字典等
+
+        Args:
+            data_root (str, optional): A CSV file with (file_name, label) records. Defaults to "".
+            mode (str, optional): model mode in train/test/val. Defaults to "train".
+            loader (fn, optional): specific which loader to use(see line 10-40 in this file). Defaults to default_loader.
+            use_memory (bool, optional): option to use memory cache to accelerate reading. Defaults to True.
+            trfms (list, optional): A transform list (in LFS, its useless). Defaults to None.
+        """
         super(GeneralDataset, self).__init__()
         assert mode in ["train", "val", "test"]
 
@@ -77,6 +95,14 @@ class GeneralDataset(Dataset):
         )
 
     def _generate_data_list(self):
+        """
+        [summary]
+
+        [extended_summary]
+
+        Returns:
+            [type]: [description]
+        """
         meta_csv = os.path.join(self.data_root, "{}.csv".format(self.mode))
 
         data_list = []
@@ -102,8 +128,10 @@ class GeneralDataset(Dataset):
             with open(cache_path, "rb") as fin:
                 data_list, label_list, class_label_dict = pickle.load(fin)
         else:
-            self.logger.info("dump the cache to {}, please wait...".format(cache_path))
-            data_list, label_list, class_label_dict = self._save_cache(cache_path)
+            self.logger.info(
+                "dump the cache to {}, please wait...".format(cache_path))
+            data_list, label_list, class_label_dict = self._save_cache(
+                cache_path)
 
         return data_list, label_list, class_label_dict
 
