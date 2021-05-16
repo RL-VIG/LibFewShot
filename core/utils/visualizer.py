@@ -2,6 +2,10 @@ from torch.utils import tensorboard
 
 
 class TensorboardWriter(object):
+    """
+    A TensorboardWriter to write logs.
+    """
+
     def __init__(self, log_dir):
         self.step = 0
 

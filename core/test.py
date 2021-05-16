@@ -22,6 +22,17 @@ from core.utils import (
 
 
 def get_instance(module, name, config, *args):
+    """
+    A reflect function to get backbone/classifier/loss(todo.).
+
+    Args:
+        module ([type]): 包名
+        name (str): Config文件中最顶级配置名（backbone。 classifier）
+        config (dict): The parsed config dict.
+
+    Returns:
+        class: 对应的类
+    """
     kwargs = dict()
     if config[name]["kwargs"] is not None:
         kwargs.update(config[name]["kwargs"])
@@ -29,6 +40,12 @@ def get_instance(module, name, config, *args):
 
 
 class Test(object):
+    """
+    The tester.
+
+    Build a tester from config dict, set up model from a saved checkpoint, etc. Test and log.
+    """
+
     def __init__(self, config, result_path=None):
         self.config = config
         self.result_path = result_path
@@ -42,12 +59,16 @@ class Test(object):
         self.test_loader = self._init_dataloader(config)
 
     def test_loop(self):
+        """
+        The normal test loop: test and cal the 0.95 mean_confidence_interval.
+        """
         total_accuracy = 0.0
         total_h = np.zeros(self.config["test_epoch"])
         total_accuracy_vector = []
 
         for epoch_idx in range(self.config["test_epoch"]):
-            self.logger.info("============ Testing on the test set ============")
+            self.logger.info(
+                "============ Testing on the test set ============")
             _, accuracies = self._validate(epoch_idx)
             test_accuracy, h = mean_confidence_interval(accuracies)
             self.logger.info(
@@ -66,6 +87,15 @@ class Test(object):
         self.logger.info("............Testing is end............")
 
     def _validate(self, epoch_idx):
+        """
+        The test stage.
+
+        Args:
+            epoch_idx (int): Epoch index.
+
+        Returns:
+            float: Acc.
+        """
         # switch to evaluate mode
         self.model.eval()
 
@@ -83,7 +113,8 @@ class Test(object):
         with torch.set_grad_enabled(enable_grad):
             for episode_idx, batch in enumerate(self.test_loader):
                 self.writer.set_step(
-                    epoch_idx * len(self.test_loader) + episode_idx * episode_size
+                    epoch_idx * len(self.test_loader) +
+                    episode_idx * episode_size
                 )
 
                 meter.update("data_time", time() - end)
@@ -120,6 +151,15 @@ class Test(object):
         return meter.avg("acc"), accuracies
 
     def _init_files(self, config):
+        """
+        Init result_path(log_path, viz_path) from the config dict.
+
+        Args:
+            config (dict): Parsed config file.
+
+        Returns:
+            tuple: A tuple of (result_path, log_path, checkpoints_path, viz_path).
+        """
         if self.result_path is not None:
             result_path = self.result_path
         else:
@@ -144,16 +184,35 @@ class Test(object):
             is_train=False,
         )
 
-        state_dict_path = os.path.join(result_path, "checkpoints", "model_best.pth")
+        state_dict_path = os.path.join(
+            result_path, "checkpoints", "model_best.pth")
 
         return viz_path, state_dict_path
 
     def _init_dataloader(self, config):
+        """
+        Init dataloaders.(train_loader, val_loader and test_loader)
+
+        Args:
+            config (dict): Parsed config file.
+
+        Returns:
+            tuple: A tuple of (train_loader, val_loader and test_loader).
+        """
         test_loader = get_dataloader(config, "test", self.model_type)
 
         return test_loader
 
     def _init_model(self, config):
+        """
+        Init model(backbone+classifier) from the config dict and load the best checkpoint, then parallel if necessary .
+
+        Args:
+            config (dict): Parsed config file.
+
+        Returns:
+            tuple: A tuple of the model and model's type.
+        """
         emb_func = get_instance(arch, "backbone", config)
         model = get_instance(
             arch,
@@ -169,7 +228,8 @@ class Test(object):
         self.logger.info(model)
         self.logger.info(count_parameters(model))
 
-        self.logger.info("load the state dict from {}.".format(self.state_dict_path))
+        self.logger.info(
+            "load the state dict from {}.".format(self.state_dict_path))
         state_dict = torch.load(self.state_dict_path, map_location="cpu")
         model.load_state_dict(state_dict)
 
@@ -190,11 +250,27 @@ class Test(object):
         return model, model.model_type
 
     def _init_device(self, config):
+        """
+        Init the devices from the config file.
+
+        Args:
+            config (dict): Parsed config file.
+
+        Returns:
+            tuple: A tuple of deviceand list_ids.
+        """
         init_seed(config["seed"], config["deterministic"])
-        device, list_ids = prepare_device(config["device_ids"], config["n_gpu"])
+        device, list_ids = prepare_device(
+            config["device_ids"], config["n_gpu"])
         return device, list_ids
 
     def _init_meter(self):
+        """
+        Init the AverageMeter of test stage to cal avg... of batch_time, data_time,calc_time ,loss and prec1.
+
+        Returns:
+            tuple: A tuple of train_meter, val_meter, test_meter.
+        """
         test_meter = AverageMeter(
             "test", ["batch_time", "data_time", "acc"], self.writer
         )

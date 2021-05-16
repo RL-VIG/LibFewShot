@@ -26,6 +26,17 @@ from core.utils import (
 
 
 def get_instance(module, name, config, *args):
+    """
+    A reflect function to get backbone/classifier/loss(todo.).
+
+    Args:
+        module ([type]): 包名
+        name (str): Config文件中最顶级配置名（backbone。 classifier）
+        config (dict): The parsed config dict.
+
+    Returns:
+        class: 对应的类
+    """
     kwargs = dict()
     if config[name]["kwargs"] is not None:
         kwargs.update(config[name]["kwargs"])
@@ -33,6 +44,12 @@ def get_instance(module, name, config, *args):
 
 
 class Trainer(object):
+    """
+    The trainer.
+
+    Build a trainer from config dict, set up optimizer, model, etc. Train/test/val and log.
+    """
+
     def __init__(self, config):
         self.config = config
         self.device, self.list_ids = self._init_device(config)
@@ -47,25 +64,34 @@ class Trainer(object):
         self.train_loader, self.val_loader, self.test_loader = self._init_dataloader(
             config
         )
-        self.optimizer, self.scheduler, self.from_epoch = self._init_optim(config)
+        self.optimizer, self.scheduler, self.from_epoch = self._init_optim(
+            config)
 
     def train_loop(self):
+        """
+        The normal train loop: train-val-test and save model when val-prec increases.
+        """
         best_val_acc = float("-inf")
         best_test_acc = float("-inf")
         experiment_begin = time()
         for epoch_idx in range(self.from_epoch + 1, self.config["epoch"]):
-            self.logger.info("============ Train on the train set ============")
+            self.logger.info(
+                "============ Train on the train set ============")
             train_acc = self._train(epoch_idx)
             self.logger.info(" * Prec@1 {:.3f} ".format(train_acc))
-            self.logger.info("============ Validation on the val set ============")
+            self.logger.info(
+                "============ Validation on the val set ============")
             val_acc = self._validate(epoch_idx, is_test=False)
             self.logger.info(
-                " * Prec@1 {:.3f} Best acc {:.3f}".format(val_acc, best_val_acc)
+                " * Prec@1 {:.3f} Best acc {:.3f}".format(
+                    val_acc, best_val_acc)
             )
-            self.logger.info("============ Testing on the test set ============")
+            self.logger.info(
+                "============ Testing on the test set ============")
             test_acc = self._validate(epoch_idx, is_test=True)
             self.logger.info(
-                " * Prec@1 {:.3f} Best acc {:.3f}".format(test_acc, best_test_acc)
+                " * Prec@1 {:.3f} Best acc {:.3f}".format(
+                    test_acc, best_test_acc)
             )
 
             if val_acc > best_val_acc:
@@ -86,6 +112,15 @@ class Trainer(object):
         )
 
     def _train(self, epoch_idx):
+        """
+        The train stage.
+
+        Args:
+            epoch_idx (int): Epoch index.
+
+        Returns:
+            float: Acc.
+        """
         self.model.train()
 
         meter = self.train_meter
@@ -157,6 +192,15 @@ class Trainer(object):
         return meter.avg("acc")
 
     def _validate(self, epoch_idx, is_test=False):
+        """
+        The val/test stage.
+
+        Args:
+            epoch_idx (int): Epoch index.
+
+        Returns:
+            float: Acc.
+        """
         # switch to evaluate mode
         self.model.eval()
 
@@ -218,6 +262,15 @@ class Trainer(object):
         return meter.avg("acc")
 
     def _init_files(self, config):
+        """
+        Init result_path(checkpoints_path, log_path, viz_path) from the config dict.
+
+        Args:
+            config (dict): Parsed config file.
+
+        Returns:
+            tuple: A tuple of (result_path, log_path, checkpoints_path, viz_path).
+        """
         # you should ensure that data_root name contains its true name
         # FIXME 改成如果不包含data_name就自动切会不会好点
         symlink_dir = "{}-{}-{}-{}-{}".format(
@@ -257,6 +310,15 @@ class Trainer(object):
         return result_path, log_path, checkpoints_path, viz_path
 
     def _init_dataloader(self, config):
+        """
+        Init dataloaders.(train_loader, val_loader and test_loader)
+
+        Args:
+            config (dict): Parsed config file.
+
+        Returns:
+            tuple: A tuple of (train_loader, val_loader and test_loader).
+        """
         train_loader = get_dataloader(config, "train", self.model_type)
         val_loader = get_dataloader(config, "val", self.model_type)
         test_loader = get_dataloader(config, "test", self.model_type)
@@ -264,6 +326,15 @@ class Trainer(object):
         return train_loader, val_loader, test_loader
 
     def _init_model(self, config):
+        """
+        Init model(backbone+classifier) from the config dict and load the pretrained params or resume from a checkpoint, then parallel if necessary .
+
+        Args:
+            config (dict): Parsed config file.
+
+        Returns:
+            tuple: A tuple of the model and model's type.
+        """
         emb_func = get_instance(arch, "backbone", config)
         model = get_instance(
             arch,
@@ -281,15 +352,18 @@ class Trainer(object):
 
         if self.config["pretrain_path"] is not None:
             self.logger.info(
-                "load pretrain emb_func from {}".format(self.config["pretrain_path"])
+                "load pretrain emb_func from {}".format(
+                    self.config["pretrain_path"])
             )
-            state_dict = torch.load(self.config["pretrain_path"], map_location="cpu")
+            state_dict = torch.load(
+                self.config["pretrain_path"], map_location="cpu")
             model.emb_func.load_state_dict(state_dict)
 
         if self.config["resume"]:
             resume_path = os.path.join(self.checkpoints_path, "model_last.pth")
             self.logger.info(
-                "load the resume model checkpoints dict from {}.".format(resume_path)
+                "load the resume model checkpoints dict from {}.".format(
+                    resume_path)
             )
             state_dict = torch.load(resume_path, map_location="cpu")["model"]
             model.load_state_dict(state_dict)
@@ -311,6 +385,15 @@ class Trainer(object):
         return model, model.model_type
 
     def _init_optim(self, config):
+        """
+        Init the optimizers and scheduler from config, if necessary, load the state dict from a checkpoint.
+
+        Args:
+            config (dict): Parsed config file.
+
+        Returns:
+            tuple: A tuple of optimizer, scheduler and epoch_index.
+        """
         params_idx = []
         params_dict_list = []
         if config["optimizer"]["other"] is not None:
@@ -339,7 +422,8 @@ class Trainer(object):
                 )
             }
         )
-        optimizer = get_instance(torch.optim, "optimizer", config, params_dict_list)
+        optimizer = get_instance(
+            torch.optim, "optimizer", config, params_dict_list)
         scheduler = get_instance(
             torch.optim.lr_scheduler, "lr_scheduler", config, optimizer
         )
@@ -358,16 +442,36 @@ class Trainer(object):
             state_dict = all_state_dict["lr_scheduler"]
             scheduler.load_state_dict(state_dict)
             from_epoch = all_state_dict["epoch"]
-            self.logger.info("model resume from the epoch {}".format(from_epoch))
+            self.logger.info(
+                "model resume from the epoch {}".format(from_epoch))
 
         return optimizer, scheduler, from_epoch
 
     def _init_device(self, config):
+        """
+        Init the devices from the config file.
+
+        Args:
+            config (dict): Parsed config file.
+
+        Returns:
+            tuple: A tuple of deviceand list_ids.
+        """
         init_seed(config["seed"], config["deterministic"])
-        device, list_ids = prepare_device(config["device_ids"], config["n_gpu"])
+        device, list_ids = prepare_device(
+            config["device_ids"], config["n_gpu"])
         return device, list_ids
 
     def _save_model(self, epoch, save_type=SaveType.NORMAL):
+        """
+        Save the model, optimizer, scheduler and epoch.
+
+        TODO
+
+        Args:
+            epoch (int): the current epoch index.
+            save_type (SaveType, optional): type of (last, best). Defaults to SaveType.NORMAL.
+        """
         save_model(
             self.model,
             self.optimizer,
@@ -398,16 +502,24 @@ class Trainer(object):
                         self.logger.warning("")
 
     def _init_meter(self):
+        """
+        Init the AverageMeter of train/val/test stage to cal avg... of batch_time, data_time,calc_time ,loss and prec1.
+
+        Returns:
+            tuple: A tuple of train_meter, val_meter, test_meter.
+        """
         train_meter = AverageMeter(
             "train",
             ["batch_time", "data_time", "calc_time", "loss", "prec1"],
             self.writer,
         )
         val_meter = AverageMeter(
-            "val", ["batch_time", "data_time", "calc_time", "prec1"], self.writer
+            "val", ["batch_time", "data_time",
+                    "calc_time", "prec1"], self.writer
         )
         test_meter = AverageMeter(
-            "test", ["batch_time", "data_time", "calc_time", "prec1"], self.writer
+            "test", ["batch_time", "data_time",
+                     "calc_time", "prec1"], self.writer
         )
 
         return train_meter, val_meter, test_meter

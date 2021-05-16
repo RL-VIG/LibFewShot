@@ -17,7 +17,7 @@ from core.utils import SaveType
 
 class AverageMeter(object):
     """
-
+    A AverageMeter to meter avg of number-like data.
     """
 
     def __init__(self, name, keys, writer=None):
@@ -39,7 +39,8 @@ class AverageMeter(object):
         self._data.last_value[key] = value
         self._data.total[key] += value * n
         self._data.counts[key] += n
-        self._data.average[key] = self._data.total[key] / self._data.counts[key]
+        self._data.average[key] = self._data.total[key] / \
+            self._data.counts[key]
 
     def avg(self, key):
         return self._data.average[key]
@@ -52,31 +53,28 @@ class AverageMeter(object):
 
 
 def get_local_time():
-    """
-
-    :return:
-    """
     cur_time = datetime.now().strftime("%b-%d-%Y_%H-%M-%S")
 
     return cur_time
 
 
 def count_parameters(model):
-    """
-
-    :param model:
-    :return:
-    """
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
 def accuracy(output, target, topk=1):
     """
+    Calc the acc of tpok.
 
-    :param output:
-    :param target:
-    :param topk:
-    :return:
+    output, target 同类型，同shape，自动选择方法.
+
+    Args:
+        output (torch.Tensor or np.ndarray): The output.
+        target (torch.Tensor or np.ndarray): The target.
+        topk (int or list or tuple): topk . Defaults to 1.
+
+    Returns:
+        float: acc.
     """
     with torch.no_grad():
         batch_size = target.size(0)
@@ -85,7 +83,8 @@ def accuracy(output, target, topk=1):
             "Tensor": torch.topk,
             "ndarray": lambda output, maxk, axis: (
                 None,
-                torch.from_numpy(topk_(output, maxk, axis)[1]).to(target.device),
+                torch.from_numpy(topk_(output, maxk, axis)
+                                 [1]).to(target.device),
             ),
         }[output.__class__.__name__](output, topk, 1)
 
@@ -98,6 +97,12 @@ def accuracy(output, target, topk=1):
 
 
 def topk_(matrix, K, axis):
+    """
+    the function to calc topk acc of ndarrary. 
+
+    TODO
+
+    """
     if axis == 0:
         row_index = np.arange(matrix.shape[1 - axis])
         topk_index = np.argpartition(-matrix, K, axis=axis)[0:K, :]
@@ -168,7 +173,8 @@ def prepare_device(device_ids, n_gpu_use):
     if n_gpu_use > n_gpu:
         logger.warning(
             "only {} are available on this machine, "
-            "but the number of the GPU in config is {}.".format(n_gpu, n_gpu_use)
+            "but the number of the GPU in config is {}.".format(
+                n_gpu, n_gpu_use)
         )
         n_gpu_use = n_gpu
 
@@ -202,7 +208,8 @@ def save_model(
     """
 
     if save_type == SaveType.NORMAL:
-        save_name = os.path.join(save_path, "{}_{:0>5d}.pth".format(name, epoch))
+        save_name = os.path.join(
+            save_path, "{}_{:0>5d}.pth".format(name, epoch))
     elif save_type == SaveType.BEST:
         save_name = os.path.join(save_path, "{}_best.pth".format(name))
     elif save_type == SaveType.LAST:
@@ -214,7 +221,8 @@ def save_model(
     if is_parallel:
         model_state_dict = OrderedDict()
         for k, v in model.state_dict().items():
-            name = ".".join([name for name in k.split(".") if name != "module"])
+            name = ".".join(
+                [name for name in k.split(".") if name != "module"])
             model_state_dict[name] = v
     else:
         model_state_dict = model.state_dict()

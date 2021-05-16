@@ -96,12 +96,10 @@ class GeneralDataset(Dataset):
 
     def _generate_data_list(self):
         """
-        [summary]
-
-        [extended_summary]
+        Parse a CSV file to a data list(image_name), a label list(corresponding to the data list) and a class-label dict.
 
         Returns:
-            [type]: [description]
+            tuple: A tuple of (data list, label list, class-label dict)
         """
         meta_csv = os.path.join(self.data_root, "{}.csv".format(self.mode))
 
@@ -123,6 +121,15 @@ class GeneralDataset(Dataset):
         return data_list, label_list, class_label_dict
 
     def _load_cache(self, cache_path):
+        """
+        Load a pickle cache from saved file.(when use_memory option is True)
+
+        Args:
+            cache_path (str): The path to the pickle file.
+
+        Returns:
+            tuple: A tuple of (data list, label list, class-label dict)
+        """
         if os.path.exists(cache_path):
             self.logger.info("load cache from {}...".format(cache_path))
             with open(cache_path, "rb") as fin:
@@ -136,6 +143,15 @@ class GeneralDataset(Dataset):
         return data_list, label_list, class_label_dict
 
     def _save_cache(self, cache_path):
+        """
+        Save a pickle cache to the disk.
+
+        Args:
+            cache_path (str): The path to the pickle file.
+
+        Returns:
+            tuple: A tuple of (data list, label list, class-label dict)
+        """
         data_list, label_list, class_label_dict = self._generate_data_list()
         data_list = [
             self.loader(os.path.join(self.data_root, "images", path))
@@ -150,6 +166,15 @@ class GeneralDataset(Dataset):
         return self.length
 
     def __getitem__(self, idx):
+        """
+        Return a PyTorch like dataset item of (data, label) tuple.
+
+        Args:
+            idx (int): The __getitem__ id.
+
+        Returns:
+            tuple: A tuple of (image, label)
+        """
         if self.use_memory:
             data = self.data_list[idx]
         else:
