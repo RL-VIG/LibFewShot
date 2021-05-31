@@ -180,11 +180,11 @@ deterministic: False
 
 ### 杂项设置
 
-+ log_name：如果为空，即使用自动生成的`classifier.name-data_root-backbone-way_num-shot_num`文件目录。
-+ log_level：训练中日志输出等级。
-+ log_interval：日志输出间隔的任务数目。
-+ result_root：结果存放的根目录
-+ save_interval：权重保存的epoch间隔
++ `log_name`：如果为空，即使用自动生成的`classifier.name-data_root-backbone-way_num-shot_num`文件目录。
++ `log_level`：训练中日志输出等级。
++ `log_interval`：日志输出间隔的任务数目。
++ `result_root`：结果存放的根目录
++ `save_interval`：`权重保存的epoch间隔`
 + `save_part`：方法中需要保存的部分在方法中的变量名称。这些名称的变量会在模型保存时单独对这些变量保存一次。需要保存的部分在`save_part`下以列表的形式给出。
 
 ```yaml
