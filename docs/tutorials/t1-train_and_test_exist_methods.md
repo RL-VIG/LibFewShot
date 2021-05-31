@@ -12,7 +12,7 @@ includes:
 	- headers/device.yaml
 	- headers/misc.yaml
 	- headers/optimizer.yaml
-	- backbones/resnet12_nogap.yaml
+	- backbones/resnet12.yaml
 	- classifiers/dn4_classifier.yaml
 ```
 
