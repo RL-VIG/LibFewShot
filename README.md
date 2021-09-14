@@ -1,25 +1,28 @@
-# LibFewShot
+# [LibFewShot](https://arxiv.org/abs/2109.04898)
 Make few shot learning easy.
 
 ## Supported Methods
 ### Meta
-+ MAML(ICML'17)
-+ ANIL(ICLR'20)
-+ R2D2(ICLR'19)
-+ Versa(NeurIPS'18)
-+ LEO(ICLR'19)
-+ MTL(CVPR'19)
++ [MAML(ICML'17)](https://arxiv.org/abs/1703.03400)
++ [ANIL(ICLR'20)](https://arxiv.org/abs/1909.09157)
++ [R2D2(ICLR'19)](https://arxiv.org/abs/1805.08136)
++ [Versa(NeurIPS'18)](https://openreview.net/forum?id=HkxStoC5F7)
++ [LEO(ICLR'19)](https://arxiv.org/abs/1807.05960)
++ [MTL(CVPR'19)](https://arxiv.org/abs/1812.02391)
 ### Metric
-+ ProtoNet(NeuraIPS'17)
-+ RelationNet(CVPR'18)
-+ ConvaMNet(AAAI'19)
-+ DN4(CVPR'19)
-+ CAN(NeuraIPS'19)
++ [ADM(IJCAI'20)](https://arxiv.org/abs/2002.00153)
++ [ATL-Net(IJCAI'20)](https://www.ijcai.org/proceedings/2020/0100.pdf)
++ [ProtoNet(NeuraIPS'17)](https://arxiv.org/abs/1703.05175)
++ [RelationNet(CVPR'18)](https://arxiv.org/abs/1711.06025)
++ [ConvaMNet(AAAI'19)](https://ojs.aaai.org//index.php/AAAI/article/view/4885)
++ [DN4(CVPR'19)](https://arxiv.org/abs/1903.12290)
++ [CAN(NeuraIPS'19)](https://arxiv.org/abs/1910.07677)
++ [FEAT(CVPR'20)](http://arxiv.org/abs/1812.03664)
 ### Finetuning
-+ Baseline(ICLR'19)
-+ Baseline++(ICLR'19)
-+ RFS(ECCV'20)
-+ SKD(arxiv'20)
++ [Baseline(ICLR'19)](https://arxiv.org/abs/1904.04232)
++ [Baseline++(ICLR'19)](https://arxiv.org/abs/1904.04232)
++ [RFS(ECCV'20)](https://arxiv.org/abs/2003.11539)
++ [SKD(arxiv'20)](https://arxiv.org/abs/2006.09785)
 
 
 ## Quick Installnation
