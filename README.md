@@ -1,5 +1,5 @@
 # LibFewShot
-Make few shot learning easy.
+Make few-shot learning easy.
 
 ## Supported Methods
 ### Meta
