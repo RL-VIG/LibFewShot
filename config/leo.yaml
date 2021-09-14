@@ -1,0 +1,47 @@
+includes:
+  - headers/data.yaml
+  - headers/device.yaml
+  - headers/losses.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
+  - classifiers/LEO.yaml
+  - backbones/resnet12.yaml
+
+device_ids: 0
+way_num: 5
+shot_num: 1
+query_num: 15
+test_way: 5 # use ~ -> test_* = *_num
+test_shot: 1
+test_query: 15
+episode_size: 1
+train_episode: 10
+test_episode: 10
+
+backbone:
+  name: Conv64F
+  kwargs:
+    is_flatten: True
+    is_feature: False
+    leaky_relu: False
+    negative_slope: 0.2
+    last_pool: True
+
+# backbone:
+#   name: resnet12
+#   kwargs:
+#     keep_prob: 0.0
+
+# backbone:
+#   name: resnet18
+#   kwargs:
+
+# backbone:
+#   name: WRN
+#   kwargs:
+#     depth: 10
+#     widen_factor: 10
+#     dropRate: 0.0
+#     avg_pool: True
+#     is_flatten: True

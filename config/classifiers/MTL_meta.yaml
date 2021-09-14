@@ -1,0 +1,8 @@
+classifier:
+  name: MTL
+  kwargs:
+    feat_dim: 640
+    num_class: 64
+    inner_param:
+      iter: 10
+    use_MTL: True

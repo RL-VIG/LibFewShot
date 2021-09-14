@@ -1,0 +1,4 @@
+classifier:
+  name: ADM
+  kwargs:
+    n_k: 3

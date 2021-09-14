@@ -1,0 +1,26 @@
+includes:
+  - headers/data.yaml
+  - headers/device.yaml
+  - headers/losses.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
+  - classifiers/CAN.yaml
+  - backbones/Conv64F.yaml
+
+backbone:
+  name: Conv64F
+  kwargs:
+    last_pool: False
+    is_flatten: False
+
+classifier:
+  name: CAN
+  kwargs:
+    scale_cls: 7 # default
+    num_class: 64
+    nFeat: 64
+    HW: 10
+
+device_ids: 3
+episode_size: 4

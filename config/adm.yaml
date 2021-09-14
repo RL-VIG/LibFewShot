@@ -1,0 +1,45 @@
+includes:
+  - headers/data.yaml
+  - headers/device.yaml
+  - headers/losses.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
+  - classifiers/ADM.yaml
+
+way_num: 5
+shot_num: 1
+query_num: 15
+
+backbone:
+  name: Conv64F
+  kwargs:
+    is_flatten: False
+    is_feature: False
+    leaky_relu: True
+    negative_slope: 0.2
+    last_pool: False
+
+
+# backbone:
+#   name: resnet12
+#   kwargs: 
+#     maxpool_last2: False
+#     is_flatten: False
+
+
+# need to modify: core/model/backbone/resnet_18.py:114 stride=1
+# backbone:
+#   name: resnet18
+#   kwargs: 
+#     is_flatten: False
+#     avg_pool: False
+
+
+# backbone:
+#   name: WRN
+#   kwargs: 
+#     depth: 28
+#     widen_factor: 10
+#     avg_pool: False
+#     is_flatten: False

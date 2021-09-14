@@ -1,0 +1,7 @@
+classifier:
+  name: MTLPretrain
+  kwargs:
+    feat_dim: 640
+    num_class: 64
+    inner_train_iter: 100
+    use_MTL: False

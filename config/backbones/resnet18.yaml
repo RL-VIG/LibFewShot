@@ -1,0 +1,6 @@
+backbone:
+  name: resnet18
+  kwargs:
+    is_feature: False
+    avg_pool: True
+    is_flatten: True

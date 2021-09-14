@@ -1,0 +1,8 @@
+classifier:
+  name: FEAT
+  kwargs:
+    hdim: 640
+    temperature: 1.0
+    temperature2: 1.0
+    balance: 0.5
+    mode: euclidean

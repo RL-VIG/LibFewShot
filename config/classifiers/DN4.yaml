@@ -1,0 +1,4 @@
+classifier:
+  name: DN4
+  kwargs:
+    n_k: 3

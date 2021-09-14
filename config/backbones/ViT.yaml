@@ -1,0 +1,14 @@
+backbone:
+  name: ViT # FIXME
+  kwargs:
+    image_size: 0
+    patch_size: 0
+    dim: 0
+    depth: 0
+    heads: 0
+    mlp_dim: 0
+    channels: 3
+    dim_head: 64
+    dropout: 0
+    emb_dropout: 0
+    num_classes: 64

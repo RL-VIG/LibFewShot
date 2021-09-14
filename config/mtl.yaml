@@ -1,0 +1,28 @@
+include:
+  - headers/data.yaml
+  - headers/devices.yaml
+  - headers/loss.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
+  - backbones/Conv64F.yaml
+  - classifiers/MTL_meta.yaml
+
+backbone:
+  name: Conv64F
+  kwargs:
+    is_flatten: False
+    is_feature: False
+    leaky_relu: False
+    negative_slope: 0.2
+    last_pool: True
+
+
+classifier:
+  name: MTL
+  kwargs:
+    feat_dim: 1600
+    num_classes: 64
+    inner_para:
+      iter: 10
+    use_MTL: True

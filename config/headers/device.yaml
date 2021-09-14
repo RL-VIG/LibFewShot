@@ -1,0 +1,4 @@
+device_ids: 0 # determine GPU ids in bus order
+n_gpu: 1 # select the number of gpus to use
+seed: 0 # random seed for numpy, torch and cuda
+deterministic: True # option for torch.backends.cudnn.benchmark  and torch.backends.cudnn.deterministic

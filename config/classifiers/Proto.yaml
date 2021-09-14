@@ -1,0 +1,3 @@
+classifier:
+  name: ProtoNet
+  kwargs: ~

@@ -1,0 +1,10 @@
+classifier:
+  name: RFSModel
+  kwargs:
+    feat_dim: 1600
+    num_class: 64
+    gamma: 0.5
+    alpha: 0.5
+    is_distill: True
+    emb_func_path: ./results/RFSModel-Conv64F-5-5/checkpoints/emb_func_best.pth
+    classifier_path: ./results/RFSModel-Conv64F-5-5/checkpoints/classifier_best.pth

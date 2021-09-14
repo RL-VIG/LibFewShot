@@ -1,0 +1,5 @@
+classifier:
+  name: ADM_KL
+  kwargs:
+    n_k: 3
+    CMS: True

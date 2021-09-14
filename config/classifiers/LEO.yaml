@@ -1,0 +1,13 @@
+classifier:
+  name: LEO
+  kwargs:
+    inner_para:
+      lr: 1e-2
+      iter: 5
+      finetune_lr: 1e-2
+      finetune_iter: 5
+    feat_dim: 640
+    hid_dim: 64
+    kl_weight: 1e-3
+    encoder_penalty_weight: 1e-9
+    orthogonality_penalty_weight: 1e-3

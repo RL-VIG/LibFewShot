@@ -1,0 +1,4 @@
+backbone:
+  name: resnet12MTLofficial
+  kwargs:
+    MTL: False

@@ -1,0 +1,6 @@
+data_root: /data/wzy/miniImageNet--ravi
+image_size: 84
+use_memory: False
+augment: True
+augment_times: 1
+augment_times_query: 1

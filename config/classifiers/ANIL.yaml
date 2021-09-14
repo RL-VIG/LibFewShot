@@ -1,0 +1,7 @@
+classifier:
+  name: ANIL
+  kwargs:
+    inner_param:
+      lr: 1e-3
+      iter: 10
+    feat_dim: 800

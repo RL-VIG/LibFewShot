@@ -1,0 +1,7 @@
+classifier:
+  name: FEAT_Pretrain
+  kwargs:
+    feat_dim: 640
+    train_num_class: 64
+    val_num_class: 16
+    mode: euclidean

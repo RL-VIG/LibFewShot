@@ -1,0 +1,12 @@
+classifier:
+  name: BaselinePlus
+  kwargs:
+    inner_param:
+      inner_optim:
+        name: Adam
+        kwargs:
+          lr: 1e-2
+      inner_train_iter: 100
+      inner_batch_size: 4
+    feat_dim: 1600
+    num_class: 64

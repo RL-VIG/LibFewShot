@@ -1,0 +1,52 @@
+includes:
+  - headers/data.yaml
+  - headers/device.yaml
+  - headers/losses.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
+  - classifiers/FEAT.yaml
+  - backbones/WRN.yaml
+
+
+classifier:
+  name: FEAT
+  kwargs:
+    hdim: 640
+    temperature: 1.0
+    temperature2: 1.0
+    balance: 0.5
+    mode: euclidean
+
+# backbone:
+#   name: Conv64F
+#   kwargs:
+#     is_flatten: True
+#     is_feature: False
+#     leaky_relu: False
+#     negative_slope: 0.2
+#     last_pool: True
+
+# Conv64: feat_dim: 1600
+
+# backbone:
+#   name: resnet12
+#   kwargs:
+#     keep_prob: 0.0
+#     avg_pool: True
+#     is_flatten: True
+
+# resnet12: feat_dim: 640
+
+# resnet18: feat_dim: 512
+
+backbone:
+  name: WRN
+  kwargs:
+    depth: 28 
+    widen_factor: 10
+
+# WRN: feat_dim: 640
+
+device_ids: 1
+n_gpu: 1 

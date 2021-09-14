@@ -1,0 +1,96 @@
+includes:
+  - headers/data.yaml
+  - headers/device.yaml
+  - headers/losses.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
+  - classifiers/Baseline++.yaml
+  - backbones/resnet18.yaml
+
+classifier:
+  name: BaselinePlus
+  kwargs:
+    inner_param:
+      inner_optim:
+        name: Adam
+        kwargs:
+          lr: 1e-2
+      inner_train_iter: 100
+      inner_batch_size: 4
+    feat_dim: 1600
+    num_class: 351
+
+
+backbone:
+  name: Conv64F
+  kwargs:
+    is_flatten: True
+    is_feature: False
+    leaky_relu: False
+    negative_slope: 0.2
+    last_pool: True
+
+# Conv64: feat_dim: 1600
+
+# backbone:
+#   name: resnet12
+#   kwargs:
+#     keep_prob: 0.0
+#     avg_pool: True
+#     is_flatten: True
+
+# resnet12: feat_dim: 640
+
+# resnet18: feat_dim: 512
+
+# backbone:
+#   name: WRN
+#   kwargs:
+#     depth: 28 
+#     widen_factor: 10
+
+# WRN: feat_dim: 640
+
+
+epoch: 100
+test_epoch: 5
+
+parallel_part:
+  - emb_func
+
+pretrain_path: ~
+resume: False
+# few shot settings
+way_num: 5
+shot_num: 1
+query_num: 15
+test_way: ~ # use ~ -> test_* = *_num
+test_shot: ~
+test_query: ~
+episode_size: 1
+train_episode: 100
+test_episode: 600
+
+# general model setting
+batch_size: 128
+
+device_ids: 2
+n_gpu: 1 
+
+# optimizer info
+optimizer:
+  name: SGD
+  kwargs:
+    lr: 0.01
+    weight_decay: 5e-4
+    momentum: 0.9
+  other: ~
+
+
+# lr_scheduler info
+lr_scheduler:
+  name: CosineAnnealingLR
+  kwargs:
+    T_max: 50
+    eta_min: 0

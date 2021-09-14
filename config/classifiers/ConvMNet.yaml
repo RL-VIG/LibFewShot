@@ -1,0 +1,4 @@
+classifier:
+  name: ConvMNet
+  kwargs:
+    n_local: 441

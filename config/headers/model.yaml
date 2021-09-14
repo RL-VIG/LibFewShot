@@ -1,0 +1,21 @@
+epoch: 50
+test_epoch: 5
+
+parallel_part:
+  - emb_func
+
+pretrain_path: ~
+resume: False
+# few shot settings
+way_num: 5
+shot_num: 1
+query_num: 15
+test_way: ~ # use ~ -> test_* = *_num
+test_shot: ~
+test_query: ~
+episode_size: 1
+train_episode: 100
+test_episode: 100
+
+# general model setting
+batch_size: 128

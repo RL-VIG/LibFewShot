@@ -1,0 +1,8 @@
+classifier:
+  name: ATLNet
+  kwargs:
+    feat_dim: 64
+    scale_value: 30
+    atten_scale_value: 50
+    from_value: 0.4
+    value_interval: 0.5

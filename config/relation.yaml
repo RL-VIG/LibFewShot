@@ -1,0 +1,26 @@
+includes:
+  - headers/data.yaml
+  - headers/device.yaml
+  - headers/losses.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
+  - classifiers/RelationNet.yaml
+  - backbones/resnet18.yaml
+
+backbone:
+  name: resnet18
+  kwargs:
+    is_feature: False
+
+
+classifier:
+  name: RelationNet
+  kwargs:
+    feat_dim: 640
+    feat_height: 3
+    feat_width: 3
+
+
+device_ids: 2
+episode_size: 1

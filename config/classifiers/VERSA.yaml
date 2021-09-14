@@ -1,0 +1,6 @@
+classifier:
+  name: VERSA
+  kwargs:
+    feat_dim: 640
+    hid_dim: 640
+    sample_num: 10

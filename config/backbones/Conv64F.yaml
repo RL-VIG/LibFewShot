@@ -1,0 +1,9 @@
+backbone:
+  name: Conv64F
+  kwargs:
+    is_flatten: False
+    is_feature: False
+    leaky_relu: False
+    negative_slope: 0.2
+    last_pool: False
+    maxpool_last2: True

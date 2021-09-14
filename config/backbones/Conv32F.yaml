@@ -1,0 +1,8 @@
+backbone:
+  name: Conv32F
+  kwargs:
+    is_flatten: False
+    is_feature: False
+    leaky_relu: False
+    negative_slope: 0.2
+    last_pool: False
