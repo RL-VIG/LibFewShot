@@ -36,7 +36,7 @@ Welcome to LibFewShot's documentation!
    :maxdepth: 2
    :caption: Contribution
 
-   contribution.md
+   contributing.md
 
 Indices and tables
 ==================
