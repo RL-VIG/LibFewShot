@@ -1,0 +1,8 @@
+recommonmark
+sphinx
+sphinx-autobuild
+sphinx-rtd-theme
+sphinxcontrib-jsmath
+sphinxcontrib-napoleon
+sphinxcontrib-qthelp
+sphinxcontrib-serializinghtml
