@@ -24,12 +24,12 @@ Make few shot learning easy.
 
 ## Quick Installnation
 
-Please refer to [install.md](https://doc-test-en.readthedocs.io/en/latest/install.html)([安装](https://doc-test-en.readthedocs.io/zh_CN/latest/install.html)) for installation.
+Please refer to [install.md](https://libfewshot-en.readthedocs.io/en/latest/install.html)([安装](https://libfewshot-en.readthedocs.io/zh_CN/latest/install.html)) for installation.
 
-Full tutorials can be found at [document](https://doc-test-en.readthedocs.io/en/latest/)([中文文档](https://doc-test-en.readthedocs.io/zh_CN/latest/index.html)).
+Full tutorials can be found at [document](https://libfewshot-en.readthedocs.io/en/latest/)([中文文档](https://libfewshot-en.readthedocs.io/zh_CN/latest/index.html)).
 
 ## Contributing
-Feel free to contribute any kind of function or enhancement, here the coding style follows PEP8. Please refer to [contributing.md](https://doc-test-en.readthedocs.io/en/latest/contributing.html)([贡献代码](https://doc-test-en.readthedocs.io/zh_CN/latest/contributing.html)) for the contributing guideline.
+Feel free to contribute any kind of function or enhancement, here the coding style follows PEP8. Please refer to [contributing.md](https://libfewshot-en.readthedocs.io/en/latest/contributing.html)([贡献代码](https://libfewshot-en.readthedocs.io/zh_CN/latest/contributing.html)) for the contributing guideline.
 
 ## License
 This project is licensed under the MIT License. See  LICENSE for more details
