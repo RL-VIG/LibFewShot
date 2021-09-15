@@ -6,7 +6,7 @@
 使用以下命令获取LibFewShot:
 ```shell
 cd ~
-git clone https://github.com/LegenDong/LibFewShot
+git clone https://github.com/RL-VIG/LibFewShot.git
 ```
 
 ## 配置`LibFewShot`环境

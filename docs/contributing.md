@@ -27,7 +27,7 @@ pip install pre-commit
 2. run `pre-commit install`
 3. run `pre-commit run --all-files`
 4. 根据pre-commit给出的warning修改代码
-5.
+
 ## PR style
 你的PR请求标题应该如下：
 ```text
