@@ -8,7 +8,7 @@ Use the following command to get `LibFewShot`:
 
 ```shell
 cd ~
-git clone https://github.com/LegenDong/LibFewShot
+git clone https://github.com/RL-VIG/LibFewShot.git
 ```
 
 ## Configure the `LibFewShot` environment
