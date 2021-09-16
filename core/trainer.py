@@ -252,7 +252,6 @@ class Trainer(object):
             tuple: A tuple of (result_path, log_path, checkpoints_path, viz_path).
         """
         # you should ensure that data_root name contains its true name
-        # FIXME 改成如果不包含data_name就自动切会不会好点
         symlink_dir = "{}-{}-{}-{}-{}".format(
             config["classifier"]["name"],
             config["data_root"].split("/")[-1],
@@ -329,7 +328,8 @@ class Trainer(object):
 
         self.logger.info(model)
         self.logger.info("Trainable params in the model: {}".format(count_parameters(model)))
-        # 不是非常准确，对于在训练过程中要改变tensor的梯度行为的方法尤其不准确
+        # FIXME: May be inaccurate
+
 
         if self.config["pretrain_path"] is not None:
             self.logger.info(
@@ -392,10 +392,8 @@ class Trainer(object):
                         p.requires_grad = False
                 else:
                     param_dict = {"params": sub_model.parameters()}
-                    # 兼容只传了一个lr的config，在之后可以考虑规定config写法以统一
                     if isinstance(value, float):
                         param_dict.update({"lr": value})
-                    # 传了一系列参数, 用缩进传入字典
                     elif isinstance(value, dict):
                         param_dict.update(value)
                     else:

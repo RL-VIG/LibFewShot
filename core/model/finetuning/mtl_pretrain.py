@@ -26,7 +26,7 @@ from .finetuning_model import FinetuningModel
 import torch.nn.functional as F
 
 
-# FIXME 加上多GPU
+# FIXME: Add multi-GPU support
 class MTLBaseLearner(nn.Module):
     """The class for inner loop."""
 

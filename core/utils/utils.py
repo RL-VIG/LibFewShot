@@ -82,7 +82,7 @@ def accuracy(output, target, topk=1):
     """
     Calc the acc of tpok.
 
-    output, target 同类型，同shape，自动选择方法.
+    output and target have the same dtype and the same shape.
 
     Args:
         output (torch.Tensor or np.ndarray): The output.

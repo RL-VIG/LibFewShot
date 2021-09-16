@@ -35,7 +35,7 @@ from .finetuning_model import FinetuningModel
 from .. import DistillKLLoss
 
 
-# FIXME 加上多GPU
+# FIXME: Add multi-GPU support
 class DistillLayer(nn.Module):
     def __init__(
         self,

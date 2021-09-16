@@ -54,7 +54,6 @@ class AbstractModel(nn.Module):
         """
         split features by episode and
         generate local targets + split labels by episode
-        #!FIXME: 使用mode参数的方式需要调整，现在很难看
         """
         episode_size = features.size(0) // (self.way_num * (self.shot_num + self.query_num))
         local_labels = (
@@ -104,7 +103,7 @@ class AbstractModel(nn.Module):
             query_target = local_labels[:, :, self.shot_num :].contiguous().view(-1)
         elif (
             mode == 3
-        ):  # input 4D, return 4D(w/o episode) E.g.realationnet FIXME: 暂时用来处理还没有实现multi-task的方法
+        ):  # input 4D, return 4D(w/o episode) E.g.realationnet 
             b, c, h, w = features.shape
             features = features.contiguous().view(
                 self.way_num, self.shot_num + self.query_num, c, h, w
@@ -123,8 +122,7 @@ class AbstractModel(nn.Module):
             query_target = local_labels[:, :, self.shot_num :].contiguous().view(-1)
         elif (
             mode == 4
-        ):  # finetuning baseline input 2D, return 2D(w/o episode) E.g.baseline set_forward FIXME:
-            # 暂时用来处理还没有实现multi-task的方法
+        ):  # finetuning baseline input 2D, return 2D(w/o episode) E.g.baseline set_forward 
             features = features.view(self.way_num, self.shot_num + self.query_num, -1)
             support_features = (
                 features[:, : self.shot_num, :].contiguous().view(self.way_num * self.shot_num, -1)

@@ -1,1 +1,3 @@
 该目录只是暂时作为YAML的头文件目录使用，因为路径写死(refer to core/config/config.py Line.45)的原因，之后可能需要做一些调整。
+
+This directory is only temporarily used as the YAML header file directory, because the path is hard to write (refer to core/config/config.py Line.45), and some adjustments may be needed later.

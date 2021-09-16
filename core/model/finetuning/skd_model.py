@@ -34,7 +34,7 @@ from .. import DistillKLLoss
 from core.model.loss import L2DistLoss
 
 
-# FIXME 加上多GPU
+# FIXME: Add multi-GPU support
 class DistillLayer(nn.Module):
     def __init__(
         self,
