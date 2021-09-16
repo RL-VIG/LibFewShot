@@ -22,8 +22,8 @@ There are some difference in`Resize&Crop` for different dataset and config file 
 2. other phase：
    ```python
    from torchvision import transforms
-   transforms.Resize((96, 96)) # 当 config.image_size 为224时，该项为256
-   transforms.CenterCrop((84, 84)) # 当 config.image_size 为224时，该项为224
+   transforms.Resize((96, 96))  # or 256 when config.image_size = 224
+   transforms.CenterCrop((84, 84)) # or 224 when config.image_size = 224
    ```
 
 Besides, you may notice that `ToTensor & Norm` always uses the same set of mean and variance, then you can reset mean and variance for different datasets.
