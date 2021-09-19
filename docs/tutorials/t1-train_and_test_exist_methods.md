@@ -11,7 +11,7 @@ In this section, we take the DN4 method as an example to describe how to train a
 
 ## Configuration files
 
-In [t0-write_a_config_yaml.md](./t0-write_a_config_yaml.md), we have showed how to write a configuration file. We also assemble some of the common configuration into public file, so that you can easily finish your DN4 configuration file.
+In [t0-write_a_config_yaml.md](./t0-write_a_config_yaml.md), we have showed how to write a configuration file. We also assemble some of the common configuration into the public file, so that you can easily finish your DN4 configuration file.
 
 ```yaml
 includes:
@@ -27,7 +27,7 @@ For specific customer requirements, you can modify the related included files or
 
 ## Train
 
-Name the configuration file we have finished in previous section as `dn4.yaml`, place it into `config/`directory.
+Name the configuration file we have finished in previous section as `dn4.yaml`, place it into the `config/` directory.
 
 Modify the `run_trainer.py` file in project root as follow:
 
@@ -82,7 +82,7 @@ python run_test.py
 
 and the testing will start.
 
-Of course, all of the VAR_DICT variables in`run_test.py`can be removed, by running instruction as follow
+Of course, all of the VAR_DICT variables in`run_test.py` can be removed, by running instruction as follows
 
 ```shell
 python run_test.py --test_epoch 5 --device_ids 4 --n_gpu 1 --test_episode 600 --episode_size 1
