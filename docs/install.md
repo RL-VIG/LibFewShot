@@ -2,7 +2,7 @@
 
 This section provides a tutorial on building a working environment for `LibFewShot` from scratch.
 
-## Get `LibFewShot` library
+## Get the `LibFewShot` library
 
 Use the following command to get `LibFewShot`:
 
@@ -62,7 +62,7 @@ The environment can be configured in any of the following ways:
    ```shell
    python run_trainer.py
    ```
-4. If the first output is correct then `LibFewShot` has been installed successfully.
+4. If the first output is correct, it means that `LibFewShot` has been successfully installed.
 
 ## Next
 
