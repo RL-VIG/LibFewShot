@@ -6,7 +6,7 @@ core/model/backbone/*
 config/backbones/*
 ```
 
-If you want to add a new backbone in `LibFewShot`, you should put all files about this new backbone in directory `core/model/backbone/`. For example, to add a `ResNet` to `LibFewShot`, you need provide a `resnet.py` in directory `core/model/backbone/`, and provide a class or function that can return a ResNet model like following:
+If you want to add a new backbone into `LibFewShot`, you should put all files about this new backbone in the directory of `core/model/backbone/`. For example, to add a `ResNet` to `LibFewShot`, you need provide a `resnet.py` in the directory of `core/model/backbone/`, and provide a class or function that can return a ResNet model like following:
 
 ```python
 ...
@@ -30,7 +30,7 @@ from resnet import ResNet18
 
 At this point, the addition of a new backbone is finished.
 
-The new backbone shares the same way to use as previous backbone. For example, to change `DN4` backbone to the new backbone, you just modify `backbone`'s value in ' `config/dn4.yaml` as follows:
+The new backbone shares the same way to use as other backbones. For example, to change `DN4` backbone to the new backbone, you just modify `backbone`'s value in `config/dn4.yaml` as follows:
 
 ```yaml
 # arch info
