@@ -1,14 +1,14 @@
 # Getting started
 
-This section shows an example of a process using `LibFewShot`.
+This section shows an example of a process of using `LibFewShot`.
 
-## Prepare dataset(use miniImageNet as example)
+## Prepare the dataset (use miniImageNet as an example)
 
 1. download and extract [miniimagent--ravi](https://drive.google.com/file/d/1Oq7JKbd8-6QgLXbZ1MW4Wkv39EgDBk5t/view?usp=sharing).
 
 2. check the structure of the dataset：
 
-    The dataset must be in following structure:
+    The dataset must be in the following structure:
 
     ```
     dataset_folder/
@@ -21,11 +21,11 @@ This section shows an example of a process using `LibFewShot`.
     └── val.csv *
     ```
 
-## Modify config file
+## Modify the config file
 
-Use`ProtoNet` as example：
+Use `ProtoNet` as an example：
 1. create a new `yaml` file `getting_started.yaml` in `config/`
-2. write the following to the created file:
+2. write the following commands into the created file:
    ```yaml
    includes:
      - headers/data.yaml
@@ -38,7 +38,7 @@ Use`ProtoNet` as example：
      - backbones/Conv64F.yaml
    ```
 
-More details refer to  [write a config yaml](./tutorials/t0-write_a_config_yaml.md).
+More details can be referred to [write a config yaml](./tutorials/t0-write_a_config_yaml.md).
 
 ## Run
 
@@ -57,18 +57,18 @@ More details refer to  [write a config yaml](./tutorials/t0-write_a_config_yaml.
         trainer = Trainer(config)
         trainer.train_loop()
     ```
-2. train with console command:
+2. train with the console command:
    ```shell
    python run_trainer.py
    ```
 3. wait for the end of training.
 
-## View log files
+## View the log files
 
-After running the program, you can find a symlink `results/ProtoNet-miniImageNet-Conv64F-5-1` and a directory`results/ProtoNet-miniImageNet-Conv64F-5-1-$TS` that `TS` means timestamp, which contains two directorys: `checkpoint/` and `log_files/`, and a configuration file:`config.yaml`. Note that the symlink will always link to the directory createdthe last time you trained with the same few shot learning configuration.
+After running the program, you can find a symlink of `results/ProtoNet-miniImageNet-Conv64F-5-1` and a directory of `results/ProtoNet-miniImageNet-Conv64F-5-1-$TS`, where `TS` means the timestamp. The directory contains two folders: `checkpoint/` and `log_files/`, and a configuration file: `config.yaml`. Note that the symlink will always link to the directory created at the last time, when you train the model with the same few-shot learning configuration for multiple times.
 
-`config.yaml` contains all the settings used in the training.
+`config.yaml` contains all the settings used in the training phase.
 
 `log_files/` contains tensorboard files, training log files and test log files.
 
-`checkpoints/` contains model checkpoints saved at `$save_insterval` intervals, last model checkpoint(used to resume) and best model checkpoint(used to test). The checkpoint files are generally divided into `emb_func.pth`, `classifier.pth`, and `model.pth` , a combination of the first two.
+`checkpoints/` contains model checkpoints saved at `$save_insterval` intervals, the last model checkpoint (used to resume) and the best model checkpoint (used to test). The checkpoint files are generally divided into `emb_func.pth`, `classifier.pth`, and `model.pth` (a combination of the first two), respectively.
