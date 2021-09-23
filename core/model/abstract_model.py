@@ -130,8 +130,8 @@ class AbstractModel(nn.Module):
             query_features = (
                 features[:, self.shot_num :, :].contiguous().view(self.way_num * self.query_num, -1)
             )
-            support_target = local_labels[:, :, : self.shot_num].reshape(episode_size, self.way_num * self.shot_num)
-            query_target = local_labels[:, :, self.shot_num :].reshape(episode_size, self.way_num * self.query_num)
+            support_target = local_labels[:, :, : self.shot_num].reshape(self.way_num * self.shot_num)
+            query_target = local_labels[:, :, self.shot_num :].reshape(self.way_num * self.query_num)
         else:
             raise Exception("mode should in [1,2,3,4], not {}".format(mode))
 

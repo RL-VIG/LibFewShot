@@ -20,6 +20,7 @@ episode_size: 1
 train_episode: 100
 test_episode: 100
 
+
 backbone:
   name: Conv64F
   kwargs:
@@ -29,14 +30,41 @@ backbone:
     negative_slope: 0.2
     last_pool: True
 
+classifier:
+  name: ANIL
+  kwargs:
+    inner_param:
+      lr: 1e-3
+      iter: 10
+    feat_dim: 1600
+
+
 # backbone:
 #   name: resnet12
 #   kwargs:
 #     keep_prob: 0.0
 
+# classifier:
+#   name: ANIL
+#   kwargs:
+#     inner_param:
+#       lr: 1e-3
+#       iter: 10
+#     feat_dim: 640
+
+
 # backbone:
 #   name: resnet18
 #   kwargs:
+
+# classifier:
+#   name: ANIL
+#   kwargs:
+#     inner_param:
+#       lr: 1e-3
+#       iter: 10
+#     feat_dim: 512
+
 
 # backbone:
 #   name: WRN
@@ -46,3 +74,11 @@ backbone:
 #     dropRate: 0.0
 #     avg_pool: True
 #     is_flatten: True
+
+# classifier:
+#   name: ANIL
+#   kwargs:
+#     inner_param:
+#       lr: 1e-3
+#       iter: 10
+#     feat_dim: 640

@@ -8,6 +8,16 @@ include:
   - backbones/Conv64F.yaml
   - classifiers/MTL_meta.yaml
 
+pretrain_path: ./results/checkpoint.pth
+
+way_num: 5
+shot_num: 1
+query_num: 15
+episode_size: 1
+train_episode: 10
+test_episode: 10
+
+
 backbone:
   name: Conv64F
   kwargs:
@@ -17,12 +27,64 @@ backbone:
     negative_slope: 0.2
     last_pool: True
 
-
 classifier:
   name: MTL
   kwargs:
     feat_dim: 1600
     num_classes: 64
-    inner_para:
+    inner_param:
       iter: 10
     use_MTL: True
+
+
+# backbone:
+#   name: resnet12
+#   kwargs:
+#     keep_prob: 0.0
+
+# classifier:
+#   name: MTL
+#   kwargs:
+#     feat_dim: 640
+#     num_classes: 64
+#     inner_param:
+#       iter: 10
+#     use_MTL: True
+
+
+# backbone:
+#   name: Conv64F
+#   kwargs:
+#     is_flatten: False
+#     is_feature: False
+#     leaky_relu: False
+#     negative_slope: 0.2
+#     last_pool: True
+
+# classifier:
+#   name: MTL
+#   kwargs:
+#     feat_dim: 1600
+#     num_classes: 64
+#     inner_param:
+#       iter: 10
+#     use_MTL: True
+
+
+# backbone:
+#   name: Conv64F
+#   kwargs:
+#     is_flatten: False
+#     is_feature: False
+#     leaky_relu: False
+#     negative_slope: 0.2
+#     last_pool: True
+
+# classifier:
+#   name: MTL
+#   kwargs:
+#     feat_dim: 1600
+#     num_classes: 64
+#     inner_param:
+#       iter: 10
+#     use_MTL: True
