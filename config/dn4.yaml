@@ -4,7 +4,7 @@ includes:
   - headers/misc.yaml
   - headers/model.yaml
   - headers/optimizer.yaml
-  - classifiers/dn4_classifier.yaml
+  - classifiers/DN4.yaml
   - backbones/Conv64F.yaml
 
 classifier:
