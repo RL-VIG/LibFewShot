@@ -1,6 +1,6 @@
 include:
   - headers/data.yaml
-  - headers/devices.yaml
+  - headers/device.yaml
   - headers/misc.yaml
   - headers/model.yaml
   - headers/optimizer.yaml
