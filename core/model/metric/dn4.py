@@ -87,7 +87,7 @@ class DN4(MetricModel):
         output = self.dn4_layer(
             query_feat, support_feat, self.way_num, self.shot_num, self.query_num
         ).view(episode_size * self.way_num * self.query_num, self.way_num)
-        acc = accuracy(output, query_target)
+        acc = accuracy(output, query_target.view(-1))
 
         return output, acc
 
@@ -111,7 +111,7 @@ class DN4(MetricModel):
             self.shot_num,
             self.query_num,
         ).view(episode_size * self.way_num * self.query_num, self.way_num)
-        loss = self.loss_func(output, query_target)
-        acc = accuracy(output, query_target)
+        loss = self.loss_func(output, query_target.view(-1))
+        acc = accuracy(output, query_target.view(-1))
 
         return output, acc, loss

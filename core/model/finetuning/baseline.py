@@ -25,13 +25,7 @@ from .finetuning_model import FinetuningModel
 
 
 class Baseline(FinetuningModel):
-    def __init__(
-        self,
-        feat_dim,
-        num_class,
-        inner_param,
-        **kwargs
-    ):
+    def __init__(self, feat_dim, num_class, inner_param, **kwargs):
         super(Baseline, self).__init__(**kwargs)
         self.feat_dim = feat_dim
         self.num_class = num_class
@@ -52,8 +46,8 @@ class Baseline(FinetuningModel):
 
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
         episode_size = support_feat.size(0)
-        
-        support_target = support_target.reshape(episode_size, self.way_num*self.shot_num)
+
+        support_target = support_target.reshape(episode_size, self.way_num * self.shot_num)
 
         output_list = []
         for i in range(episode_size):

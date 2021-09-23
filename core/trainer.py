@@ -92,9 +92,7 @@ class Trainer(object):
                 str(datetime.timedelta(seconds=int(time() - experiment_begin)))
             )
         )
-        self.logger.info(
-            "Result DIR: {}".format(self.result_path)
-        )
+        self.logger.info("Result DIR: {}".format(self.result_path))
 
     def _train(self, epoch_idx):
         """
@@ -143,9 +141,9 @@ class Trainer(object):
             meter.update("batch_time", time() - end)
 
             # print the intermediate results
-            if (
-                batch_idx != 0 and (batch_idx + 1) % self.config["log_interval"] == 0
-            ) or (batch_idx + 1) * episode_size >= len(self.train_loader):
+            if (batch_idx != 0 and (batch_idx + 1) % self.config["log_interval"] == 0) or (
+                batch_idx + 1
+            ) * episode_size >= len(self.train_loader):
                 info_str = (
                     "Epoch-({}): [{}/{}]\t"
                     "Time {:.3f} ({:.3f})\t"
@@ -214,9 +212,9 @@ class Trainer(object):
                 # measure elapsed time
                 meter.update("batch_time", time() - end)
 
-                if (
-                    batch_idx != 0 and (batch_idx + 1) % self.config["log_interval"] == 0
-                ) or (batch_idx + 1) * episode_size >= len(self.val_loader):
+                if (batch_idx != 0 and (batch_idx + 1) % self.config["log_interval"] == 0) or (
+                    batch_idx + 1
+                ) * episode_size >= len(self.val_loader):
                     info_str = (
                         "Epoch-({}): [{}/{}]\t"
                         "Time {:.3f} ({:.3f})\t"
@@ -260,7 +258,10 @@ class Trainer(object):
             config["shot_num"],
         )
         result_dir = (
-            symlink_dir + "{}-{}".format(("-" + config['tag']) if config['tag'] is not None else "", get_local_time())
+            symlink_dir
+            + "{}-{}".format(
+                ("-" + config["tag"]) if config["tag"] is not None else "", get_local_time()
+            )
             if config["log_name"] is None
             else config["log_name"]
         )
@@ -329,7 +330,6 @@ class Trainer(object):
         self.logger.info(model)
         self.logger.info("Trainable params in the model: {}".format(count_parameters(model)))
         # FIXME: May be inaccurate
-
 
         if self.config["pretrain_path"] is not None:
             self.logger.info(
@@ -507,7 +507,7 @@ class Trainer(object):
         )
 
         return train_meter, val_meter, test_meter
-    
+
     def _cal_time_scheduler(self, start_time, epoch_idx):
         """
         Calculate the remaining time and consuming time of the training process.
@@ -517,11 +517,11 @@ class Trainer(object):
         """
         total_epoch = self.config["epoch"] - self.from_epoch - 1
         now_epoch = epoch_idx - self.from_epoch
-        
+
         time_consum = datetime.datetime.now() - datetime.datetime.fromtimestamp(start_time)
         time_consum -= datetime.timedelta(microseconds=time_consum.microseconds)
         time_remain = (time_consum * (total_epoch - now_epoch)) / (now_epoch)
-        
+
         res_str = str(time_consum) + "/" + str(time_remain + time_consum)
-        
+
         return res_str

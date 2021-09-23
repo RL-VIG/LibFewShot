@@ -188,7 +188,7 @@ class ATLNet(MetricModel):
         output = self.atlLayer(self.way_num, self.shot_num, query_feat, support_feat).view(
             episode_size * self.way_num * self.query_num, self.way_num
         )
-        acc = accuracy(output, query_target)
+        acc = accuracy(output, query_target.view(-1))
 
         return output, acc
 
@@ -212,7 +212,7 @@ class ATLNet(MetricModel):
         output = self.atlLayer(self.way_num, self.shot_num, query_feat, support_feat).view(
             episode_size * self.way_num * self.query_num, self.way_num
         )
-        loss = self.loss_func(output, query_target)
-        acc = accuracy(output, query_target)
+        loss = self.loss_func(output, query_target.view(-1))
+        acc = accuracy(output, query_target.view(-1))
 
         return output, acc, loss

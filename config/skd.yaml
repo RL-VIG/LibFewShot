@@ -1,7 +1,6 @@
 includes:
   - headers/data.yaml
   - headers/device.yaml
-  - headers/losses.yaml
   - headers/misc.yaml
   - headers/model.yaml
   - headers/optimizer.yaml
@@ -47,4 +46,3 @@ backbone:
 #     dropRate: 0.0
 #     avg_pool: True
 #     is_flatten: True
-

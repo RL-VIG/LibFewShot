@@ -108,7 +108,6 @@ class MTLPretrain(FinetuningModel):  # use image-size=80 in repo
         acc = accuracy(output, global_target)
         return output, acc, loss
 
-
     def set_forward_adaptation(self, support_feat, support_target):
         classifier = self.base_learner.to(self.device)
 

@@ -1,7 +1,6 @@
 includes:
   - headers/data.yaml
   - headers/device.yaml
-  - headers/losses.yaml
   - headers/misc.yaml
   - headers/model.yaml
   - headers/optimizer.yaml
@@ -44,7 +43,7 @@ backbone:
 # backbone:
 #   name: WRN
 #   kwargs:
-#     depth: 28 
+#     depth: 28
 #     widen_factor: 10
 
 # WRN: feat_dim: 640

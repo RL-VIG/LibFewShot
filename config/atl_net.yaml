@@ -1,27 +1,15 @@
 includes:
   - headers/data.yaml
   - headers/device.yaml
-  - headers/losses.yaml
   - headers/misc.yaml
   - headers/model.yaml
   - headers/optimizer.yaml
   - classifiers/ATL_NET.yaml
+  - backbones/Conv64F.yaml
 
 way_num: 5
 shot_num: 1
 query_num: 15
-test_way: 10 # use ~ -> test_* = *_num
-test_shot: 5
-test_query: 5
-
-backbone:
-  name: Conv64F
-  kwargs:
-    is_flatten: False
-    is_feature: False
-    leaky_relu: True
-    negative_slope: 0.2
-    last_pool: False
 
 classifier:
   name: ATLNet
@@ -32,53 +20,34 @@ classifier:
     from_value: 0.4
     value_interval: 0.5
 
+backbone:
+  name: Conv64F
+  kwargs:
+    is_flatten: False
+    is_feature: False
+    leaky_relu: True
+    negative_slope: 0.2
+    last_pool: False
+
 
 # backbone:
 #   name: resnet12
-#   kwargs: 
+#   kwargs:
 #     maxpool_last2: False
 #     is_flatten: False
-
-# classifier:
-#   name: ATLNet
-#   kwargs:
-#     feat_dim: 640
-#     scale_value: 30
-#     atten_scale_value: 50
-#     from_value: 0.4
-#     value_interval: 0.5
-
 
 # need to modify: core/model/backbone/resnet_18.py:114 stride=1
 # backbone:
 #   name: resnet18
-#   kwargs: 
+#   kwargs:
 #     is_flatten: False
 #     avg_pool: False
-
-# classifier:
-#   name: ATLNet
-#   kwargs:
-#     feat_dim: 512
-#     scale_value: 30
-#     atten_scale_value: 50
-#     from_value: 0.4
-#     value_interval: 0.5
 
 
 # backbone:
 #   name: WRN
-#   kwargs: 
+#   kwargs:
 #     depth: 28
 #     widen_factor: 10
 #     avg_pool: False
 #     is_flatten: False
-
-# classifier:
-#   name: ATLNet
-#   kwargs:
-#     feat_dim: 640
-#     scale_value: 30
-#     atten_scale_value: 50
-#     from_value: 0.4
-#     value_interval: 0.5

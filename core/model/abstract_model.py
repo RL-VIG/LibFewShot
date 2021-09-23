@@ -77,8 +77,12 @@ class AbstractModel(nn.Module):
                 .contiguous()
                 .view(episode_size, self.way_num * self.query_num, -1)
             )
-            support_target = local_labels[:, :, : self.shot_num].reshape(episode_size, self.way_num * self.shot_num)
-            query_target = local_labels[:, :, self.shot_num :].reshape(episode_size, self.way_num * self.query_num)
+            support_target = local_labels[:, :, : self.shot_num].reshape(
+                episode_size, self.way_num * self.shot_num
+            )
+            query_target = local_labels[:, :, self.shot_num :].reshape(
+                episode_size, self.way_num * self.query_num
+            )
         elif mode == 2:  # input 4D, return 5D(with episode) E.g.DN4
             b, c, h, w = features.shape
             features = features.contiguous().view(
@@ -99,11 +103,13 @@ class AbstractModel(nn.Module):
                 .contiguous()
                 .view(episode_size, self.way_num * self.query_num, c, h, w)
             )
-            support_target = local_labels[:, :, : self.shot_num].reshape(episode_size, self.way_num * self.shot_num)
-            query_target = local_labels[:, :, self.shot_num :].reshape(episode_size, self.way_num * self.query_num)
-        elif (
-            mode == 3
-        ):  # input 4D, return 4D(w/o episode) E.g.realationnet 
+            support_target = local_labels[:, :, : self.shot_num].reshape(
+                episode_size, self.way_num * self.shot_num
+            )
+            query_target = local_labels[:, :, self.shot_num :].reshape(
+                episode_size, self.way_num * self.query_num
+            )
+        elif mode == 3:  # input 4D, return 4D(w/o episode) E.g.realationnet
             b, c, h, w = features.shape
             features = features.contiguous().view(
                 self.way_num, self.shot_num + self.query_num, c, h, w
@@ -118,11 +124,15 @@ class AbstractModel(nn.Module):
                 .contiguous()
                 .view(self.way_num * self.query_num, c, h, w)
             )
-            support_target = local_labels[:, :, : self.shot_num].reshape(episode_size, self.way_num * self.shot_num)
-            query_target = local_labels[:, :, self.shot_num :].reshape(episode_size, self.way_num * self.query_num)
+            support_target = local_labels[:, :, : self.shot_num].reshape(
+                episode_size, self.way_num * self.shot_num
+            )
+            query_target = local_labels[:, :, self.shot_num :].reshape(
+                episode_size, self.way_num * self.query_num
+            )
         elif (
             mode == 4
-        ):  # finetuning baseline input 2D, return 2D(w/o episode) E.g.baseline set_forward 
+        ):  # finetuning baseline input 2D, return 2D(w/o episode) E.g.baseline set_forward
             features = features.view(self.way_num, self.shot_num + self.query_num, -1)
             support_features = (
                 features[:, : self.shot_num, :].contiguous().view(self.way_num * self.shot_num, -1)
@@ -130,8 +140,12 @@ class AbstractModel(nn.Module):
             query_features = (
                 features[:, self.shot_num :, :].contiguous().view(self.way_num * self.query_num, -1)
             )
-            support_target = local_labels[:, :, : self.shot_num].reshape(episode_size, self.way_num * self.shot_num)
-            query_target = local_labels[:, :, self.shot_num :].reshape(episode_size, self.way_num * self.query_num)
+            support_target = local_labels[:, :, : self.shot_num].reshape(
+                episode_size, self.way_num * self.shot_num
+            )
+            query_target = local_labels[:, :, self.shot_num :].reshape(
+                episode_size, self.way_num * self.query_num
+            )
         else:
             raise Exception("mode should in [1,2,3,4], not {}".format(mode))
 

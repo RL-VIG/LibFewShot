@@ -36,7 +36,7 @@ class ConvMLayer(nn.Module):
         self.way_num = way_num
         self.shot_num = shot_num
         self.query_num = query_num
-
+        # twq, 1, whw
         self.conv1dLayer = nn.Sequential(
             nn.LeakyReLU(0.2, inplace=True),
             nn.Dropout(),
@@ -83,7 +83,6 @@ class ConvMLayer(nn.Module):
         # twq, 1, whw
         cov_sim = torch.diagonal(prod_mat, dim1=1, dim2=2).contiguous()
         cov_sim = cov_sim.view(t * wq, 1, self.way_num * h * w)
-
         return cov_sim
 
     def forward(self, query_feat, support_feat):
@@ -121,7 +120,7 @@ class ConvMNet(MetricModel):
         output = self.convm_layer(query_feat, support_feat).view(
             episode_size * self.way_num * self.query_num, self.way_num
         )
-        acc = accuracy(output, query_target)
+        acc = accuracy(output, query_target.view(-1))
 
         return output, acc
 
@@ -145,7 +144,7 @@ class ConvMNet(MetricModel):
         output = self.convm_layer(query_feat, support_feat).view(
             episode_size * self.way_num * self.query_num, self.way_num
         )
-        loss = self.loss_func(output, query_target)
-        acc = accuracy(output, query_target)
+        loss = self.loss_func(output, query_target.view(-1))
+        acc = accuracy(output, query_target.view(-1))
 
         return output, acc, loss

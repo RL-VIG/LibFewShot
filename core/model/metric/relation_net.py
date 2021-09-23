@@ -78,7 +78,7 @@ class RelationNet(MetricModel):
         relation_pair = self._calc_pairs(query_feat, support_feat)
         output = self.relation_layer(relation_pair).view(-1, self.way_num)
 
-        acc = accuracy(output, query_target)
+        acc = accuracy(output, query_target.view(-1))
         return output, acc
 
     def set_forward_loss(self, batch):
@@ -96,8 +96,8 @@ class RelationNet(MetricModel):
         relation_pair = self._calc_pairs(query_feat, support_feat)
         output = self.relation_layer(relation_pair).view(-1, self.way_num)
 
-        loss = self.loss_func(output, query_target)
-        acc = accuracy(output, query_target)
+        loss = self.loss_func(output, query_target.view(-1))
+        acc = accuracy(output, query_target.view(-1))
         return output, acc, loss
 
     def _calc_pairs(self, query_feat, support_feat):

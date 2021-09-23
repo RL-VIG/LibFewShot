@@ -90,8 +90,8 @@ class BaselinePlus(FinetuningModel):
 
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
         episode_size = support_feat.size(0)
-        
-        support_target = support_target.reshape(episode_size, self.way_num*self.shot_num)
+
+        support_target = support_target.reshape(episode_size, self.way_num * self.shot_num)
 
         output_list = []
         for i in range(episode_size):

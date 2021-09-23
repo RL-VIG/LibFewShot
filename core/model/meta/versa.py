@@ -94,15 +94,12 @@ class VERSALayer(nn.Module):
 
 
 class VERSA(MetaModel):
-    def __init__(self, feat_dim, sample_num, d_theta=256, drop_rate=0., **kwargs):
+    def __init__(self, feat_dim, sample_num, d_theta=256, drop_rate=0.0, **kwargs):
         super(VERSA, self).__init__(**kwargs)
         self.feat_dim = feat_dim
         self.sample_num = sample_num
         self.h = nn.Sequential(
-            nn.Linear(feat_dim, d_theta),
-            nn.BatchNorm1d(d_theta),
-            nn.ReLU(),
-            nn.Dropout(drop_rate)
+            nn.Linear(feat_dim, d_theta), nn.BatchNorm1d(d_theta), nn.ReLU(), nn.Dropout(drop_rate)
         )
         self.weight_mean = Predictor(d_theta, d_theta, d_theta)
         self.weight_logvar = Predictor(d_theta, d_theta, d_theta)
