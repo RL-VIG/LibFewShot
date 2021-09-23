@@ -91,15 +91,13 @@ class BaselinePlus(FinetuningModel):
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
         episode_size = support_feat.size(0)
 
-        support_target = support_target.reshape(episode_size, self.way_num * self.shot_num)
-
         output_list = []
         for i in range(episode_size):
             output = self.set_forward_adaptation(support_feat[i], support_target[i], query_feat[i])
             output_list.append(output)
 
         output = torch.cat(output_list, dim=0)
-        acc = accuracy(output, query_target)
+        acc = accuracy(output, query_target.reshape(-1))
 
         return output, acc
 
@@ -115,8 +113,8 @@ class BaselinePlus(FinetuningModel):
 
         feat = self.emb_func(image)
         output = self.classifier(feat)
-        loss = self.loss_func(output, target)
-        acc = accuracy(output, target)
+        loss = self.loss_func(output, target.reshape(-1))
+        acc = accuracy(output, target.reshape(-1))
         return output, acc, loss
 
     def set_forward_adaptation(self, support_feat, support_target, query_feat):

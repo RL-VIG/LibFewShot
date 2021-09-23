@@ -53,7 +53,7 @@ classifier:
 
 # backbone:
 #   name: resnet18
-#   kwargs:
+#   kwargs: ~
 
 # classifier:
 #   name: MAML
@@ -67,11 +67,8 @@ classifier:
 # backbone:
 #   name: WRN
 #   kwargs:
-#     depth: 10
+#     depth: 28
 #     widen_factor: 10
-#     dropRate: 0.0
-#     avg_pool: True
-#     is_flatten: True
 
 # classifier:
 #   name: MAML
