@@ -54,18 +54,18 @@ class MTLBaseLearner(nn.Module):
 
 
 class MTLPretrain(FinetuningModel):  # use image-size=80 in repo
-    def __init__(self, feat_dim, num_class, inner_train_iter, **kwargs):
+    def __init__(self, feat_dim, num_classes, inner_param, **kwargs):
         super(MTLPretrain, self).__init__(**kwargs)
         self.feat_dim = feat_dim
-        self.num_class = num_class
+        self.num_classes = num_classes
 
         self.pre_fc = nn.Sequential(
             nn.Linear(self.feat_dim, 1000),
             nn.ReLU(),
-            nn.Linear(1000, self.num_class),
+            nn.Linear(1000, self.num_classes),
         )
         self.base_learner = MTLBaseLearner(self.way_num, z_dim=self.feat_dim)
-        self.inner_train_iter = inner_train_iter
+        self.inner_param = inner_param
 
         self.loss_func = nn.CrossEntropyLoss()
 
@@ -122,7 +122,7 @@ class MTLPretrain(FinetuningModel):  # use image-size=80 in repo
             )
         )
 
-        for _ in range(1, self.inner_train_iter):
+        for _ in range(1, self.inner_param["iter"]):
             logit = self.base_learner(support_feat, fast_parameters)
             loss = F.cross_entropy(logit, support_target)
             grad = torch.autograd.grad(loss, fast_parameters)
