@@ -60,9 +60,7 @@ class Test(object):
             total_h[epoch_idx] = h
 
         aver_accuracy, h = mean_confidence_interval(total_accuracy_vector)
-        self.logger.info(
-            "Aver Accuracy: {:.3f}\t Aver h: {:.3f}".format(aver_accuracy, h)
-        )
+        self.logger.info("Aver Accuracy: {:.3f}\t Aver h: {:.3f}".format(aver_accuracy, h))
         self.logger.info("............Testing is end............")
 
     def _validate(self, epoch_idx):

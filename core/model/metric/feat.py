@@ -148,7 +148,7 @@ class FEAT(MetricModel):
 
         logits = self._calc_logits().view(-1, self.way_num)
 
-        acc = accuracy(logits, query_target)
+        acc = accuracy(logits, query_target.view(-1))
         return logits, acc
 
     def set_forward_loss(self, batch):
@@ -165,16 +165,18 @@ class FEAT(MetricModel):
             self.feat, mode=1
         )
 
-        target_aux = torch.cat([support_target, query_target])
+        target_aux = torch.cat(
+            [support_target.view(-1).contiguous(), query_target.view(-1).contiguous()]
+        )
 
         logits = self._calc_logits().view(-1, self.way_num)
         reg_logits = self._calc_reg_logits().view(-1, self.way_num)
 
-        loss1 = self.loss_func(logits, query_target)
+        loss1 = self.loss_func(logits, query_target.view(-1))
 
         loss_reg = self.loss_func(reg_logits, target_aux)
 
-        acc = accuracy(logits, query_target)
+        acc = accuracy(logits, query_target.view(-1))
         loss = loss1 * self.balance + loss_reg
         return logits, acc, loss
 

@@ -171,7 +171,7 @@ class ADM_KL(MetricModel):
         output = self.klLayer(query_feat, support_feat).view(
             episode_size * self.way_num * self.query_num, -1
         )
-        acc = accuracy(output, query_target)
+        acc = accuracy(output, query_target.view(-1))
         return output, acc
 
     def set_forward_loss(self, batch):
@@ -194,6 +194,6 @@ class ADM_KL(MetricModel):
         output = self.klLayer(query_feat, support_feat).view(
             episode_size * self.way_num * self.query_num, -1
         )
-        loss = self.loss_func(output, query_target)
-        acc = accuracy(output, query_target)
+        loss = self.loss_func(output, query_target.view(-1))
+        acc = accuracy(output, query_target.view(-1))
         return output, acc, loss

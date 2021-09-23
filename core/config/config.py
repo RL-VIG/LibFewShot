@@ -103,7 +103,7 @@ class Config(object):
         config_dict = dict()
         config_dict.update(variable_dict if variable_dict is not None else {})
         return config_dict
-    
+
     @staticmethod
     def _load_console_dict():
         """Parsing command line parameters
@@ -178,7 +178,7 @@ class Config(object):
             else:
                 dic1[k] = dic2[k]
         return dic1
-    
+
     def _update(self, dic1, dic2):
         """Merge dictionaries.
 
@@ -223,7 +223,7 @@ class Config(object):
         # Modify or add some configs
         config_dict["resume"] = self.is_resume
         if self.is_resume:
-            config_dict["resume_path"] = self.config_file[:-1 * len("/config.yaml")]
+            config_dict["resume_path"] = self.config_file[: -1 * len("/config.yaml")]
         config_dict["tb_scale"] = float(config_dict["train_episode"]) / config_dict["test_episode"]
 
         return config_dict

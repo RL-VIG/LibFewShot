@@ -134,4 +134,4 @@ dmypy.json
 # IDE
 .idea/
 .vscode/
-
+results/

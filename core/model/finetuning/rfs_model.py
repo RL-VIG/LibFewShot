@@ -114,9 +114,6 @@ class RFSModel(FinetuningModel):
             feat = self.emb_func(image)
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
         episode_size = support_feat.size(0)
-        
-        support_target = support_target.reshape(episode_size, self.way_num*self.shot_num)
-        query_target = query_target.reshape(episode_size, self.way_num*self.query_num)
 
         output_list = []
         acc_list = []

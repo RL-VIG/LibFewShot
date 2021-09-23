@@ -1,12 +1,23 @@
 includes:
   - headers/data.yaml
   - headers/device.yaml
-  - headers/losses.yaml
   - headers/misc.yaml
   - headers/model.yaml
   - headers/optimizer.yaml
   - classifiers/RFS.yaml
   - backbones/resnet18.yaml
+
+device_ids: 0
+way_num: 5
+shot_num: 1
+query_num: 15
+episode_size: 1
+train_episode: 100
+test_episode: 100
+
+save_part:
+  - emb_func
+  - classifier
 
 classifier:
   name: RFSModel
@@ -16,8 +27,8 @@ classifier:
     gamma: 0.5
     alpha: 0.5
     is_distill: False
-    emb_func_path: ./results/RFSModel-miniImageNet--ravi-WRN-5-1/checkpoints/emb_func_best.pth
-    classifier_path: ./results/RFSModel-miniImageNet--ravi-WRN-5-1/checkpoints/model_last.pth
+    emb_func_path: ./results/RFSModel-miniImageNet--ravi-resnet18-5-1-Sep-23-2021-15-24-44/checkpoints/emb_func_best.pth
+    classifier_path: ./results/RFSModel-miniImageNet--ravi-resnet18-5-1-Sep-23-2021-15-24-44/checkpoints/classifier_best.pth
 
 
 # backbone:
@@ -45,10 +56,7 @@ classifier:
 # backbone:
 #   name: WRN
 #   kwargs:
-#     depth: 28 
+#     depth: 28
 #     widen_factor: 10
 
 # WRN: feat_dim: 640
-
-device_ids: 1
-n_gpu: 1 

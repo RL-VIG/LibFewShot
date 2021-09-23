@@ -5,9 +5,7 @@ include:
   - headers/model.yaml
   - headers/optimizer.yaml
   - backbones/Conv64F.yaml
-  - classifiers/MTL_meta.yaml
-
-pretrain_path: ./results/checkpoint.pth
+  - classifiers/MTL_pretrain.yaml
 
 way_num: 5
 shot_num: 1
@@ -20,20 +18,19 @@ test_episode: 10
 backbone:
   name: Conv64F
   kwargs:
-    is_flatten: False
+    is_flatten: True
     is_feature: False
     leaky_relu: False
     negative_slope: 0.2
     last_pool: True
 
 classifier:
-  name: MTL
+  name: MTLPretrain
   kwargs:
     feat_dim: 1600
     num_classes: 64
     inner_param:
       iter: 10
-    use_MTL: True
 
 
 # backbone:
@@ -42,13 +39,12 @@ classifier:
 #     keep_prob: 0.0
 
 # classifier:
-#   name: MTL
+#   name: MTLPretrain
 #   kwargs:
 #     feat_dim: 640
 #     num_classes: 64
 #     inner_param:
 #       iter: 10
-#     use_MTL: True
 
 
 # backbone:
@@ -56,26 +52,24 @@ classifier:
 #   kwargs: ~
 
 # classifier:
-#   name: MTL
+#   name: MTLPretrain
 #   kwargs:
 #     feat_dim: 512
 #     num_classes: 64
 #     inner_param:
 #       iter: 10
-#     use_MTL: True
 
 
 # backbone:
 #   name: WRN
 #   kwargs:
-#     depth: 28
+#     depth: 28 
 #     widen_factor: 10
 
 # classifier:
-#   name: MTL
+#   name: MTLPretrain
 #   kwargs:
 #     feat_dim: 640
 #     num_classes: 64
 #     inner_param:
 #       iter: 10
-#     use_MTL: True

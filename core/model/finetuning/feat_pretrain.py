@@ -52,7 +52,7 @@ class FEAT_Pretrain(FinetuningModel):
             query_feat, support_feat, self.way_num, self.shot_num, self.query_num, mode=self.mode
         ).view(-1, self.way_num)
 
-        acc = accuracy(output, query_target)
+        acc = accuracy(output, query_target.view(-1))
 
         return output, acc
 
