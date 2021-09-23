@@ -51,7 +51,6 @@ class ANIL(MetaModel):
         feat = self.emb_func(image)
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
         episode_size = support_feat.size(0)
-        support_target = support_target.reshape(episode_size, self.way_num * self.shot_num)
 
         output_list = []
         for i in range(episode_size):
@@ -60,7 +59,7 @@ class ANIL(MetaModel):
             output_list.append(output)
 
         output = torch.cat(output_list, dim=0)
-        acc = accuracy(output.squeeze(), query_target)
+        acc = accuracy(output.squeeze(), query_target.reshape(-1))
         return output, acc
 
     def set_forward_loss(self, batch):
@@ -70,7 +69,6 @@ class ANIL(MetaModel):
         feat = self.emb_func(image)
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
         episode_size = support_feat.size(0)
-        support_target = support_target.reshape(episode_size, self.way_num * self.shot_num)
 
         output_list = []
         for i in range(episode_size):
@@ -79,8 +77,8 @@ class ANIL(MetaModel):
             output_list.append(output)
 
         output = torch.cat(output_list, dim=0)
-        loss = self.loss_func(output, query_target)
-        acc = accuracy(output.squeeze(), query_target)
+        loss = self.loss_func(output, query_target.reshape(-1))
+        acc = accuracy(output.squeeze(), query_target.reshape(-1))
         return output, acc, loss
 
     def set_forward_adaptation(self, support_feat, support_target):
