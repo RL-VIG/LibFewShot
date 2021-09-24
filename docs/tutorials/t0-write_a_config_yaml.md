@@ -6,13 +6,13 @@ core/config/config.py
 config/*
 ```
 
-## LibFewShot配置文件的组成
+## LibFewShot中配置文件的组成
 
-LibFewSHot的配置文件采用了yaml格式的文件，同时也支持从命令行中读取一些全局配置的更改。我们预先定义了一个默认的配置`core/config/default.yaml`，并且用户可以将自定义的配置放在`config/`目录下，保存为`yaml`格式的文件。配置定义方法在解析时的先后关系是`default.yaml->config/->console`。后一个定义会覆盖前一个定义中名称相同的值。
+LibFewSHot的配置文件采用了yaml格式的文件，同时也支持从命令行中读取一些全局配置的更改。我们预先定义了一个默认的配置`core/config/default.yaml`。用户可以将自定义的配置放在`config/`目录下，保存为`yaml`格式的文件。配置定义在解析时的优先级顺序是`default.yaml->config/->console`。后一个定义会覆盖前一个定义中名称相同的值。
 
-`default.yaml`中设置的是小样本学习中的一些最基础的配置，仅仅依靠`default.yaml`是无法运行程序的，需要用户在`config/`目录下定义已经在LibFewShot中实现了的方法的配置才可以运行。
+尽管`default.yaml`中设置的是小样本学习中的一些最基础的配置，无法仅依靠`default.yaml`直接运行程序。运行代码前，用户需要在`config/`目录下定义已经在LibFewShot中实现了的方法的配置。
 
-考虑到小样本方法有一些基本的例如`way, shot`或者`device id`这样的参数是经常需要改动的，每次都修改`yaml`文件的体验很差，LibFewShot支持在命令行中对一些简单的配置进行更改而不需要修改`yaml`文件。同样的，在不同的小样本学习方法的训练和测试过程中，有很多参数是相同的，为了简洁起见，我们将这些相同的参数包装到了一起，放到了`config/headers`目录下，这样就能够通过导入的方式简洁地编写自定义方法的`yaml`文件。
+考虑到小样本方法有一些基本参数例如`way, shot`或者`device id`，这样的参数是经常需要改动的。LibFewShot支持在命令行中对一些简单的配置进行更改而不需要修改`yaml`文件。同样的，在训练和测试过程中，很多不同的小样本学习方法的参数是相同的。为了简洁起见，我们将这些相同的参数包装到了一起，放到了`config/headers`目录下，这样就能够通过导入的方式简洁地编写自定义方法的`yaml`文件。
 
 以下是`config/headers`目录下文件的构成。
 
@@ -23,18 +23,18 @@ LibFewSHot的配置文件采用了yaml格式的文件，同时也支持从命令
 - `model.yaml`：定义了模型训练的相关配置。
 - `optimizer.yaml`：定义了训练所使用的优化器的相关配置。
 
-## 配置文件的设置
+## LibFewShot中配置文件的设置
 
-以下介绍配置文件中每部分代表的信息以及如何编写，并且将以DN4方法的配置给出示例。
+以下详细介绍配置文件中每部分代表的信息以及如何编写。将以DN4方法的配置给出示例。
 
 ### 数据设置
 
 + `data_root`：数据集存放的路径
-+ `image_size`：训练中数据将会被resize的大小
++ `image_size`：输入图像的尺寸
 + `use_momery`：是否使用内存加速读取
 + `augment`：是否使用数据增强
-+ `augment_times：support_set`使用数据增强的次数。增强多次相当于扩充了`support set`数据。
-+ `augment_times_query：query_set`使用数据增强的次数。增强多次相当于扩充了`query set`数据。
++ `augment_times：support_set`使用数据增强/转换的次数。相当于多次扩充`support set`数据。
++ `augment_times_query：query_set`使用数据增强/转换的次数。相当于多次扩充了`query set`数据。
 
   ```yaml
   data_root: /data/miniImageNet--ravi
@@ -80,9 +80,9 @@ LibFewSHot的配置文件采用了yaml格式的文件，同时也支持从命令
 
 + `parallel_part`：在前向传播时需要并行处理的部分，以列表形式给出这些部分在方法中的变量名称。
 
-+ `pretrain_path`：预训练权重地址，需要指定到文件。训练开始时会检查该设置，如果不为空，将会把目标地址的预训练权重载入到当前训练的`backbone`中。
++ `pretrain_path`：预训练权重地址。训练开始时会检查该设置。如果不为空，将会把目标地址的预训练权重载入到当前训练的`backbone`中。
 
-+ `resume`：如果设置为True，将从默认地址中读取训练状态并继续训练。
++ `resume`：如果设置为True，将从默认地址中读取训练状态从而支持不间断的训练。
 
 + `way_num`：训练中的`way`的数量。
 
@@ -96,13 +96,13 @@ LibFewSHot的配置文件采用了yaml格式的文件，同时也支持从命令
 
 + `test_query`：测试中的`query`的数量。如果未指定，将会把`query_num`赋值给`test_way`。
 
-+ `episode_size`：网络训练一次所使用的任务数量.
++ `episode_size`：网络每次训练所使用的任务数量.
 
-+ `batch_size`：`pre-training`的方法在`pre-train`时所使用的`batch size`。在其他种类的方法训练中是无用属性。
++ `batch_size`：`pre-training`的方法在`pre-train`时所使用的`batch size`。在某些方法中，该属性是无用的。
 
-+ `train_episode`：训练中每个`epoch`的任务数量。
++ `train_episode`：训练阶段每个`epoch`的任务数量。
 
-+ `test_episode`：测试中每个`epoch`的任务数量。
++ `test_episode`：测试阶段每个`epoch`的任务数量。
 
   ```yaml
   epoch: 50
@@ -130,9 +130,9 @@ LibFewSHot的配置文件采用了yaml格式的文件，同时也支持从命令
 
 ### 优化器设置
 
-+ `optimizer`：训练时使用的优化器信息。
-  + `name`：优化器名称，当前仅支持`pytorch`提供的所有优化器。
-  + `kwargs`：需要传入优化器的参数，名称需要与pytorch优化器所需要的参数名称相同。
++ `optimizer`：训练阶段使用的优化器信息。
+  + `name`：优化器名称，当前仅支持`Pytorch`提供的所有优化器。
+  + `kwargs`：传入优化器的参数，名称需要与Pytorch优化器所需要的参数名称相同。
   + `other`：当前仅支持单独指定方法中的每一部分所使用的学习率，名称需要与方法中所使用的变量名相同。
 
   ```yaml
@@ -146,9 +146,9 @@ LibFewSHot的配置文件采用了yaml格式的文件，同时也支持从命令
           dnf_layer: 0.001
   ```
 
-+ `lr_scheduler`：训练时使用的学习率调整策略，当前仅支持`pytorch`提供的所有学习率调整策略。
++ `lr_scheduler`：训练时使用的学习率调整策略，仅支持`Pytorch`提供的所有学习率调整策略。
   + `name`：学习率调整策略名称。
-  + `kwargs`：除了优化器之外的，需要传入学习率调整策略的参数名称，需要与`pytorch`学习率调整策略所需要的参数名称相同。
+  + `kwargs`：其他`Pytorch`学习率调整策略所需要的参数。
 
   ```yaml
   lr_scheduler:
@@ -160,9 +160,9 @@ LibFewSHot的配置文件采用了yaml格式的文件，同时也支持从命令
 
 ### 损失设置
 
-+ `loss`：训练使用的损失函数信息。
-  + `name`：损失函数名称，暂时只支持`pytorch`提供的所有损失函数。
-  + `kwargs`：损失函数需要的参数，与`pytorch`中损失函数需要的参数相同
++ `loss`：训练阶段使用的损失函数信息。
+  + `name`：损失函数名称，暂时只支持`Pytorch`提供的所有损失函数。
+  + `kwargs`：损失函数需要的参数，与`Pytorch`中损失函数需要的参数相同
 
   ```yaml
   loss:

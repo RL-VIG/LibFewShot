@@ -21,7 +21,7 @@
 ## 修改配置文件
 以`ProtoNet`为例：
 1. 在`config`目录下新建一个yaml文件`getting_started.yaml`
-2. 在该文件中写入以下内容
+2. 在该文件中写入以下指令
    ```yaml
    includes:
      - headers/data.yaml
@@ -54,10 +54,10 @@
 3. 等待程序运行结束（你可以去喝100杯咖啡）
 
 ## 查看运行日志文件
-程序运行完毕之后，可以在`results`目录下找到使用时间戳作为标记的对应文件夹，如`TODOTODO`，其中包含两个文件夹`checkpoints`和`log_files`以及一个配置文件`config.yaml`。
+程序运行完毕之后，可以找到链接`results/ProtoNet-miniImageNet-Conv64F-5-1`和目录`results/ProtoNet-miniImageNet-Conv64F-5-1-$TS`，其中`TS`表示时间戳。目录包含两个文件夹`checkpoint/`和`log_files/`和一个配置文件`config.yaml`。当你多次训练同一种小样本学习方法，链接总会关联到最后创建的目录。
 
 `config.yaml`即本次训练使用的配置文件内容。
 
 `log_files`包含tensorboard记录文件，以及在本模型上的训练日志以及测试日志。
 
-`checkpoints`包含按照save_interval保存的模型文件、最后模型文件（用于resume）和最佳模型文件（用于测试），模型文件一般分为`model_func.pth`,`classifier.pth`以及这两者的组合。
+`checkpoints`包含按照save_interval保存的模型文件、最后模型文件（用于resume）和最佳模型文件（用于测试）。模型文件一般分为`emb_func.pth`,`classifier.pth`以及`model.pth`（前两者的组合）
