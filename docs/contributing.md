@@ -1,5 +1,5 @@
 # 贡献代码
-Feel free to contribute classifiers, backbones, functions and any enhancements.
+可自由贡献classifiers, backbones, functions及其他任何改进。
 
 ## 增加一个方法/特性或修复一个错误
 我们建议参考如下方法：
