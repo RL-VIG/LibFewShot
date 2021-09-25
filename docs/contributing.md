@@ -1,4 +1,5 @@
 # 贡献代码
+你可以提交新的方法、backbone、功能或者任何的功能增强。
 Feel free to contribute classifiers, backbones, functions and any enhancements.
 
 ## 增加一个方法/特性或修复一个错误
@@ -11,7 +12,7 @@ Feel free to contribute classifiers, backbones, functions and any enhancements.
 注意，如果你添加了一个方法，你需要做的是
 1. 测试该方法的表现是否正常
 2. 提供你复现该方法使用的config文件，以及对应的在miniImageNet上的1-shot和5-shot精度。
-以及，您最好能提供：
+以及，你最好能提供：
 3. 在其它数据集（如*tiered*ImageNet）上的1-shot和5-shot精度
 4. 对应的`model_best.pth`文件（以zip文件格式）
 我们会在`README`和其它显眼的地方感谢您的贡献。
