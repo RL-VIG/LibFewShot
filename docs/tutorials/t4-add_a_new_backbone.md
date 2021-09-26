@@ -30,7 +30,7 @@ from resnet import ResNet18
 
 这样一个新的`backbone`就添加完成了。
 
-这个新加入的`backbone`和以前的`backbone`是同样的使用方式。举个例子，要将`ResNet18`替换为`DN4`的`backbone`，只需要在`config/dn4.yaml`中将修改`backbone`字段如下：
+这个新加入的`backbone`和其他的`backbone`是同样的使用方式。举个例子，要将`ResNet18`替换为`DN4`的`backbone`，只需要在`config/dn4.yaml`中将修改`backbone`字段如下：
 
 ```yaml
 # arch info

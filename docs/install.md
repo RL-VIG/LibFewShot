@@ -57,7 +57,7 @@ git clone https://github.com/RL-VIG/LibFewShot.git
    ```shell
    python run_trainer.py
    ```
-4. 若第一个epoch输出正常，则已正确安装
+4. 若第一个epoch输出正常，则表明`LibFewShot`已成功安装
 
 ## 后续
 模型训练和代码修改可参考 [训练/测试LibFewShot中已集成的方法](./tutorials/t1-train_and_test_exist_methods.md) 以及其他部分教程。
