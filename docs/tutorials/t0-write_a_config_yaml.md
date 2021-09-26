@@ -158,18 +158,6 @@ The following details each part of the configuration file and explain how to wri
       step_size: 10
   ```
 
-  ### The settings for loss
-
-+ `loss`: Loss function information used during training.
-  + `name`: The name of the loss function, only temporarily supports all loss functions provided by `PyTorch`.
-  + `kwargs`: The parameters required for the loss function.
-
-  ```yaml
-  loss:
-      name: CrossEntropy
-      kwargs: ~
-  ```
-
   ### The settings for Hardware
 
 + `device_ids`: The `gpu` number, which is the same as the `nvidia-smi` command.
