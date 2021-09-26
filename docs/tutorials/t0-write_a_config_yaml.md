@@ -143,7 +143,7 @@ LibFewSHot的配置文件采用了yaml格式的文件，同时也支持从命令
       other:
           emb_func: 0.01
           #演示用，dn4分类时没有可训练参数
-          dnf_layer: 0.001
+          dn4_layer: 0.001
   ```
 
 + `lr_scheduler`：训练时使用的学习率调整策略，当前仅支持`Pytorch`提供的所有学习率调整策略。
@@ -156,18 +156,6 @@ LibFewSHot的配置文件采用了yaml格式的文件，同时也支持从命令
     kwargs:
       gamma: 0.5
       step_size: 10
-  ```
-
-### 损失设置
-
-+ `loss`：训练阶段使用的损失函数信息。
-  + `name`：损失函数名称，暂时只支持`Pytorch`提供的所有损失函数。
-  + `kwargs`：损失函数需要的参数，与`Pytorch`中损失函数需要的参数相同
-
-  ```yaml
-  loss:
-      name: CrossEntropy
-      kwargs: ~
   ```
 
 ### 硬件设置

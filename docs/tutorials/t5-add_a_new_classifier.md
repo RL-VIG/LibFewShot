@@ -95,7 +95,7 @@ class MetricModel(AbstractModel):
 
 由于`metric based`方法的`pipeline`的方法大多比较简单，因此只是继承了`abstract_model`，并没有做其他修改。
 
-**build model**
+**建立模型**
 
 首先创建`DN4`的模型类，在`core/model/metric/`下添加`dn4.py`文件：（这部分代码与源码略有不同）
 
@@ -247,7 +247,7 @@ class MetaModel(AbstractModel):
 
 `meta-learning`方法加入了两个新函数，`set_forward_adaptation`和`sub_optimizer`。`set_forward_adaptation`是微调网络阶段的分类过程所采用的逻辑，而`sub_optimizer`用于在微调时提供新的局部优化器。
 
-**build model**
+**建立模型**
 
 首先创建`MAML`的模型类，在`core/model/meta/`下添加`maml.py`文件：（这部分代码与源码略有不同）
 
@@ -393,7 +393,7 @@ class FinetuningModel(AbstractModel):
 
 `fine-tuning`方法训练时的目标是训练出一个好的特征抽取器，在测试时使用小样本学习的设置，通过`support set`来对模型进行微调。也有的方法是在训练完毕特征抽取器后，再使用小样本学习的训练设置来进行整个模型的微调。为了与`meta learning`的方法统一，我们添加了一个`set_forward_adaptation`抽象函数，用于处理在测试时的前向过程。另外，由于有一些`fine-tuning`方法的测试过程中，也需要训练分类器，因此，添加了一个`sub_optimizer`方法，传入需要优化的参数以及优化的配置参数，返回优化器，用以方便调用。
 
-**build model**
+**建立模型**
 
 首先创建`Baseline`的模型类，在`core/model/finetuning/`下添加`baseline.py`文件：（这部分代码与源码略有不同）
 
