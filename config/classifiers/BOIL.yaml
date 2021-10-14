@@ -1,0 +1,7 @@
+classifier:
+  name: BOIL
+  kwargs:
+    inner_param:
+      classifier_lr: 1e-2
+      extractor_lr: 1e-2
+    feat_dim: 1600

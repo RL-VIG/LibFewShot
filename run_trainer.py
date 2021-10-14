@@ -7,6 +7,6 @@ from core.config import Config
 from core import Trainer
 
 if __name__ == "__main__":
-    config = Config("./config/relation.yaml").get_config_dict()
+    config = Config("./config/boil.yaml").get_config_dict()
     trainer = Trainer(config)
     trainer.train_loop()
