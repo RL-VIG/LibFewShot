@@ -404,9 +404,12 @@ class Trainer(object):
             {"params": filter(lambda p: id(p) not in params_idx, self.model.parameters())}
         )
         optimizer = get_instance(torch.optim, "optimizer", config, params=params_dict_list)
-        scheduler = get_instance(
-            torch.optim.lr_scheduler, "lr_scheduler", config, optimizer=optimizer
-        )
+        if config["lr_scheduler"]["name"] is "LambdaLR":
+            optimizer = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=eval(config["lr_scheduler"]["kwargs"]["lr_lambda"]), last_epoch=-1)
+        else:
+            scheduler = get_instance(
+                torch.optim.lr_scheduler, "lr_scheduler", config, optimizer=optimizer
+            )
         self.logger.info(optimizer)
         from_epoch = -1
         if self.config["resume"]:
