@@ -5,3 +5,4 @@ classifier:
       classifier_lr: 1e-2
       extractor_lr: 1e-2
     feat_dim: 1600
+    testing_method: NIL  # NIL for NIL_testing, No_

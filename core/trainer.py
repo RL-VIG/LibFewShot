@@ -55,6 +55,7 @@ class Trainer(object):
             self.test_loader,
         ) = self._init_dataloader(config)
         self.optimizer, self.scheduler, self.from_epoch = self._init_optim(config)
+        self.idiot_train = config["idiot_train"]
 
     def train_loop(self):
         """
@@ -67,19 +68,21 @@ class Trainer(object):
             self.logger.info("============ Train on the train set ============")
             train_acc = self._train(epoch_idx)
             self.logger.info(" * Acc@1 {:.3f} ".format(train_acc))
-            self.logger.info("============ Validation on the val set ============")
-            val_acc = self._validate(epoch_idx, is_test=False)
-            self.logger.info(" * Acc@1 {:.3f} Best acc {:.3f}".format(val_acc, best_val_acc))
-            self.logger.info("============ Testing on the test set ============")
-            test_acc = self._validate(epoch_idx, is_test=True)
-            self.logger.info(" * Acc@1 {:.3f} Best acc {:.3f}".format(test_acc, best_test_acc))
+            if self.idiot_train <= epoch_idx:
+                self.logger.info("============ Validation on the val set ============")
+                val_acc = self._validate(epoch_idx, is_test=False)
+                self.logger.info(" * Acc@1 {:.3f} Best acc {:.3f}".format(val_acc, best_val_acc))
+                self.logger.info("============ Testing on the test set ============")
+                test_acc = self._validate(epoch_idx, is_test=True)
+                self.logger.info(" * Acc@1 {:.3f} Best acc {:.3f}".format(test_acc, best_test_acc))
             time_scheduler = self._cal_time_scheduler(experiment_begin, epoch_idx)
             self.logger.info(" * Time: {}".format(time_scheduler))
 
-            if val_acc > best_val_acc:
-                best_val_acc = val_acc
-                best_test_acc = test_acc
-                self._save_model(epoch_idx, SaveType.BEST)
+            if self.idiot_train <= epoch_idx:
+                if val_acc > best_val_acc:
+                    best_val_acc = val_acc
+                    best_test_acc = test_acc
+                    self._save_model(epoch_idx, SaveType.BEST)
 
             if epoch_idx != 0 and epoch_idx % self.config["save_interval"] == 0:
                 self._save_model(epoch_idx, SaveType.NORMAL)

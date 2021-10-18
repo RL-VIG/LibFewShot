@@ -1,5 +1,6 @@
 epoch: 50
 test_epoch: 5
+idiot_train: 200 # skip val for first `idiot_train` epochs
 
 parallel_part:
   - emb_func

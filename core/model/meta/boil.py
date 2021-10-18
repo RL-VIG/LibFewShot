@@ -34,12 +34,13 @@ class BOILLayer(nn.Module):
 
 
 class BOIL(MetaModel):
-    def __init__(self, inner_param, feat_dim, **kwargs):
+    def __init__(self, inner_param, feat_dim, NIL_testing, **kwargs):
         super(BOIL, self).__init__(**kwargs)
         self.feat_dim = feat_dim
         self.loss_func = nn.CrossEntropyLoss()
         self.classifier = BOILLayer(feat_dim, way_num=self.way_num)
         self.inner_param = inner_param
+        self.NIL_testing = NIL_testing
 
         convert_maml_module(self)
 
@@ -49,7 +50,7 @@ class BOIL(MetaModel):
         return out2
 
     def set_forward(self, batch):
-        image, global_target = batch  # unused global_target
+        image, global_target = batch
         image = image.to(self.device)
         support_image, query_image, support_target, query_target = self.split_by_episode(
             image, mode=2
