@@ -1,17 +1,19 @@
 # -*- coding: utf-8 -*-
+from torch.utils import data
 from torch.utils.data import DataLoader
+from torch.utils.data.distributed import DistributedSampler
 from torchvision import transforms
 
 from core.data.dataset import GeneralDataset
 from .collates import get_collate_function, get_augment_method
-from .samplers import CategoriesSampler
+from .samplers import DistributedCategoriesSampler, get_sampler
 from ..utils import ModelType
 
 MEAN = [120.39586422 / 255.0, 115.59361427 / 255.0, 104.54012653 / 255.0]
 STD = [70.68188272 / 255.0, 68.27635443 / 255.0, 72.54505529 / 255.0]
 
 
-def get_dataloader(config, mode, model_type):
+def get_dataloader(config, mode, model_type, distribute):
     """Get the dataloader corresponding to the model type and training phase.
 
     According to the config dict, the training phase and model category, select the appropriate transforms, set the corresponding sampler and collate_fn, and return the corresponding dataloader.
@@ -66,6 +68,10 @@ def get_dataloader(config, mode, model_type):
     trfms_list.append(transforms.Normalize(mean=MEAN, std=STD))
     trfms = transforms.Compose(trfms_list)
 
+    # dataset = torchvision.datasets.ImageNet("/data/IMAGENET2012/", split="train")
+
+    # dataset = GeneralDataset("/data/yxs/", train=True, download=False)
+
     dataset = GeneralDataset(
         data_root=config["data_root"],
         mode=mode,
@@ -74,33 +80,26 @@ def get_dataloader(config, mode, model_type):
 
     collate_function = get_collate_function(config, trfms, mode, model_type)
 
-    if mode == "train" and model_type == ModelType.FINETUNING:
-        dataloader = DataLoader(
-            dataset,
-            batch_size=config["batch_size"],
-            shuffle=True,
-            num_workers=config["n_gpu"] * 4,
-            drop_last=True,
-            pin_memory=True,
-            collate_fn=collate_function,
-        )
-    else:
-        sampler = CategoriesSampler(
-            label_list=dataset.label_list,
-            label_num=dataset.label_num,
-            episode_size=config["episode_size"],
-            episode_num=config["train_episode"] if mode == "train" else config["test_episode"],
-            way_num=config["way_num"] if mode == "train" else config["test_way"],
-            image_num=config["shot_num"] + config["query_num"]
-            if mode == "train"
-            else config["test_shot"] + config["test_query"],
-        )
-        dataloader = DataLoader(
-            dataset,
-            batch_sampler=sampler,
-            num_workers=config["n_gpu"] * 4,
-            pin_memory=True,
-            collate_fn=collate_function,
-        )
+    few_shot = (model_type != ModelType.FINETUNING)
+
+    sampler = get_sampler(
+        dataset=dataset,
+        few_shot = few_shot,
+        distribute=distribute,
+        mode=mode,
+        config=config
+    )
+
+    dataloader = DataLoader(
+        dataset=dataset,
+        sampler=None if few_shot else sampler,
+        batch_sampler=sampler if few_shot else None,
+        batch_size= 1 if few_shot else config["batch_size"],    # batch_size is default set to 1
+        shuffle=False if few_shot and distribute else False,
+        num_workers=config["n_gpu"] * 4,
+        drop_last=False if few_shot else True,
+        pin_memory=True,
+        collate_fn=collate_function
+    )
 
     return dataloader

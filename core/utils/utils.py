@@ -12,6 +12,7 @@ import scipy as sp
 import scipy.stats
 import torch
 import torch.multiprocessing
+import torch.distributed as dist
 
 from core.utils import SaveType
 
@@ -171,12 +172,21 @@ def create_dirs(dir_paths):
             os.mkdir(dir_path)
 
 
-def prepare_device(device_ids, n_gpu_use):
+def prepare_device(rank, device_ids, n_gpu_use, backend, dist_url):
     """
 
     :param n_gpu_use:
     :return:
     """
+    if n_gpu_use > 1:
+        dist.init_process_group(
+                backend=backend,
+                init_method=dist_url,
+                world_size=n_gpu_use,
+                rank=rank
+            )
+        dist.barrier()
+
     logger = getLogger(__name__)
     os.environ["CUDA_VISIBLE_DEVICES"] = str(device_ids)
 
@@ -192,7 +202,7 @@ def prepare_device(device_ids, n_gpu_use):
         )
         n_gpu_use = n_gpu
 
-    device = torch.device("cuda:0" if n_gpu_use > 0 else "cpu")
+    device = torch.device("cuda:{}".format(rank) if n_gpu_use > 0 else "cpu")
     list_ids = list(range(n_gpu_use))
 
     return device, list_ids

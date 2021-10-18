@@ -2,7 +2,6 @@
 import csv
 import os
 import pickle
-from logging import getLogger
 
 from PIL import Image
 from torch.utils.data import Dataset
@@ -71,7 +70,6 @@ class GeneralDataset(Dataset):
         self.loader = loader
         self.use_memory = use_memory
         self.trfms = trfms
-        self.logger = getLogger(__name__)
 
         if use_memory:
             cache_path = os.path.join(data_root, "{}.pth".format(mode))
@@ -89,8 +87,6 @@ class GeneralDataset(Dataset):
 
         self.label_num = len(self.class_label_dict)
         self.length = len(self.data_list)
-
-        self.logger.info("load {} image with {} label.".format(self.length, self.label_num))
 
     def _generate_data_list(self):
         """Parse a CSV file to a data list(image_name), a label list(corresponding to the data list) and a class-label dict.
@@ -127,11 +123,15 @@ class GeneralDataset(Dataset):
             tuple: A tuple of (data list, label list, class-label dict)
         """
         if os.path.exists(cache_path):
-            self.logger.info("load cache from {}...".format(cache_path))
+            # FIXME logger will conflit with DDP dataloader
+            print("load cache from {}...".format(cache_path))
+            # self.logger.info("load cache from {}...".format(cache_path))
             with open(cache_path, "rb") as fin:
                 data_list, label_list, class_label_dict = pickle.load(fin)
         else:
-            self.logger.info("dump the cache to {}, please wait...".format(cache_path))
+            # FIXME logger will conflit with DDP dataloader
+            print("dump the cache to {}, please wait...".format(cache_path))
+            # self.logger.info("dump the cache to {}, please wait...".format(cache_path))
             data_list, label_list, class_label_dict = self._save_cache(cache_path)
 
         return data_list, label_list, class_label_dict
