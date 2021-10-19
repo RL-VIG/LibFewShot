@@ -46,6 +46,7 @@ classifier:
       classifier_lr: 0.0
       extractor_lr: 0.5
     feat_dim: 1600
+    testing_method: NIL
 
 backbone:
   name: Conv64F

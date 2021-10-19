@@ -34,20 +34,20 @@ class BOILLayer(nn.Module):
 
 
 class BOIL(MetaModel):
-    def __init__(self, inner_param, feat_dim, NIL_testing, **kwargs):
+    def __init__(self, inner_param, feat_dim, testing_method, **kwargs):
         super(BOIL, self).__init__(**kwargs)
         self.feat_dim = feat_dim
         self.loss_func = nn.CrossEntropyLoss()
         self.classifier = BOILLayer(feat_dim, way_num=self.way_num)
         self.inner_param = inner_param
-        self.NIL_testing = NIL_testing
+        self.testing_method = testing_method
 
         convert_maml_module(self)
 
     def forward_output(self, x):
         out1 = self.emb_func(x)
         out2 = self.classifier(out1)
-        return out2
+        return out1, out2
 
     def set_forward(self, batch):
         image, global_target = batch
@@ -63,10 +63,22 @@ class BOIL(MetaModel):
             episode_query_image = query_image[i].contiguous().reshape(-1, c, h, w)
             episode_support_target = support_target[i].reshape(-1)
             # episode_query_target = query_target[i].reshape(-1)
-            self.set_forward_adaptation(episode_support_image, episode_support_target)
-
-            output = self.forward_output(episode_query_image)
-
+            if self.testing_method == "Directly":
+                _, output = self.forward_output(episode_query_image)
+            else:
+                self.set_forward_adaptation(episode_support_image, episode_support_target)
+                _, output = self.forward_output(episode_query_image)
+                if self.testing_method == "NIL":
+                    support_features, _ = self.forward_output(episode_support_image)
+                    query_features, _ = self.forward_output(episode_query_image)
+                    cos = nn.CosineSimilarity()
+                    support_features_mean = torch.mean(
+                        support_features.reshape(self.way_num, self.shot_num, -1), dim=1
+                    )
+                    output = cos(
+                        query_features.unsqueeze(-1),
+                        support_features_mean.transpose(-1, -2).unsqueeze(0),
+                    )
             output_list.append(output)
 
         output = torch.cat(output_list, dim=0)
@@ -89,7 +101,7 @@ class BOIL(MetaModel):
             # episode_query_targets = query_targets[i].reshape(-1)
             self.set_forward_adaptation(episode_support_image, episode_support_target)
 
-            output = self.forward_output(episode_query_image)
+            features, output = self.forward_output(episode_query_image)
 
             output_list.append(output)
 
@@ -106,7 +118,7 @@ class BOIL(MetaModel):
             parameter.fast = None
         self.emb_func.train()
         self.classifier.train()
-        output = self.forward_output(support_set)
+        features, output = self.forward_output(support_set)
         loss = self.loss_func(output, support_target)
         grad = torch.autograd.grad(loss, fast_parameters, create_graph=True)
         fast_parameters = []
