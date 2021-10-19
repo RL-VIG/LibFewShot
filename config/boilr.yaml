@@ -5,7 +5,7 @@ includes:
   - headers/model.yaml
   - headers/optimizer.yaml
   - classifiers/BOIL.yaml
-  - backbones/Conv64F.yaml
+  - backbones/resnet12.yaml
 
 # This config can reach
 # (66.629+-0.308) (NIL test)
@@ -27,16 +27,16 @@ test_episode: 50
 skip_val_epochs: 200
 # so we add a skip_val_epochs(idiot_train) option
 epoch: 200
-device_ids: 0
+device_ids: 1
 n_gpu: 1
 
 
 optimizer:
   name: Adam
   kwargs:
-    lr: 0.001
+    lr: 6e-4
   other:
-    emb_func: 0.001
+    emb_func: 6e-4
 
 lr_scheduler:
   name: StepLR
@@ -50,16 +50,14 @@ classifier:
   kwargs:
     inner_param:
       classifier_lr: 0.0
-      extractor_lr: 0.5
-    feat_dim: 1600
+      extractor_lr: 0.3
+    feat_dim: 640
     testing_method: NIL
 
 backbone:
-  name: Conv64F
+  name: resnet12
   kwargs:
+    keep_prob: 0.0
+    avg_pool: True
     is_flatten: True
-    is_feature: False
-    leaky_relu: False
-    negative_slope: 0.0
-    last_pool: True
     maxpool_last2: True
