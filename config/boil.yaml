@@ -24,7 +24,8 @@ episode_size: 4
 train_episode: 1000
 test_episode: 50
 # actually BOIL uses idiot_train (train without validation, then test)
-# we will add a skip_val_epochs(idiot_train) option later
+skip_val_epochs: 200
+# so we add a skip_val_epochs(idiot_train) option
 epoch: 200
 device_ids: 0
 n_gpu: 1

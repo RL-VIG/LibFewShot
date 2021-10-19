@@ -55,7 +55,7 @@ class Trainer(object):
             self.test_loader,
         ) = self._init_dataloader(config)
         self.optimizer, self.scheduler, self.from_epoch = self._init_optim(config)
-        self.idiot_train = config["idiot_train"]
+        self.skip_val_epochs = config["skip_val_epochs"]
 
     def train_loop(self):
         """
@@ -68,7 +68,7 @@ class Trainer(object):
             self.logger.info("============ Train on the train set ============")
             train_acc = self._train(epoch_idx)
             self.logger.info(" * Acc@1 {:.3f} ".format(train_acc))
-            if self.idiot_train <= epoch_idx:
+            if self.skip_val_epochs <= epoch_idx:
                 self.logger.info("============ Validation on the val set ============")
                 val_acc = self._validate(epoch_idx, is_test=False)
                 self.logger.info(" * Acc@1 {:.3f} Best acc {:.3f}".format(val_acc, best_val_acc))
@@ -78,7 +78,7 @@ class Trainer(object):
             time_scheduler = self._cal_time_scheduler(experiment_begin, epoch_idx)
             self.logger.info(" * Time: {}".format(time_scheduler))
 
-            if self.idiot_train <= epoch_idx:
+            if self.skip_val_epochs <= epoch_idx:
                 if val_acc > best_val_acc:
                     best_val_acc = val_acc
                     best_test_acc = test_acc
