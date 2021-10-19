@@ -7,6 +7,10 @@ includes:
   - classifiers/BOIL.yaml
   - backbones/Conv64F.yaml
 
+# This config can reach
+# (66.629+-0.308) (NIL test)
+# reported 66.45 ± 0.37
+
 way_num: 5
 shot_num: 5
 query_num: 15
@@ -17,10 +21,11 @@ augment: True
 augment_times: 1
 augment_times_query: 1
 episode_size: 4
-train_episode: 100
-test_episode: 25
-
-epoch: 50
+train_episode: 1000
+test_episode: 50
+# actually BOIL uses idiot_train (train without validation, then test)
+# we will add a skip_val_epochs(idiot_train) option later
+epoch: 200
 device_ids: 0
 n_gpu: 1
 
@@ -35,7 +40,7 @@ optimizer:
 lr_scheduler:
   name: StepLR
   kwargs:
-    gamma: 0.5
+    gamma: 1.0
     step_size: 10
 
 
