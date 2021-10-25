@@ -1,0 +1,45 @@
+includes:
+  - headers/data.yaml
+  - headers/device.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
+  - classifiers/S2M2R_pretrain.yaml
+  - backbones/resnet18.yaml
+
+classifier:
+  name: S2M2_Rotation_pretrain
+  kwargs:
+    feat_dim: 512
+    num_class: 64
+
+backbone:
+  name: resnet18
+  kwargs:
+    is_feature: False
+    avg_pool: True
+    is_flatten: True
+
+
+data_root: /data/wzy/miniImageNet--ravi
+image_size: 80 # https://github.com/nupurkmr9/S2M2_fewshot/issues/4#issuecomment-617040989
+use_memory: False
+augment: True
+batch_size: 64
+epoch: 400 # https://github.com/nupurkmr9/S2M2_fewshot/issues/23#issuecomment-927372820
+skip_val_epochs: 400
+device_ids: 2
+n_gpu: 1
+
+optimizer:
+  name: Adam
+  kwargs:
+    lr: 0.001
+  other:
+    emb_func: 0.001
+
+lr_scheduler:
+  name: StepLR # use steplr with gamma=1.0 for no scheduler
+  kwargs:
+    gamma: 1.0
+    step_size: 10

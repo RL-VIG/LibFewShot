@@ -1,0 +1,5 @@
+classifier:
+  name: S2M2_Rotation_pretrain
+  kwargs:
+    feat_dim: 640
+    num_class: 64
