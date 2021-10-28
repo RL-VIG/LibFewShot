@@ -149,15 +149,6 @@ def mean_confidence_interval(data, confidence=0.95):
     return m, h
 
 
-def force_symlink(source, symlink):
-    try:
-        os.symlink(source, symlink)
-    except OSError as e:
-        if e.errno == errno.EEXIST:
-            os.remove(symlink)
-            os.symlink(source, symlink)
-
-
 def create_dirs(dir_paths):
     """
 
@@ -275,3 +266,42 @@ def init_seed(seed=0, deterministic=False):
     else:
         torch.backends.cudnn.benchmark = True
         torch.backends.cudnn.deterministic = False
+
+
+# https://github.com/NVIDIA/apex/blob/master/examples/imagenet/main_amp.py
+class data_prefetcher:
+    """
+    make dataloader more fast.
+    """
+
+    def __init__(self, loader):
+        """
+        loader: train_loader, val_loader or test_loader
+        """
+        self.loader = iter(loader)
+        self.stream = torch.cuda.Stream()
+
+        self.preload()
+
+    def preload(self):
+        try:
+            self.next_data = next(self.loader)
+        except StopIteration:
+            self.next_data = None
+            return
+
+        with torch.cuda.stream(self.stream):
+            self.next_data = [data.cuda(non_blocking=True) for data in self.next_data]
+
+    def next(self):
+        torch.cuda.current_stream().wait_stream(self.stream)
+        if self.next_data is None:
+            return None
+        input = self.next_data[0]
+        target = self.next_data[1]
+        if input is not None:
+            input.record_stream(torch.cuda.current_stream())
+        if target is not None:
+            target.record_stream(torch.cuda.current_stream())
+        self.preload()
+        return [input, target]
