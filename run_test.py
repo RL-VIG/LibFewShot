@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 import sys
+
+sys.dont_write_bytecode = True
+
 import os
 
 from core.config import Config

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 import os
+import builtins
 from logging import getLogger
 from time import time
 
@@ -20,7 +21,7 @@ from core.utils import (
     create_dirs,
     force_symlink,
     get_local_time,
-    init_logger,
+    init_logger_config,
     init_seed,
     prepare_device,
     save_model,
@@ -37,17 +38,17 @@ class Trainer(object):
 
     def __init__(self, config):
         self.config = config
-        self.device, self.list_ids = self._init_device(config)
         (
             self.result_path,
             self.log_path,
             self.checkpoints_path,
             self.viz_path,
         ) = self._init_files(config)
+        self.logger = self._init_logger()
+        self.device, self.list_ids = self._init_device(config)
         self.writer = TensorboardWriter(self.viz_path)
         self.train_meter, self.val_meter, self.test_meter = self._init_meter()
-        self.logger = getLogger(__name__)
-        self.logger.info(config)
+        print(config)
         self.model, self.model_type = self._init_model(config)
         (
             self.train_loader,
@@ -64,17 +65,17 @@ class Trainer(object):
         best_test_acc = float("-inf")
         experiment_begin = time()
         for epoch_idx in range(self.from_epoch + 1, self.config["epoch"]):
-            self.logger.info("============ Train on the train set ============")
+            print("============ Train on the train set ============")
             train_acc = self._train(epoch_idx)
-            self.logger.info(" * Acc@1 {:.3f} ".format(train_acc))
-            self.logger.info("============ Validation on the val set ============")
+            print(" * Acc@1 {:.3f} ".format(train_acc))
+            print("============ Validation on the val set ============")
             val_acc = self._validate(epoch_idx, is_test=False)
-            self.logger.info(" * Acc@1 {:.3f} Best acc {:.3f}".format(val_acc, best_val_acc))
-            self.logger.info("============ Testing on the test set ============")
+            print(" * Acc@1 {:.3f} Best acc {:.3f}".format(val_acc, best_val_acc))
+            print("============ Testing on the test set ============")
             test_acc = self._validate(epoch_idx, is_test=True)
-            self.logger.info(" * Acc@1 {:.3f} Best acc {:.3f}".format(test_acc, best_test_acc))
+            print(" * Acc@1 {:.3f} Best acc {:.3f}".format(test_acc, best_test_acc))
             time_scheduler = self._cal_time_scheduler(experiment_begin, epoch_idx)
-            self.logger.info(" * Time: {}".format(time_scheduler))
+            print(" * Time: {}".format(time_scheduler))
 
             if val_acc > best_val_acc:
                 best_val_acc = val_acc
@@ -87,12 +88,12 @@ class Trainer(object):
             self._save_model(epoch_idx, SaveType.LAST)
 
             self.scheduler.step()
-        self.logger.info(
+        print(
             "End of experiment, took {}".format(
                 str(datetime.timedelta(seconds=int(time() - experiment_begin)))
             )
         )
-        self.logger.info("Result DIR: {}".format(self.result_path))
+        print("Result DIR: {}".format(self.result_path))
 
     def _train(self, epoch_idx):
         """
@@ -166,7 +167,7 @@ class Trainer(object):
                         meter.avg("acc1"),
                     )
                 )
-                self.logger.info(info_str)
+                print(info_str)
             end = time()
 
         return meter.avg("acc1")
@@ -234,7 +235,7 @@ class Trainer(object):
                             meter.avg("acc1"),
                         )
                     )
-                    self.logger.info(info_str)
+                    print(info_str)
                 end = time()
         self.model.reverse_setting_info()
         return meter.avg("acc1")
@@ -278,7 +279,7 @@ class Trainer(object):
         with open(os.path.join(result_path, "config.yaml"), "w", encoding="utf-8") as fout:
             fout.write(yaml.dump(config))
 
-        init_logger(
+        init_logger_config(
             config["log_level"],
             log_path,
             config["classifier"]["name"],
@@ -286,6 +287,20 @@ class Trainer(object):
         )
 
         return result_path, log_path, checkpoints_path, viz_path
+    
+    def _init_logger(self):
+        self.logger = getLogger(__name__)
+        
+        # hack print
+        def use_logger(msg, level="info"):
+            if level == "info":
+                self.logger.info(msg)
+            else:
+                raise("Not implemente {} level log".format(level))
+            
+        builtins.print = use_logger
+        
+        return self.logger
 
     def _init_dataloader(self, config):
         """
@@ -327,12 +342,12 @@ class Trainer(object):
         }
         model = get_instance(arch, "classifier", config, **model_kwargs)
 
-        self.logger.info(model)
-        self.logger.info("Trainable params in the model: {}".format(count_parameters(model)))
+        print(model)
+        print("Trainable params in the model: {}".format(count_parameters(model)))
         # FIXME: May be inaccurate
 
         if self.config["pretrain_path"] is not None:
-            self.logger.info(
+            print(
                 "load pretraining emb_func from {}".format(self.config["pretrain_path"])
             )
             state_dict = torch.load(self.config["pretrain_path"], map_location="cpu")
@@ -345,7 +360,7 @@ class Trainer(object):
 
         if self.config["resume"]:
             resume_path = os.path.join(self.config["resume_path"], "checkpoints", "model_last.pth")
-            self.logger.info("load the resume model checkpoints dict from {}.".format(resume_path))
+            print("load the resume model checkpoints dict from {}.".format(resume_path))
             state_dict = torch.load(resume_path, map_location="cpu")["model"]
             msg = model.load_state_dict(state_dict, strict=False)
 
@@ -404,17 +419,17 @@ class Trainer(object):
             {"params": filter(lambda p: id(p) not in params_idx, self.model.parameters())}
         )
         optimizer = get_instance(torch.optim, "optimizer", config, params=params_dict_list)
-        if config["lr_scheduler"]["name"] is "LambdaLR":
-            optimizer = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=eval(config["lr_scheduler"]["kwargs"]["lr_lambda"]), last_epoch=-1)
+        if config["lr_scheduler"]["name"] == "LambdaLR":
+            scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=eval(config["lr_scheduler"]["kwargs"]["lr_lambda"]), last_epoch=-1)
         else:
             scheduler = get_instance(
                 torch.optim.lr_scheduler, "lr_scheduler", config, optimizer=optimizer
             )
-        self.logger.info(optimizer)
+        print(optimizer)
         from_epoch = -1
         if self.config["resume"]:
             resume_path = os.path.join(self.config["resume_path"], "checkpoints", "model_last.pth")
-            self.logger.info(
+            print(
                 "load the optimizer, lr_scheduler and epoch checkpoints dict from {}.".format(
                     resume_path
                 )
@@ -425,7 +440,7 @@ class Trainer(object):
             state_dict = all_state_dict["lr_scheduler"]
             scheduler.load_state_dict(state_dict)
             from_epoch = all_state_dict["epoch"]
-            self.logger.info("model resume from the epoch {}".format(from_epoch))
+            print("model resume from the epoch {}".format(from_epoch))
 
         return optimizer, scheduler, from_epoch
 
