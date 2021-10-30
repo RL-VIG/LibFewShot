@@ -32,31 +32,44 @@ class DSNLayer(nn.Module):
     def __init__(self):
         super().__init__()
 
-    def forward(self, query_feat, support_feat, way_num, shot_num, normalize=True):
+    def forward(self, query_feat, support_feat, way_num, shot_num, normalize=True, discriminative=False):
         e, ws, d = support_feat.size()
 
         support_feat = support_feat.reshape(e, way_num, shot_num, -1)
+        # add way dim
+        query_feat = query_feat.unsqueeze(1)
 
-        UU, _, _ = torch.svd(support_feat.permute(0, 1, 3, 2))
-        subspace = UU[:, :, :, :shot_num-1].permute(0,1,3,2)
+        UU, _, _ = torch.svd(support_feat.permute(0, 1, 3, 2).double()) # [episode_size, way_num, dim, dim]
+        UU = UU.float()
+        subspace = UU[:, :, :, :shot_num-1].permute(0, 1, 3, 2) # [episode_size, way_num, subspace_dim, dim]
 
-        projection = subspace.permute(0,1,3,2).matmul(subspace.matmul(query_feat.permute(0, 2, 1))).permute(0, 1, 3, 2)
+        projection = subspace.permute(0, 1, 3, 2).matmul(subspace.matmul(query_feat.permute(0, 1, 3, 2))).permute(0, 1, 3, 2) # [episode_size, way_num, shot_num, dim]
 
         dist = torch.sum((query_feat - projection) ** 2, dim=-1).permute(0, 2, 1)
 
         logits = -dist
         if normalize:
             logits /= d
-
-        return logits
+        
+        disc_loss = 0
+        if discriminative:
+            subspace_metric = torch.norm(torch.matmul(subspace.unsqueeze(1).transpose(-2, -1), subspace.unsqueeze(2)), p="fro", dim=[-2,-1])  # [episode_size, way_num, way_num]
+            mask = torch.eye(way_num).bool()
+            subspace_metric = subspace_metric[:, ~mask]
+            disc_loss = torch.sum(subspace)
+            
+        return logits, disc_loss
 
 class DSN(MetricModel):
-    def __init__(self, eps=0.1, **kwargs):
+    def __init__(self, eps=0.1, enable_scale=True, lamb=0.03, discriminative=False, **kwargs):
         super().__init__(**kwargs)
-        self.loss_fn = nn.CrossEntropyLoss()
         self.dsn_layer = DSNLayer()
 
+        self.lamb = lamb
+        self.discriminative = discriminative
         self.eps = eps
+        self.enable_scale = enable_scale
+        self.scale = nn.Parameter(torch.FloatTensor([1.0]))
 
     def set_forward(self, batch):
         """
@@ -85,15 +98,25 @@ class DSN(MetricModel):
             all_images = torch.cat([support_images, query_images], dim=0)
 
             all_feat = self.emb_func(all_images)
-            support_feat = all_feat[:e*w*s]
-            query_feat = all_feat[e*w*s:]
+            support_feat = all_feat[:e*w*s].reshape(episode_size, -1, all_feat.size(-1))
+            query_feat = all_feat[e*w*s:].reshape(episode_size, -1, all_feat.size(-1))
+            
+            output, _ = self.dsn_layer(query_feat, support_feat, self.way_num, self.shot_num)
+            output = output.reshape(episode_size * self.way_num * self.query_num, self.way_num)
+            output = output * self.scale if self.enable_scale else output
+            acc = accuracy(output, query_target.reshape(-1))
+            
+            # change shot_num
+            self.shot_num = 1
         else:
             feat = self.emb_func(image)
 
             support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
 
-        output = self.dsn_layer(query_feat, support_feat, self.way_num, self.shot_num).view(episode_size * self.way_num * self.query_num, self.way_num)
-        acc = accuracy(output, query_target.view(-1))
+            output, _ = self.dsn_layer(query_feat, support_feat, self.way_num, self.shot_num)
+            output = output.reshape(episode_size * self.way_num * self.query_num, self.way_num)
+            output = output * self.scale if self.enable_scale else output
+            acc = accuracy(output, query_target.reshape(-1))
 
         return output, acc
 
@@ -110,13 +133,17 @@ class DSN(MetricModel):
 
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
 
-        smoothed_query_target = F.one_hot(query_target.view(-1), self.way_num)
+        smoothed_query_target = F.one_hot(query_target.reshape(-1), self.way_num)
         smoothed_query_target = smoothed_query_target * (1 - self.eps) + (1 - smoothed_query_target) * self.eps / (self.way_num - 1)
 
-        output = self.dsn_layer(query_feat, support_feat, self.way_num, self.shot_num).view(episode_size * self.way_num * self.query_num, self.way_num)
-        # loss = self.loss_fn(output, query_target.view(-1))
-        log_prb = F.log_softmax(output.reshape(-1, self.way_num))
+        output, disc_loss = self.dsn_layer(query_feat, support_feat, self.way_num, self.shot_num, discriminative=self.discriminative)
+        output = output.reshape(episode_size * self.way_num * self.query_num, self.way_num)
+        output = output * self.scale if self.enable_scale else output
+        # loss = self.loss_fn(output, query_target.reshape(-1))
+        log_prb = F.log_softmax(output, dim=-1)
         loss = -(smoothed_query_target * log_prb).sum(dim=1).mean()
-        acc = accuracy(output, query_target.view(-1))
+        
+        loss += self.lamb * disc_loss
+        acc = accuracy(output, query_target.reshape(-1))
 
         return output, acc, loss
