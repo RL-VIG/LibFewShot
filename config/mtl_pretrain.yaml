@@ -63,7 +63,7 @@ classifier:
 # backbone:
 #   name: WRN
 #   kwargs:
-#     depth: 28 
+#     depth: 28
 #     widen_factor: 10
 
 # classifier:

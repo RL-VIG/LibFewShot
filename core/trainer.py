@@ -27,6 +27,7 @@ from core.utils import (
     prepare_device,
     save_model,
     get_instance,
+    data_prefetcher,
 )
 
 
@@ -123,8 +124,13 @@ class Trainer(object):
         episode_size = 1 if self.model_type == ModelType.FINETUNING else self.config["episode_size"]
 
         end = time()
-        log_scale = 1 if self.config["n_gpu"] == 0 else self.config["n_gpu"]
-        for batch_idx, batch in enumerate(self.train_loader):
+        log_scale = 1 if self.config["n_gpu"] == 0 else self.config["n_gpu"]            
+
+        prefetcher = data_prefetcher(self.train_loader)
+        batch = prefetcher.next()
+        batch_idx = -1
+        while batch is not None:
+            batch_idx += 1
             if self.rank == 0:
                 self.writer.set_step(epoch_idx * len(self.train_loader) + batch_idx * episode_size)
 
@@ -187,6 +193,8 @@ class Trainer(object):
                 self.logger.info(info_str)
             end = time()
 
+            batch = prefetcher.next()
+
         return meter.avg("acc1")
 
     def _validate(self, epoch_idx, is_test=False):
@@ -213,11 +221,16 @@ class Trainer(object):
         enable_grad = self.model_type != ModelType.METRIC
         log_scale = 1 if self.config["n_gpu"] == 0 else self.config["n_gpu"]
         with torch.set_grad_enabled(enable_grad):
-            for batch_idx, batch in enumerate(self.test_loader if is_test else self.val_loader):
+            loader = self.test_loader if is_test else self.val_loader
+            prefetcher = data_prefetcher(loader)
+            batch = prefetcher.next()
+            batch_idx = -1
+            while batch is not None:
+                batch_idx += 1
                 if self.rank == 0:
                     self.writer.set_step(
                         int(
-                            (epoch_idx * len(self.test_loader) + batch_idx * episode_size)
+                            (epoch_idx * len(loader) + batch_idx * episode_size)
                             * self.config["tb_scale"]
                         )
                     )
@@ -240,7 +253,7 @@ class Trainer(object):
 
                 if self.rank == 0 and (((batch_idx + 1) % self.config["log_interval"] == 0) or (
                     batch_idx + 1
-                ) * episode_size >= len(self.train_loader)):
+                ) * episode_size >= len(loader)):
                     info_str = (
                         "Epoch-({}): [{}/{}]\t"
                         "Time {:.3f} ({:.3f})\t"
@@ -248,8 +261,8 @@ class Trainer(object):
                         "Data {:.3f} ({:.3f})\t"
                         "Acc@1 {:.3f} ({:.3f})".format(
                             epoch_idx,
-                            (batch_idx + 1) * episode_size * log_scale,
-                            len(self.train_loader) * log_scale,
+                            (batch_idx + 1) * episode_size,
+                            len(loader),
                             meter.last("batch_time"),
                             meter.avg("batch_time"),
                             meter.last("calc_time"),
@@ -262,6 +275,8 @@ class Trainer(object):
                     )
                     self.logger.info(info_str)
                 end = time()
+
+                batch = prefetcher.next()
         if self.distribute:
             self.model.module.reverse_setting_info()
         else:
@@ -281,7 +296,7 @@ class Trainer(object):
         if self.rank != 0:
             return None, None, None, None
         # you should ensure that data_root name contains its true name
-        symlink_dir = "{}-{}-{}-{}-{}".format(
+        base_dir = "{}-{}-{}-{}-{}".format(
             config["classifier"]["name"],
             config["data_root"].split("/")[-1],
             config["backbone"]["name"],
@@ -289,22 +304,19 @@ class Trainer(object):
             config["shot_num"],
         )
         result_dir = (
-            symlink_dir
+            base_dir
             + "{}-{}".format(
                 ("-" + config["tag"]) if config["tag"] is not None else "", get_local_time()
             )
             if config["log_name"] is None
             else config["log_name"]
         )
-        symlink_path = os.path.join(config["result_root"], symlink_dir)
         result_path = os.path.join(config["result_root"], result_dir)
         # self.logger.log("Result DIR: " + result_path)
         checkpoints_path = os.path.join(result_path, "checkpoints")
         log_path = os.path.join(result_path, "log_files")
         viz_path = os.path.join(log_path, "tfboard_files")
         create_dirs([result_path, log_path, checkpoints_path, viz_path])
-
-        force_symlink(result_dir, symlink_path)
 
         with open(os.path.join(result_path, "config.yaml"), "w", encoding="utf-8") as fout:
             fout.write(yaml.dump(config))
