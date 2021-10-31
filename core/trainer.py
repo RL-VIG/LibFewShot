@@ -2,6 +2,7 @@
 import datetime
 import logging
 import os
+import builtins
 from logging import getLogger
 from time import time
 
@@ -22,7 +23,7 @@ from core.utils import (
     create_dirs,
     force_symlink,
     get_local_time,
-    init_logger,
+    init_logger_config,
     init_seed,
     prepare_device,
     save_model,
@@ -43,16 +44,16 @@ class Trainer(object):
         self.config = config
         self.config["rank"] = rank
         self.distribute = self.config["n_gpu"] > 1
-        self.device, self.list_ids = self._init_device(rank, config)
         (
             self.result_path,
             self.log_path,
             self.checkpoints_path,
             self.viz_path,
         ) = self._init_files(config)
+        self.logger = self._init_logger()
+        self.device, self.list_ids = self._init_device(rank, config)
         self.writer = self._init_writer(self.viz_path)
         self.train_meter, self.val_meter, self.test_meter = self._init_meter()
-        self.logger = self._init_logger(self.log_path)
         self.model, self.model_type = self._init_model(config)
         (
             self.train_loader,
@@ -69,23 +70,17 @@ class Trainer(object):
         best_test_acc = float("-inf")
         experiment_begin = time()
         for epoch_idx in range(self.from_epoch + 1, self.config["epoch"]):
-            self.logger.info("============ Train on the train set ============")
-            if self.distribute:
-                # self.train_loader.sampler.set_epoch(epoch_idx)
-                if self.model_type == ModelType.FINETUNING:
-                    self.train_loader.sampler.set_epoch(epoch_idx)
-                else:
-                    self.train_loader.batch_sampler.set_epoch(epoch_idx)
+            print("============ Train on the train set ============")
             train_acc = self._train(epoch_idx)
-            self.logger.info(" * Acc@1 {:.3f} ".format(train_acc)) 
-            self.logger.info("============ Validation on the val set ============")
+            print(" * Acc@1 {:.3f} ".format(train_acc)) 
+            print("============ Validation on the val set ============")
             val_acc = self._validate(epoch_idx, is_test=False)
-            self.logger.info(" * Acc@1 {:.3f} Best acc {:.3f}".format(val_acc, best_val_acc))
-            self.logger.info("============ Testing on the test set ============")
+            print(" * Acc@1 {:.3f} Best acc {:.3f}".format(val_acc, best_val_acc))
+            print("============ Testing on the test set ============")
             test_acc = self._validate(epoch_idx, is_test=True)
-            self.logger.info(" * Acc@1 {:.3f} Best acc {:.3f}".format(test_acc, best_test_acc))
+            print(" * Acc@1 {:.3f} Best acc {:.3f}".format(test_acc, best_test_acc))
             time_scheduler = self._cal_time_scheduler(experiment_begin, epoch_idx)
-            self.logger.info(" * Time: {}".format(time_scheduler))
+            print(" * Time: {}".format(time_scheduler))
             self.scheduler.step()
 
             if self.rank == 0:
@@ -100,12 +95,12 @@ class Trainer(object):
                 self._save_model(epoch_idx, SaveType.LAST)
         
         if self.rank == 0:
-            self.logger.info(
+            print(
                 "End of experiment, took {}".format(
                     str(datetime.timedelta(seconds=int(time() - experiment_begin)))
                 )
             )
-            self.logger.info("Result DIR: {}".format(self.result_path))
+            print("Result DIR: {}".format(self.result_path))
 
     def _train(self, epoch_idx):
         """
@@ -145,10 +140,7 @@ class Trainer(object):
 
             # calculate the output
             calc_begin = time()
-            if self.distribute:
-                output, acc, loss = self.model.module.set_forward_loss(batch)
-            else:
-                output, acc, loss = self.model.set_forward_loss(batch)
+            output, acc, loss = self.model(batch)
 
             # compute gradients
             self.optimizer.zero_grad()
@@ -164,10 +156,9 @@ class Trainer(object):
             meter.update("batch_time", time() - end)
 
             # print the intermediate results
-            
-            if self.rank == 0 and (((batch_idx + 1) % self.config["log_interval"] == 0) or (
+            if ((batch_idx + 1) % self.config["log_interval"] == 0) or (
                 batch_idx + 1
-            ) * episode_size >= len(self.train_loader)):
+            ) * episode_size >= len(self.train_loader) * log_scale:
                 info_str = (
                     "Epoch-({}): [{}/{}]\t"
                     "Time {:.3f} ({:.3f})\t"
@@ -176,7 +167,7 @@ class Trainer(object):
                     "Loss {:.3f} ({:.3f})\t"
                     "Acc@1 {:.3f} ({:.3f})".format(
                         epoch_idx,
-                        (batch_idx + 1) * episode_size * log_scale,
+                        (batch_idx + 1) * log_scale,
                         len(self.train_loader) * log_scale,
                         meter.last("batch_time"),
                         meter.avg("batch_time"),
@@ -190,7 +181,7 @@ class Trainer(object):
                         meter.avg("acc1"),
                     )
                 )
-                self.logger.info(info_str)
+                print(info_str)
             end = time()
 
             batch = prefetcher.next()
@@ -219,7 +210,7 @@ class Trainer(object):
 
         end = time()
         enable_grad = self.model_type != ModelType.METRIC
-        log_scale = 1 if self.config["n_gpu"] == 0 else self.config["n_gpu"]
+        log_scale = (1 if self.config["n_gpu"] == 0 else self.config["n_gpu"]) * episode_size
         with torch.set_grad_enabled(enable_grad):
             loader = self.test_loader if is_test else self.val_loader
             prefetcher = data_prefetcher(loader)
@@ -239,10 +230,7 @@ class Trainer(object):
 
                 # calculate the output
                 calc_begin = time()
-                if self.distribute:
-                    output, acc = self.model.module.set_forward(batch)
-                else:
-                    output, acc = self.model.set_forward(batch)
+                output, acc = self.model(batch)
                 meter.update("calc_time", time() - calc_begin)
 
                 # measure accuracy and record loss
@@ -251,9 +239,9 @@ class Trainer(object):
                 # measure elapsed time
                 meter.update("batch_time", time() - end)
 
-                if self.rank == 0 and (((batch_idx + 1) % self.config["log_interval"] == 0) or (
+                if ((batch_idx + 1) % self.config["log_interval"] == 0) or (
                     batch_idx + 1
-                ) * episode_size >= len(loader)):
+                ) * episode_size >= len(self.val_loader) * log_scale:
                     info_str = (
                         "Epoch-({}): [{}/{}]\t"
                         "Time {:.3f} ({:.3f})\t"
@@ -261,8 +249,8 @@ class Trainer(object):
                         "Data {:.3f} ({:.3f})\t"
                         "Acc@1 {:.3f} ({:.3f})".format(
                             epoch_idx,
-                            (batch_idx + 1) * episode_size,
-                            len(loader),
+                            (batch_idx + 1) * log_scale,
+                            len(self.val_loader) * log_scale,
                             meter.last("batch_time"),
                             meter.avg("batch_time"),
                             meter.last("calc_time"),
@@ -273,7 +261,7 @@ class Trainer(object):
                             meter.avg("acc1"),
                         )
                     )
-                    self.logger.info(info_str)
+                    print(info_str)
                 end = time()
 
                 batch = prefetcher.next()
@@ -312,7 +300,7 @@ class Trainer(object):
             else config["log_name"]
         )
         result_path = os.path.join(config["result_root"], result_dir)
-        # self.logger.log("Result DIR: " + result_path)
+        print("Result DIR: " + result_path)
         checkpoints_path = os.path.join(result_path, "checkpoints")
         log_path = os.path.join(result_path, "log_files")
         viz_path = os.path.join(log_path, "tfboard_files")
@@ -322,6 +310,22 @@ class Trainer(object):
             fout.write(yaml.dump(config))
 
         return result_path, log_path, checkpoints_path, viz_path
+
+    def _init_logger(self):
+        self.logger = getLogger(__name__)
+        
+        # hack print
+        def use_logger(msg, level="info"):
+            if self.rank != 0:
+                return
+            if level == "info":
+                self.logger.info(msg)
+            else:
+                raise("Not implemente {} level log".format(level))
+            
+        builtins.print = use_logger
+        
+        return self.logger
 
     def _init_dataloader(self, config):
         """
@@ -335,11 +339,8 @@ class Trainer(object):
         """
         distribute = self.distribute
         train_loader = get_dataloader(config, "train", self.model_type, distribute)
-        self.logger.info("load {} image with {} label for train.".format(train_loader.dataset.length, train_loader.dataset.label_num))
         val_loader = get_dataloader(config, "val", self.model_type, distribute)
-        self.logger.info("load {} image with {} label for val.".format(val_loader.dataset.length, val_loader.dataset.label_num))
         test_loader = get_dataloader(config, "test", self.model_type, distribute)
-        self.logger.info("load {} image with {} label for test.".format(test_loader.dataset.length, test_loader.dataset.label_num))
 
         return train_loader, val_loader, test_loader
 
@@ -367,12 +368,12 @@ class Trainer(object):
         }
         model = get_instance(arch, "classifier", config, **model_kwargs)
 
-        self.logger.info(model)
-        self.logger.info("Trainable params in the model: {}".format(count_parameters(model)))
+        print(model)
+        print("Trainable params in the model: {}".format(count_parameters(model)))
         # FIXME: May be inaccurate
 
         if self.config["pretrain_path"] is not None:
-            self.logger.info(
+            print(
                 "load pretraining emb_func from {}".format(self.config["pretrain_path"])
             )
             state_dict = torch.load(self.config["pretrain_path"], map_location="cpu")
@@ -385,7 +386,7 @@ class Trainer(object):
 
         if self.config["resume"]:
             resume_path = os.path.join(self.config["resume_path"], "checkpoints", "model_last.pth")
-            self.logger.info("load the resume model checkpoints dict from {}.".format(resume_path))
+            print("load the resume model checkpoints dict from {}.".format(resume_path))
             state_dict = torch.load(resume_path, map_location="cpu")["model"]
             msg = model.load_state_dict(state_dict, strict=False)
 
@@ -396,7 +397,6 @@ class Trainer(object):
 
         if self.distribute:
             model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
-            torch.cuda.set_device(self.rank)
             model = model.to(self.rank)
             model = nn.parallel.DistributedDataParallel(model, device_ids=[self.rank], output_device=self.rank)
 
@@ -445,11 +445,11 @@ class Trainer(object):
         scheduler = get_instance(
             torch.optim.lr_scheduler, "lr_scheduler", config, optimizer=optimizer
         )
-        self.logger.info(optimizer)
+        print(optimizer)
         from_epoch = -1
         if self.config["resume"]:
             resume_path = os.path.join(self.config["resume_path"], "checkpoints", "model_last.pth")
-            self.logger.info(
+            print(
                 "load the optimizer, lr_scheduler and epoch checkpoints dict from {}.".format(
                     resume_path
                 )
@@ -460,7 +460,7 @@ class Trainer(object):
             state_dict = all_state_dict["lr_scheduler"]
             scheduler.load_state_dict(state_dict)
             from_epoch = all_state_dict["epoch"]
-            self.logger.info("model resume from the epoch {}".format(from_epoch))
+            print("model resume from the epoch {}".format(from_epoch))
 
         return optimizer, scheduler, from_epoch
 
@@ -482,6 +482,8 @@ class Trainer(object):
             backend="nccl" if not "dist_backend" in self.config else self.config["dist_backend"],
             dist_url="tcp://127.0.0.1:25000" if not "dist_url" in self.config else self.config["dist_url"],
         )
+        torch.cuda.set_device(self.rank)
+
         return device, list_ids
 
     def _save_model(self, epoch, save_type=SaveType.NORMAL):
@@ -552,33 +554,6 @@ class Trainer(object):
         )
 
         return train_meter, val_meter, test_meter
-
-    def _init_logger(self, log_path):
-        """
-        Init the logger.
-
-        Returns:
-            logger: logger
-        """
-        if self.rank == 0:
-            init_logger(
-                self.config["log_level"],
-                log_path,
-                self.config["classifier"]["name"],
-                self.config["backbone"]["name"],
-            )
-
-            logger = getLogger(__name__)
-            logger.info(self.config)
-            return logger
-        else:
-            logger = getLogger(__name__)
-            # def log_pass(*args):
-            #     pass
-            # logger.info = log_pass
-            # logger.warning = log_pass
-            logger.setLevel(logging.DEBUG)
-            return logger
 
     def _init_writer(self, viz_path):
         """

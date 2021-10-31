@@ -2,12 +2,12 @@
 optimizer:
   name: Adam
   kwargs:
-    lr: 0.001
-  other:
-    emb_func: 0.001 # define lr OR
-#    another_part:    # define multi params
-#      lr: 0.1
-#      weight_decay: 0.5
+    lr: 0.01
+  other: ~
+    # emb_func: 0.001 # define lr OR
+    # another_part:    # define multi params
+    #   lr: 0.1
+    #   weight_decay: 0.5
 
 
 # lr_scheduler info
@@ -15,4 +15,4 @@ lr_scheduler:
   name: StepLR
   kwargs:
     gamma: 0.5
-    step_size: 10
+    step_size: 20

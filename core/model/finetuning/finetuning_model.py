@@ -19,10 +19,6 @@ class FinetuningModel(AbstractModel):
     def set_forward_loss(self, *args, **kwargs):
         pass
 
-    def forward(self, x):
-        out = self.emb_func(x)
-        return out
-
     @abstractmethod
     def set_forward_adaptation(self, *args, **kwargs):
         pass

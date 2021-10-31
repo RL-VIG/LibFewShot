@@ -20,7 +20,7 @@ str_level_dict = {
 }
 
 
-def init_logger(log_level, result_root, classifier, backbone, is_train=True):
+def init_logger_config(log_level, result_root, classifier, backbone, is_train=True):
     if log_level not in str_level_dict:
         raise KeyError
 

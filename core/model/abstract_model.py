@@ -26,8 +26,10 @@ class AbstractModel(nn.Module):
         pass
 
     def forward(self, x):
-        out = self.emb_func(x)
-        return out
+        if self.training:
+            return self.set_forward_loss(x)
+        else:
+            return self.set_forward(x)
 
     def train(self, mode=True):
         super(AbstractModel, self).train(mode)

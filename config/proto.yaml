@@ -8,16 +8,24 @@ includes:
   - backbones/resnet12.yaml
 
 
-device_ids: 0
 way_num: 5
-shot_num: 1
+shot_num: 5
 query_num: 15
-test_way: 10 # use ~ -> test_* = *_num
+test_way: 5 # use ~ -> test_* = *_num
 test_shot: 5
-test_query: 5
-episode_size: 1
-train_episode: 100
-test_episode: 100
+test_query: 15
+episode_size: 2
+train_episode: 1000
+test_episode: 600
+
+device_ids: 1, 0
+n_gpu: 2
+log_interval: 100
+epoch: 50
+
+# use_memory: True
+
+# data_root: /data/yxs/
 
 backbone:
   name: Conv64F

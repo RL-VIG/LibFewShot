@@ -250,3 +250,7 @@ class Config(object):
                 self.config_dict["episode_size"] = self.config_dict["episode_size"] // self.config_dict["n_gpu"]
                 self.config_dict["train_episode"] //= self.config_dict["n_gpu"]
                 self.config_dict["test_episode"] //= self.config_dict["n_gpu"]
+
+        # check: episode_num % episode_size == 0
+        assert self.config_dict["train_episode"] % self.config_dict["episode_size"] == 0
+        assert self.config_dict["test_episode"] % self.config_dict["episode_size"] == 0

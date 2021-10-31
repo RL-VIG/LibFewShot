@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import builtins
 from logging import getLogger
 from time import time
 
@@ -10,7 +11,7 @@ from torch import nn
 import core.model as arch
 from core.data import get_dataloader
 from core.utils import (
-    init_logger,
+    init_logger_config,
     prepare_device,
     init_seed,
     AverageMeter,
@@ -18,7 +19,6 @@ from core.utils import (
     ModelType,
     TensorboardWriter,
     mean_confidence_interval,
-    get_local_time,
     get_instance,
 )
 
@@ -33,12 +33,12 @@ class Test(object):
     def __init__(self, config, result_path=None):
         self.config = config
         self.result_path = result_path
-        self.device, self.list_ids = self._init_device(config)
         self.viz_path, self.state_dict_path = self._init_files(config)
+        self.logger = self._init_logger()
+        self.device, self.list_ids = self._init_device(config)
         self.writer = TensorboardWriter(self.viz_path)
         self.test_meter = self._init_meter()
-        self.logger = getLogger(__name__)
-        self.logger.info(config)
+        print(config)
         self.model, self.model_type = self._init_model(config)
         self.test_loader = self._init_dataloader(config)
 
@@ -51,17 +51,17 @@ class Test(object):
         total_accuracy_vector = []
 
         for epoch_idx in range(self.config["test_epoch"]):
-            self.logger.info("============ Testing on the test set ============")
+            print("============ Testing on the test set ============")
             _, accuracies = self._validate(epoch_idx)
             test_accuracy, h = mean_confidence_interval(accuracies)
-            self.logger.info("Test Accuracy: {:.3f}\t h: {:.3f}".format(test_accuracy, h))
+            print("Test Accuracy: {:.3f}\t h: {:.3f}".format(test_accuracy, h))
             total_accuracy += test_accuracy
             total_accuracy_vector.extend(accuracies)
             total_h[epoch_idx] = h
 
         aver_accuracy, h = mean_confidence_interval(total_accuracy_vector)
-        self.logger.info("Aver Accuracy: {:.3f}\t Aver h: {:.3f}".format(aver_accuracy, h))
-        self.logger.info("............Testing is end............")
+        print("Aver Accuracy: {:.3f}\t Aver h: {:.3f}".format(aver_accuracy, h))
+        print("............Testing is end............")
 
     def _validate(self, epoch_idx):
         """
@@ -94,7 +94,7 @@ class Test(object):
                 meter.update("data_time", time() - end)
 
                 # calculate the output
-                output, acc = self.model.set_forward(batch)
+                output, acc = self.model(batch)
                 accuracies.append(acc)
                 # measure accuracy and record loss
                 meter.update("acc", acc)
@@ -122,7 +122,7 @@ class Test(object):
                             meter.avg("acc"),
                         )
                     )
-                    self.logger.info(info_str)
+                    print(info_str)
         self.model.reverse_setting_info()
         return meter.avg("acc"), accuracies
 
@@ -152,7 +152,7 @@ class Test(object):
         log_path = os.path.join(result_path, "log_files")
         viz_path = os.path.join(log_path, "tfboard_files")
 
-        init_logger(
+        init_logger_config(
             config["log_level"],
             log_path,
             config["classifier"]["name"],
@@ -163,6 +163,22 @@ class Test(object):
         state_dict_path = os.path.join(result_path, "checkpoints", "model_best.pth")
 
         return viz_path, state_dict_path
+
+    def _init_logger(self):
+        self.logger = getLogger(__name__)
+
+        # hack print
+        def use_logger(msg, level="info"):
+            if self.rank != 0:
+                return
+            if level == "info":
+                self.logger.info(msg)
+            else:
+                raise("Not implemente {} level log".format(level))
+
+        builtins.print = use_logger
+
+        return self.logger
 
     def _init_dataloader(self, config):
         """
@@ -201,10 +217,10 @@ class Test(object):
         }
         model = get_instance(arch, "classifier", config, **model_kwargs)
 
-        self.logger.info(model)
-        self.logger.info("Trainable params in the model: {}".format(count_parameters(model)))
+        print(model)
+        print("Trainable params in the model: {}".format(count_parameters(model)))
 
-        self.logger.info("load the state dict from {}.".format(self.state_dict_path))
+        print("load the state dict from {}.".format(self.state_dict_path))
         state_dict = torch.load(self.state_dict_path, map_location="cpu")
         model.load_state_dict(state_dict)
 

@@ -12,6 +12,117 @@ from ..utils import ModelType
 MEAN = [120.39586422 / 255.0, 115.59361427 / 255.0, 104.54012653 / 255.0]
 STD = [70.68188272 / 255.0, 68.27635443 / 255.0, 72.54505529 / 255.0]
 
+import torch
+from queue import Queue
+from threading import Thread
+
+
+# https://www.zhihu.com/question/307282137/answer/1560137140
+class CudaDataLoader:
+    """
+    Asynchronously preloads data from the CPU to the GPU
+    """
+
+    def __init__(self, loader, device, queue_size=2):
+        self.device = device
+        self.queue_size = queue_size
+        self.loader = loader
+
+        self.load_stream = torch.cuda.Stream(device=device)
+        self.queue = Queue(maxsize=self.queue_size)
+
+        self.idx = 0
+        self.worker = Thread(target=self.load_loop)
+        self.worker.setDaemon(True)
+        self.worker.start()
+
+    def load_loop(self):
+        # The loop that will load into the queue in the background
+        torch.cuda.set_device(self.device)
+        while True:
+            for i, sample in enumerate(self.loader):
+                self.queue.put(self.load_instance(sample))
+
+    def load_instance(self, sample):
+        if torch.is_tensor(sample):
+            with torch.cuda.stream(self.load_stream):
+                return sample.to(self.device, non_blocking=True)
+        elif sample is None or type(sample) == str:
+            return sample
+        elif isinstance(sample, dict):
+            return {k: self.load_instance(v) for k, v in sample.items()}
+        else:
+            return [self.load_instance(s) for s in sample]
+
+    def __iter__(self):
+        self.idx = 0
+        return self
+
+    def __next__(self):
+        # process is dead
+        if not self.worker.is_alive() and self.queue.empty():
+            self.idx = 0
+            self.queue.join()
+            self.worker.join()
+            raise StopIteration
+        # end a epoch
+        elif self.idx >= len(self.loader):
+            self.idx = 0
+            raise StopIteration
+        # next batch
+        else:
+            out = self.queue.get()
+            self.queue.task_done()
+            self.idx += 1
+        return out
+
+    def next(self):
+        return self.__next__()
+
+    def __len__(self):
+        return len(self.loader)
+
+    @property
+    def sampler(self):
+        return self.loader.sampler
+
+    @property
+    def dataset(self):
+        return self.loader.dataset
+
+
+class _RepeatSampler(object):
+    """repeated sampler"""
+
+    def __init__(self, sampler):
+        self.sampler = sampler
+
+    def __iter__(self):
+        while True:
+            yield from iter(self.sampler)
+
+    def set_epoch(self, epoch):
+        self.sampler.set_epoch(epoch)
+
+
+class MultiEpochsDataLoader(DataLoader):
+    """
+    When training with multiple epochs, 
+    the DataLoader object does not have to re-create the thread and the batch_sampler object to save initialization time for each epoch.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        object.__setattr__(self, 'batch_sampler', _RepeatSampler(self.batch_sampler))
+        self.iterator = super().__iter__()
+
+    def __len__(self):
+        return len(self.batch_sampler.sampler)
+
+    def __iter__(self):
+        for i in range(len(self)):
+            yield next(self.iterator)
+
+
 
 def get_dataloader(config, mode, model_type, distribute):
     """Get the dataloader corresponding to the model type and training phase.
@@ -90,16 +201,19 @@ def get_dataloader(config, mode, model_type, distribute):
         config=config
     )
 
-    dataloader = DataLoader(
+    dataloader = MultiEpochsDataLoader(
         dataset=dataset,
         sampler=None if few_shot else sampler,
         batch_sampler=sampler if few_shot else None,
         batch_size= 1 if few_shot else config["batch_size"],    # batch_size is default set to 1
         shuffle=False if few_shot and distribute else False,
-        num_workers=config["n_gpu"] * 4,
+        num_workers=4,                                          # num_workers for each gpu
         drop_last=False if few_shot else True,
         pin_memory=True,
-        collate_fn=collate_function
+        collate_fn=collate_function,
     )
+
+    # if torch.cuda.is_available():
+    #     dataloader = CudaDataLoader(dataloader, config["rank"])
 
     return dataloader

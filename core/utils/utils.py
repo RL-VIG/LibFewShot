@@ -108,7 +108,14 @@ def accuracy(output, target, topk=1):
         correct = pred.eq(target.view(1, -1).expand_as(pred))
 
         correct_k = correct[:topk].view(-1).float().sum(0, keepdim=True)
+        # res = correct_k.mul_(100.0 / batch_size).item()
+        # print(f"cuda:{dist.get_rank()} res before {res}")
+        # correct_k = correct[:topk].view(-1).float().sum(0, keepdim=True)
+        if dist.is_initialized():
+            dist.all_reduce(correct_k, op=dist.ReduceOp.SUM)
+            batch_size *= dist.get_world_size()
         res = correct_k.mul_(100.0 / batch_size).item()
+        # print(f"cuda:{dist.get_rank()} res after {res}")
         return res
 
 
