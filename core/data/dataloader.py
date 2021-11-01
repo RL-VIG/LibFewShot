@@ -113,15 +113,24 @@ class MultiEpochsDataLoader(DataLoader):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        object.__setattr__(self, "batch_sampler", _RepeatSampler(self.batch_sampler))
-        self.iterator = super().__iter__()
+        self.few_shot = False
+        if self.batch_sampler is not None:
+            object.__setattr__(self, "batch_sampler", _RepeatSampler(self.batch_sampler))
+            self.iterator = super().__iter__()
+            self.few_shot = True
 
     def __len__(self):
-        return len(self.batch_sampler.sampler)
+        if self.few_shot:
+            return len(self.batch_sampler.sampler)
+        else:
+            super().__len__()
 
     def __iter__(self):
-        for i in range(len(self)):
-            yield next(self.iterator)
+        if self.few_shot:
+            for i in range(len(self)):
+                yield next(self.iterator)
+        else:
+            super().__iter__()
 
 
 def get_dataloader(config, mode, model_type, distribute):
@@ -179,10 +188,6 @@ def get_dataloader(config, mode, model_type, distribute):
     trfms_list.append(transforms.Normalize(mean=MEAN, std=STD))
     trfms = transforms.Compose(trfms_list)
 
-    # dataset = torchvision.datasets.ImageNet("/data/IMAGENET2012/", split="train")
-
-    # dataset = GeneralDataset("/data/yxs/", train=True, download=False)
-
     dataset = GeneralDataset(
         data_root=config["data_root"],
         mode=mode,
@@ -191,18 +196,19 @@ def get_dataloader(config, mode, model_type, distribute):
 
     collate_function = get_collate_function(config, trfms, mode, model_type)
 
-    few_shot = model_type != ModelType.FINETUNING
+    few_shot = not (model_type == ModelType.FINETUNING and mode == "train")
 
     sampler = get_sampler(
         dataset=dataset, few_shot=few_shot, distribute=distribute, mode=mode, config=config
     )
 
+    data_scale = 1 if config["n_gpu"] == 0 else config["n_gpu"]
     dataloader = MultiEpochsDataLoader(
         dataset=dataset,
         sampler=None if few_shot else sampler,
         batch_sampler=sampler if few_shot else None,
-        batch_size=1 if few_shot else config["batch_size"],  # batch_size is default set to 1
-        shuffle=False if few_shot and distribute else False,
+        batch_size=1 if few_shot else (config["batch_size"] // data_scale),  # batch_size is default set to 1
+        shuffle=False if few_shot or distribute else True,
         num_workers=4,  # num_workers for each gpu
         drop_last=False if few_shot else True,
         pin_memory=True,

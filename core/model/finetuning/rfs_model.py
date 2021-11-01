@@ -176,11 +176,3 @@ class RFSModel(FinetuningModel):
         classifier.fit(support_feat, support_target)
 
         return classifier
-
-    def train(self, mode=True):
-        self.emb_func.train(mode)
-        self.classifier.train(mode)
-        self.distill_layer.train(False)
-
-    def eval(self):
-        super(RFSModel, self).eval()

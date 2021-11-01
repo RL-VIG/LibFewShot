@@ -88,7 +88,7 @@ class GeneralDataset(Dataset):
         self.label_num = len(self.class_label_dict)
         self.length = len(self.data_list)
 
-        print("load {} image with {} label.".format(self.length, self.label_num))
+        print("load {} {} image with {} label.".format(self.length, mode, self.label_num))
 
     def _generate_data_list(self):
         """Parse a CSV file to a data list(image_name), a label list(corresponding to the data list) and a class-label dict.

@@ -20,7 +20,7 @@ str_level_dict = {
 }
 
 
-def init_logger_config(log_level, result_root, classifier, backbone, is_train=True):
+def init_logger_config(log_level, result_root, classifier, backbone, is_train=True, rank=0):
     if log_level not in str_level_dict:
         raise KeyError
 
@@ -30,37 +30,61 @@ def init_logger_config(log_level, result_root, classifier, backbone, is_train=Tr
     )
     log_path = os.path.join(result_root, file_name)
 
-    logging_config = {
-        "version": 1,
-        "disable_existing_loggers": True,
-        "formatters": {"simple": {"format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s"}},
-        "handlers": {
-            "console": {
-                "level": level,
-                "class": "logging.StreamHandler",
-                "formatter": "simple",
-                "stream": "ext://sys.stdout",
+    if rank == 0:
+        logging_config = {
+            "version": 1,
+            "disable_existing_loggers": True,
+            "formatters": {"simple": {"format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s"}},
+            "handlers": {
+                "console": {
+                    "level": level,
+                    "class": "logging.StreamHandler",
+                    "formatter": "simple",
+                    "stream": "ext://sys.stdout",
+                },
+                "file": {
+                    "level": level,
+                    "class": "logging.handlers.RotatingFileHandler",
+                    "formatter": "simple",
+                    "filename": log_path,
+                    "maxBytes": 100 * 1024 * 1024,
+                    "backupCount": 3,
+                },
             },
-            "file": {
-                "level": level,
-                "class": "logging.handlers.RotatingFileHandler",
-                "formatter": "simple",
-                "filename": log_path,
-                "maxBytes": 100 * 1024 * 1024,
-                "backupCount": 3,
+            "loggers": {
+                "": {
+                    "handlers": [
+                        ("rich-console" if USE_RICH_CONSOLE else "console"),
+                        "file",
+                    ],
+                    "level": level,
+                    "propagate": True,
+                }
             },
-        },
-        "loggers": {
-            "": {
-                "handlers": [
-                    ("rich-console" if USE_RICH_CONSOLE else "console"),
-                    "file",
-                ],
-                "level": level,
-                "propagate": True,
-            }
-        },
-    }
+        }
+    else:
+        logging_config = {
+            "version": 1,
+            "disable_existing_loggers": True,
+            "formatters": {"simple": {"format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s"}},
+            "handlers": {
+                "console": {
+                    "level": level,
+                    "class": "logging.StreamHandler",
+                    "formatter": "simple",
+                    "stream": "ext://sys.stdout",
+                },
+            },
+            "loggers": {
+                "": {
+                    "handlers": [
+                        ("rich-console" if USE_RICH_CONSOLE else "console"),
+                    ],
+                    "level": level,
+                    "propagate": True,
+                }
+            },
+        }
 
     if USE_RICH_CONSOLE:
         logging_config["handlers"].update(

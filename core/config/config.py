@@ -43,8 +43,6 @@ class Config(object):
         self.variable_dict = self._load_variable_dict(variable_dict)
         self.config_dict = self._merge_config_dict()
 
-        self._check_config()
-
     def get_config_dict(self):
         """Returns the merged dict.
 
@@ -229,20 +227,3 @@ class Config(object):
         config_dict["tb_scale"] = float(config_dict["train_episode"]) / config_dict["test_episode"]
 
         return config_dict
-
-    def _check_config(self):
-        """
-        Check the config params.
-        """
-        # check: episode_size >= n_gpu and episode_size != 0
-        assert (
-            self.config_dict["episode_size"] >= self.config_dict["n_gpu"]
-            and self.config_dict["episode_size"] != 0
-        )
-
-        # check: episode_size % n_gpu == 0
-        assert self.config_dict["episode_size"] % self.config_dict["n_gpu"] == 0
-
-        # check: episode_num % episode_size == 0
-        assert self.config_dict["train_episode"] % self.config_dict["episode_size"] == 0
-        assert self.config_dict["test_episode"] % self.config_dict["episode_size"] == 0

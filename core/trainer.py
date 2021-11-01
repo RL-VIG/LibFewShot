@@ -70,6 +70,8 @@ class Trainer(object):
         best_test_acc = float("-inf")
         experiment_begin = time()
         for epoch_idx in range(self.from_epoch + 1, self.config["epoch"]):
+            if self.distribute and self.model_type == ModelType.FINETUNING:
+                self.train_loader.sampler.set_epoch(epoch_idx)
             print("============ Train on the train set ============")
             train_acc = self._train(epoch_idx)
             print(" * Acc@1 {:.3f} ".format(train_acc))
@@ -281,8 +283,6 @@ class Trainer(object):
         Returns:
             tuple: A tuple of (result_path, log_path, checkpoints_path, viz_path).
         """
-        if self.rank != 0:
-            return None, None, None, None
         # you should ensure that data_root name contains its true name
         base_dir = "{}-{}-{}-{}-{}".format(
             config["classifier"]["name"],
@@ -304,16 +304,18 @@ class Trainer(object):
         checkpoints_path = os.path.join(result_path, "checkpoints")
         log_path = os.path.join(result_path, "log_files")
         viz_path = os.path.join(log_path, "tfboard_files")
-        create_dirs([result_path, log_path, checkpoints_path, viz_path])
+        if self.rank == 0:
+            create_dirs([result_path, log_path, checkpoints_path, viz_path])
 
-        with open(os.path.join(result_path, "config.yaml"), "w", encoding="utf-8") as fout:
-            fout.write(yaml.dump(config))
+            with open(os.path.join(result_path, "config.yaml"), "w", encoding="utf-8") as fout:
+                fout.write(yaml.dump(config))
 
         init_logger_config(
             config["log_level"],
             log_path,
             config["classifier"]["name"],
             config["backbone"]["name"],
+            rank=self.rank,
         )
 
         return result_path, log_path, checkpoints_path, viz_path
@@ -323,14 +325,15 @@ class Trainer(object):
 
         # hack print
         def use_logger(msg, level="info", all_rank=False):
-            if self.rank != 0 and ~all_rank:
+            if self.rank != 0 and not all_rank:
                 return
-            if level == "info":
-                self.logger.info(msg)
-            elif level == "warning":
-                self.logger.warning(msg)
-            else:
-                raise ("Not implemente {} level log".format(level))
+            try:
+                if self.rank == 0:
+                    getattr(self.logger, level)(msg)
+                else:
+                    getattr(logging, level)(msg)
+            except:
+                raise ("logging have no {} level".format(level))
 
         builtins.print = use_logger
 
@@ -346,6 +349,7 @@ class Trainer(object):
         Returns:
             tuple: A tuple of (train_loader, val_loader and test_loader).
         """
+        self._check_data_config()
         distribute = self.distribute
         train_loader = get_dataloader(config, "train", self.model_type, distribute)
         val_loader = get_dataloader(config, "val", self.model_type, distribute)
@@ -416,7 +420,7 @@ class Trainer(object):
                 )
             model = model.to(self.rank)
             model = nn.parallel.DistributedDataParallel(
-                model, device_ids=[self.rank], output_device=self.rank
+                model, device_ids=[self.rank], output_device=self.rank, find_unused_parameters=True
             )
 
             return model, model.module.model_type
@@ -589,6 +593,23 @@ class Trainer(object):
             return writer
         else:
             return None
+
+    def _check_data_config(self):
+        """
+        Check the config params.
+        """
+        # check: episode_size >= n_gpu and episode_size != 0
+        assert (
+            self.config["episode_size"] >= self.config["n_gpu"]
+            and self.config["episode_size"] != 0
+        )
+
+        # check: episode_size % n_gpu == 0
+        assert self.config["episode_size"] % self.config["n_gpu"] == 0
+
+        # check: episode_num % episode_size == 0
+        assert self.config["train_episode"] % self.config["episode_size"] == 0
+        assert self.config["test_episode"] % self.config["episode_size"] == 0
 
     def _cal_time_scheduler(self, start_time, epoch_idx):
         """

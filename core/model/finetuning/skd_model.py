@@ -212,12 +212,3 @@ class SKDModel(FinetuningModel):
             rot_target = F.one_hot(rot_target.to(torch.int64), 4).float().to(self.device)
 
         return generated_image, generated_target, rot_target
-
-    def train(self, mode=True):
-        self.emb_func.train(mode)
-        self.rot_classifier.train(mode)
-        self.cls_classifier.train(mode)
-        self.distill_layer.train(False)
-
-    def eval(self):
-        super(SKDModel, self).eval()
