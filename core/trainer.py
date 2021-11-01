@@ -21,7 +21,6 @@ from core.utils import (
     TensorboardWriter,
     count_parameters,
     create_dirs,
-    force_symlink,
     get_local_time,
     init_logger_config,
     init_seed,
@@ -54,6 +53,7 @@ class Trainer(object):
         self.device, self.list_ids = self._init_device(rank, config)
         self.writer = self._init_writer(self.viz_path)
         self.train_meter, self.val_meter, self.test_meter = self._init_meter()
+        print(self.config)
         self.model, self.model_type = self._init_model(config)
         (
             self.train_loader,
@@ -119,7 +119,7 @@ class Trainer(object):
         episode_size = 1 if self.model_type == ModelType.FINETUNING else self.config["episode_size"]
 
         end = time()
-        log_scale = 1 if self.config["n_gpu"] == 0 else self.config["n_gpu"]            
+        log_scale = (1 if self.config["n_gpu"] == 0 else self.config["n_gpu"]) * episode_size
 
         prefetcher = data_prefetcher(self.train_loader)
         batch = prefetcher.next()
@@ -300,7 +300,7 @@ class Trainer(object):
             else config["log_name"]
         )
         result_path = os.path.join(config["result_root"], result_dir)
-        print("Result DIR: " + result_path)
+        # print("Result DIR: " + result_path)
         checkpoints_path = os.path.join(result_path, "checkpoints")
         log_path = os.path.join(result_path, "log_files")
         viz_path = os.path.join(log_path, "tfboard_files")
@@ -309,14 +309,21 @@ class Trainer(object):
         with open(os.path.join(result_path, "config.yaml"), "w", encoding="utf-8") as fout:
             fout.write(yaml.dump(config))
 
+        init_logger_config(
+            config["log_level"],
+            log_path,
+            config["classifier"]["name"],
+            config["backbone"]["name"],
+        )
+
         return result_path, log_path, checkpoints_path, viz_path
 
     def _init_logger(self):
         self.logger = getLogger(__name__)
         
         # hack print
-        def use_logger(msg, level="info"):
-            if self.rank != 0:
+        def use_logger(msg, level="info", all_rank=False):
+            if self.rank != 0 and ~all_rank:
                 return
             if level == "info":
                 self.logger.info(msg)
@@ -396,7 +403,9 @@ class Trainer(object):
                 self.logger.warning("unexpected keys:{}".format(msg.unexpected_keys))
 
         if self.distribute:
-            model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
+            # higher order grad of BN in multi gpu will conflict with syncBN
+            if not (self.config["classifier"]["name"] in ["MAML"] and self.config["n_gpu"] > 1):
+                model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
             model = model.to(self.rank)
             model = nn.parallel.DistributedDataParallel(model, device_ids=[self.rank], output_device=self.rank)
 

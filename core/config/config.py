@@ -254,3 +254,7 @@ class Config(object):
         # check: episode_num % episode_size == 0
         assert self.config_dict["train_episode"] % self.config_dict["episode_size"] == 0
         assert self.config_dict["test_episode"] % self.config_dict["episode_size"] == 0
+
+        # FIXME MAML with multi GPU is conflict with syncBN
+        if self.config_dict["classifier"]["name"] in ["MAML"] and self.config_dict["n_gpu"] > 1:
+            print("\033[1;31m CONFIG WARNING: \033[0m" + "MAML with multi GPU will conflict with syncBN")
