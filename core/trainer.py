@@ -3,7 +3,7 @@ import datetime
 import logging
 import os
 import builtins
-from logging import getLogger
+from logging import ERROR, getLogger
 from time import time
 
 import torch
@@ -73,8 +73,8 @@ class Trainer(object):
             if self.distribute and self.model_type == ModelType.FINETUNING:
                 self.train_loader.sampler.set_epoch(epoch_idx)
             print("============ Train on the train set ============")
-            train_acc = self._train(epoch_idx)
-            print(" * Acc@1 {:.3f} ".format(train_acc))
+            # train_acc = self._train(epoch_idx)
+            # print(" * Acc@1 {:.3f} ".format(train_acc))
             print("============ Validation on the val set ============")
             val_acc = self._validate(epoch_idx, is_test=False)
             print(" * Acc@1 {:.3f} Best acc {:.3f}".format(val_acc, best_val_acc))
@@ -324,15 +324,18 @@ class Trainer(object):
         self.logger = getLogger(__name__)
 
         # hack print
-        def use_logger(msg, level="info", all_rank=False):
+        def use_logger(
+            *msg, level="info", all_rank=False
+        ):  # if neccessary, you need to specific the `level` and `all_rank` params
             if self.rank != 0 and not all_rank:
                 return
             try:
-                if self.rank == 0:
-                    getattr(self.logger, level)(msg)
-                else:
-                    getattr(logging, level)(msg)
-            except:
+                for m in msg:
+                    if self.rank == 0:
+                        getattr(self.logger, level)(m)
+                    else:
+                        getattr(logging, level)(m)
+            except os.error:
                 raise ("logging have no {} level".format(level))
 
         builtins.print = use_logger
@@ -600,8 +603,7 @@ class Trainer(object):
         """
         # check: episode_size >= n_gpu and episode_size != 0
         assert (
-            self.config["episode_size"] >= self.config["n_gpu"]
-            and self.config["episode_size"] != 0
+            self.config["episode_size"] >= self.config["n_gpu"] and self.config["episode_size"] != 0
         )
 
         # check: episode_size % n_gpu == 0
