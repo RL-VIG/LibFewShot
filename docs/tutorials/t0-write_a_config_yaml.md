@@ -78,8 +78,6 @@ The following details each part of the configuration file and explain how to wri
 
 + `test_epoch`: The number of `epoch` during testing.
 
-+ `parallel_part`: The parts that need to be processed in parallel in the forward propagation, and the variable names of the method in these parts are given as a list
-
 + `pretrain_path`: The path of the pre-training weights. At the beginning of the training, this setting will be first checked. If it is not empty, the pre-trained weights of the target path will be loaded into the `backbone` of the current training.
 
 + `resume`: If set to True, the training status is read from the default address to support continual training.
@@ -107,10 +105,6 @@ The following details each part of the configuration file and explain how to wri
   ```yaml
   epoch: 50
   test_epoch: 5
-
-  parallel_part:
-  - emb_func
-  - dn4_layer
 
   pretrain_path: ~
   resume: False
