@@ -78,8 +78,6 @@ LibFewSHot的配置文件采用了yaml格式的文件，同时也支持从命令
 
 + `test_epoch`：测试的`epoch`数。
 
-+ `parallel_part`：在前向传播时需要并行处理的部分，以列表形式给出这些部分在方法中的变量名称。
-
 + `pretrain_path`：预训练权重地址。训练开始时会检查该设置。如果不为空，将会把目标地址的预训练权重载入到当前训练的`backbone`中。
 
 + `resume`：如果设置为True，将从默认地址中读取训练状态从而支持断点重训。
@@ -107,10 +105,6 @@ LibFewSHot的配置文件采用了yaml格式的文件，同时也支持从命令
   ```yaml
   epoch: 50
   test_epoch: 5
-
-  parallel_part:
-  - emb_func
-  - dn4_layer
 
   pretrain_path: ~
   resume: False
