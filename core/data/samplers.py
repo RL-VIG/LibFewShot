@@ -11,22 +11,27 @@ def get_sampler(dataset, few_shot, distribute, mode, config):
             sampler = DistributedCategoriesSampler(
                 label_list=dataset.label_list,
                 label_num=dataset.label_num,
-                episode_size=config["episode_size"],
-                episode_num=(config["train_episode"] if mode == "train" else config["test_episode"]),
+                episode_size=config["episode_size"] // config["n_gpu"],
+                episode_num=(
+                    (config["train_episode"] if mode == "train" else config["test_episode"])
+                    // config["n_gpu"]
+                ),
                 way_num=config["way_num"] if mode == "train" else config["test_way"],
                 image_num=config["shot_num"] + config["query_num"]
                 if mode == "train"
                 else config["test_shot"] + config["test_query"],
                 rank=config["rank"],
                 seed=0,
-                world_size=config["n_gpu"]
+                world_size=config["n_gpu"],
             )
         else:
             sampler = CategoriesSampler(
                 label_list=dataset.label_list,
                 label_num=dataset.label_num,
                 episode_size=config["episode_size"],
-                episode_num=config["train_episode"] if mode == "train" else config["test_episode"],
+                episode_num=(
+                    config["train_episode"] if mode == "train" else config["test_episode"]
+                ),
                 way_num=config["way_num"] if mode == "train" else config["test_way"],
                 image_num=config["shot_num"] + config["query_num"]
                 if mode == "train"
@@ -159,7 +164,6 @@ class DistributedCategoriesSampler(Sampler):
         # print(f"cuda{rank} clsg init seed {self.cls_g.initial_seed()}")
         # print(f"cuda{rank} imgg init seed {self.img_g.initial_seed()}")
 
-
     def __len__(self):
         return self.episode_num // self.episode_size
 
@@ -180,7 +184,6 @@ class DistributedCategoriesSampler(Sampler):
                 batch = torch.stack(batch).reshape(-1)
                 yield batch
                 batch = []
-    
 
     def set_epoch(self, epoch: int) -> None:
         """

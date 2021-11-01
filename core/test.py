@@ -174,7 +174,7 @@ class Test(object):
             if level == "info":
                 self.logger.info(msg)
             else:
-                raise("Not implemente {} level log".format(level))
+                raise ("Not implemente {} level log".format(level))
 
         builtins.print = use_logger
 

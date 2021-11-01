@@ -107,12 +107,13 @@ class _RepeatSampler(object):
 
 class MultiEpochsDataLoader(DataLoader):
     """
-    When training with multiple epochs, 
+    When training with multiple epochs,
     the DataLoader object does not have to re-create the thread and the batch_sampler object to save initialization time for each epoch.
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        object.__setattr__(self, 'batch_sampler', _RepeatSampler(self.batch_sampler))
+        object.__setattr__(self, "batch_sampler", _RepeatSampler(self.batch_sampler))
         self.iterator = super().__iter__()
 
     def __len__(self):
@@ -121,7 +122,6 @@ class MultiEpochsDataLoader(DataLoader):
     def __iter__(self):
         for i in range(len(self)):
             yield next(self.iterator)
-
 
 
 def get_dataloader(config, mode, model_type, distribute):
@@ -191,23 +191,19 @@ def get_dataloader(config, mode, model_type, distribute):
 
     collate_function = get_collate_function(config, trfms, mode, model_type)
 
-    few_shot = (model_type != ModelType.FINETUNING)
+    few_shot = model_type != ModelType.FINETUNING
 
     sampler = get_sampler(
-        dataset=dataset,
-        few_shot = few_shot,
-        distribute=distribute,
-        mode=mode,
-        config=config
+        dataset=dataset, few_shot=few_shot, distribute=distribute, mode=mode, config=config
     )
 
     dataloader = MultiEpochsDataLoader(
         dataset=dataset,
         sampler=None if few_shot else sampler,
         batch_sampler=sampler if few_shot else None,
-        batch_size= 1 if few_shot else config["batch_size"],    # batch_size is default set to 1
+        batch_size=1 if few_shot else config["batch_size"],  # batch_size is default set to 1
         shuffle=False if few_shot and distribute else False,
-        num_workers=4,                                          # num_workers for each gpu
+        num_workers=4,  # num_workers for each gpu
         drop_last=False if few_shot else True,
         pin_memory=True,
         collate_fn=collate_function,

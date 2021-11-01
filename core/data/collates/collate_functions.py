@@ -68,7 +68,7 @@ class FewShotAugCollateFunction(object):
     For finetuning-val, finetuning-test and meta/metric-train/val/test.
     """
 
-    def __init__(self, trfms, times, times_q, way_num, shot_num, query_num, episode_size):
+    def __init__(self, trfms, times, times_q, way_num, shot_num, query_num):
         """Initialize a `FewShotAugCollateFunction`.
 
 
@@ -81,7 +81,6 @@ class FewShotAugCollateFunction(object):
             way_num (int): Few-shot way setting
             shot_num (int): Few-shot shot setting
             query_num (int): Few-shot query setting
-            episode_size (int): Few-shot episode size setting
         """
         super(FewShotAugCollateFunction, self).__init__()
         try:
@@ -98,7 +97,6 @@ class FewShotAugCollateFunction(object):
         self.query_num = query_num
         self.shot_aug = self.shot_num * self.times
         self.query_aug = self.query_num * self.times_q
-        self.episode_size = episode_size
 
     def method(self, batch):
         """Apply transforms and augmentations on a **few-shot** batch.
@@ -147,7 +145,7 @@ class FewShotAugCollateFunction(object):
             # global_labels = torch.tensor(labels,dtype=torch.int64).reshape(self.episode_size,self.way_num,
             # self.shot_num*self.times+self.query_num)
             global_labels = torch.tensor(labels, dtype=torch.int64).reshape(
-                self.episode_size, self.way_num, self.shot_num + self.query_num
+                -1, self.way_num, self.shot_num + self.query_num
             )
             global_labels = (
                 global_labels[..., 0]

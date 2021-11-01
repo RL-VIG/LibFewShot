@@ -30,7 +30,6 @@ def get_collate_function(config, trfms, mode, model_type):
             config["way_num"] if mode == "train" else config["test_way"],
             config["shot_num"] if mode == "train" else config["test_shot"],
             config["query_num"] if mode == "train" else config["test_query"],
-            config["episode_size"],
         )
 
     return collate_function

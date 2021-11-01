@@ -43,7 +43,7 @@ class Config(object):
         self.variable_dict = self._load_variable_dict(variable_dict)
         self.config_dict = self._merge_config_dict()
 
-        self.check_config()
+        self._check_config()
 
     def get_config_dict(self):
         """Returns the merged dict.
@@ -230,31 +230,19 @@ class Config(object):
 
         return config_dict
 
-    def check_config(self,):
+    def _check_config(self):
         """
         Check the config params.
         """
+        # check: episode_size >= n_gpu and episode_size != 0
+        assert (
+            self.config_dict["episode_size"] >= self.config_dict["n_gpu"]
+            and self.config_dict["episode_size"] != 0
+        )
 
-        if self.config_dict["n_gpu"] >= 1:
-            # check: episode_size >= n_gpu
-            if self.config_dict["episode_size"] < self.config_dict["n_gpu"]:
-                raise("episode_size must larger than or equal n_gpu")
-
-            # modify: modify the episode_size = episode_size // n_gpu for DDP
-            if self.config_dict["episode_size"] % self.config_dict["n_gpu"] != 0:
-                self.config_dict["episode_size"] //= self.config_dict["n_gpu"]
-                self.config_dict["train_episode"] //= self.config_dict["n_gpu"]
-                self.config_dict["test_episode"] //= self.config_dict["n_gpu"]
-                print("\033[1;31m CONFIG WARNING: \033[0m" + "episode_size % n_gpu should equal 0. The episode_size will be changed to {}".format(self.config_dict["episode_size"] * self.config_dict["n_gpu"]))
-            else:
-                self.config_dict["episode_size"] = self.config_dict["episode_size"] // self.config_dict["n_gpu"]
-                self.config_dict["train_episode"] //= self.config_dict["n_gpu"]
-                self.config_dict["test_episode"] //= self.config_dict["n_gpu"]
+        # check: episode_size % n_gpu == 0
+        assert self.config_dict["episode_size"] % self.config_dict["n_gpu"] == 0
 
         # check: episode_num % episode_size == 0
         assert self.config_dict["train_episode"] % self.config_dict["episode_size"] == 0
         assert self.config_dict["test_episode"] % self.config_dict["episode_size"] == 0
-
-        # FIXME MAML with multi GPU is conflict with syncBN
-        if self.config_dict["classifier"]["name"] in ["MAML"] and self.config_dict["n_gpu"] > 1:
-            print("\033[1;31m CONFIG WARNING: \033[0m" + "MAML with multi GPU will conflict with syncBN")

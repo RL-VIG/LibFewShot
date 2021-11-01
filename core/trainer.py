@@ -72,7 +72,7 @@ class Trainer(object):
         for epoch_idx in range(self.from_epoch + 1, self.config["epoch"]):
             print("============ Train on the train set ============")
             train_acc = self._train(epoch_idx)
-            print(" * Acc@1 {:.3f} ".format(train_acc)) 
+            print(" * Acc@1 {:.3f} ".format(train_acc))
             print("============ Validation on the val set ============")
             val_acc = self._validate(epoch_idx, is_test=False)
             print(" * Acc@1 {:.3f} Best acc {:.3f}".format(val_acc, best_val_acc))
@@ -93,7 +93,7 @@ class Trainer(object):
                     self._save_model(epoch_idx, SaveType.NORMAL)
 
                 self._save_model(epoch_idx, SaveType.LAST)
-        
+
         if self.rank == 0:
             print(
                 "End of experiment, took {}".format(
@@ -119,7 +119,7 @@ class Trainer(object):
         episode_size = 1 if self.model_type == ModelType.FINETUNING else self.config["episode_size"]
 
         end = time()
-        log_scale = (1 if self.config["n_gpu"] == 0 else self.config["n_gpu"]) * episode_size
+        log_scale = 1 if self.config["n_gpu"] == 0 else self.config["n_gpu"]
 
         prefetcher = data_prefetcher(self.train_loader)
         batch = prefetcher.next()
@@ -130,7 +130,7 @@ class Trainer(object):
                 self.writer.set_step(epoch_idx * len(self.train_loader) + batch_idx * episode_size)
 
             # visualize the weight
-            if self.rank==0 and self.config["log_paramerter"]:
+            if self.rank == 0 and self.config["log_paramerter"]:
                 for i, (name, param) in enumerate(self.model.named_parameters()):
                     if "bn" not in name:
                         save_name = name.replace(".", "/")
@@ -210,7 +210,7 @@ class Trainer(object):
 
         end = time()
         enable_grad = self.model_type != ModelType.METRIC
-        log_scale = (1 if self.config["n_gpu"] == 0 else self.config["n_gpu"]) * episode_size
+        log_scale = 1 if self.config["n_gpu"] == 0 else self.config["n_gpu"]
         with torch.set_grad_enabled(enable_grad):
             loader = self.test_loader if is_test else self.val_loader
             prefetcher = data_prefetcher(loader)
@@ -320,18 +320,20 @@ class Trainer(object):
 
     def _init_logger(self):
         self.logger = getLogger(__name__)
-        
+
         # hack print
         def use_logger(msg, level="info", all_rank=False):
             if self.rank != 0 and ~all_rank:
                 return
             if level == "info":
                 self.logger.info(msg)
+            elif level == "warning":
+                self.logger.warning(msg)
             else:
-                raise("Not implemente {} level log".format(level))
-            
+                raise ("Not implemente {} level log".format(level))
+
         builtins.print = use_logger
-        
+
         return self.logger
 
     def _init_dataloader(self, config):
@@ -380,16 +382,14 @@ class Trainer(object):
         # FIXME: May be inaccurate
 
         if self.config["pretrain_path"] is not None:
-            print(
-                "load pretraining emb_func from {}".format(self.config["pretrain_path"])
-            )
+            print("load pretraining emb_func from {}".format(self.config["pretrain_path"]))
             state_dict = torch.load(self.config["pretrain_path"], map_location="cpu")
             msg = model.emb_func.load_state_dict(state_dict, strict=False)
 
             if len(msg.missing_keys) != 0:
-                self.logger.warning("Missing keys:{}".format(msg.missing_keys))
+                print("Missing keys:{}".format(msg.missing_keys), level="warning")
             if len(msg.unexpected_keys) != 0:
-                self.logger.warning("Unexpected keys:{}".format(msg.unexpected_keys))
+                print("Unexpected keys:{}".format(msg.unexpected_keys), level="warning")
 
         if self.config["resume"]:
             resume_path = os.path.join(self.config["resume_path"], "checkpoints", "model_last.pth")
@@ -398,21 +398,31 @@ class Trainer(object):
             msg = model.load_state_dict(state_dict, strict=False)
 
             if len(msg.missing_keys) != 0:
-                self.logger.warning("missing keys:{}".format(msg.missing_keys))
+                print("missing keys:{}".format(msg.missing_keys), level="warning")
             if len(msg.unexpected_keys) != 0:
-                self.logger.warning("unexpected keys:{}".format(msg.unexpected_keys))
+                print("unexpected keys:{}".format(msg.unexpected_keys), level="warning")
 
         if self.distribute:
             # higher order grad of BN in multi gpu will conflict with syncBN
+            # FIXME MAML with multi GPU is conflict with syncBN
             if not (self.config["classifier"]["name"] in ["MAML"] and self.config["n_gpu"] > 1):
                 model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
+            else:
+                print(
+                    "{} with multi GPU will conflict with syncBN".format(
+                        self.config["classifier"]["name"]
+                    ),
+                    level="warn",
+                )
             model = model.to(self.rank)
-            model = nn.parallel.DistributedDataParallel(model, device_ids=[self.rank], output_device=self.rank)
+            model = nn.parallel.DistributedDataParallel(
+                model, device_ids=[self.rank], output_device=self.rank
+            )
 
             return model, model.module.model_type
         else:
             model = model.to(self.rank)
-            
+
             return model, model.model_type
 
     def _init_optim(self, config):
@@ -485,11 +495,13 @@ class Trainer(object):
         """
         init_seed(config["seed"], config["deterministic"])
         device, list_ids = prepare_device(
-            rank, 
-            config["device_ids"], 
+            rank,
+            config["device_ids"],
             config["n_gpu"],
-            backend="nccl" if not "dist_backend" in self.config else self.config["dist_backend"],
-            dist_url="tcp://127.0.0.1:25000" if not "dist_url" in self.config else self.config["dist_url"],
+            backend="nccl" if "dist_backend" not in self.config else self.config["dist_backend"],
+            dist_url="tcp://127.0.0.1:25000"
+            if "dist_url" not in self.config
+            else self.config["dist_url"],
         )
         torch.cuda.set_device(self.rank)
 
@@ -533,10 +545,11 @@ class Trainer(object):
                             len(self.list_ids) > 1,
                         )
                     else:
-                        self.logger.warning(
+                        print(
                             "{} is not included in {}".format(
                                 save_part, self.config["classifier"]["name"]
-                            )
+                            ),
+                            level="warning",
                         )
 
     def _init_meter(self):
