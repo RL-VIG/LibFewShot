@@ -27,30 +27,24 @@ import torch.nn.functional as F
 
 
 # FIXME: Add multi-GPU support
-class MTLBaseLearner(nn.Module):
+class MTLBaseLearner(nn.Linear):
     """The class for inner loop."""
 
     def __init__(self, way_num, z_dim):
-        super().__init__()
         self.way_num = way_num
         self.z_dim = z_dim
-        self.var = nn.ParameterList()
-        self.fc1_w = nn.Parameter(torch.ones([self.way_num, self.z_dim]))
-        torch.nn.init.kaiming_normal_(self.fc1_w)
-        self.var.append(self.fc1_w)
-        self.fc1_b = nn.Parameter(torch.zeros(self.way_num))
-        self.var.append(self.fc1_b)
+        super().__init__(z_dim, way_num)
 
-    def forward(self, input_x, the_var=None):
-        if the_var is None:
-            the_var = self.var
-        fc1_w = the_var[0]
-        fc1_b = the_var[1]
-        net = F.linear(input_x, fc1_w, fc1_b)
-        return net
+    def forward(self, x, vars=None):
+        if vars is None:
+            return F.linear(x, self.weight, self.bias)
+        else:
+            return F.linear(x, vars[0], vars[1])
 
-    def parameters(self):
-        return self.var
+    def reset_parameters(self):
+        self.weight = nn.Parameter(torch.ones([self.way_num, self.z_dim]))
+        torch.nn.init.kaiming_normal_(self.weight)
+        self.bias = nn.Parameter(torch.zeros(self.way_num))
 
 
 class MTLPretrain(FinetuningModel):  # use image-size=80 in repo
@@ -80,13 +74,23 @@ class MTLPretrain(FinetuningModel):  # use image-size=80 in repo
         with torch.no_grad():
             feat = self.emb_func(image)
 
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=4)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        episode_size, _, c = support_feat.size()
+        output_list = []
+        for i in range(episode_size):
+            self.base_learner.reset_parameters()
+            episode_support_feat = support_feat[i].contiguous().reshape(-1, c)
+            episode_query_feat = query_feat[i].contiguous().reshape(-1, c)
+            episode_support_target = support_target[i].reshape(-1)
+            fast_parameters = self.set_forward_adaptation(
+                episode_support_feat, episode_support_target
+            )
+            output = self.base_learner(episode_query_feat, fast_parameters)
+            output_list.append(output)
 
-        classifier, fast_weight = self.set_forward_adaptation(support_feat, support_target)
+        output = torch.cat(output_list, dim=0)
 
-        output = classifier(query_feat, fast_weight)
-
-        acc = accuracy(output, query_target)
+        acc = accuracy(output, query_target.view(-1))
 
         return output, acc
 
@@ -109,8 +113,7 @@ class MTLPretrain(FinetuningModel):  # use image-size=80 in repo
         return output, acc, loss
 
     def set_forward_adaptation(self, support_feat, support_target):
-        classifier = self.base_learner.to(self.device)
-
+        self.base_learner.to(self.device)
         logit = self.base_learner(support_feat)
         loss = self.loss_func(logit, support_target)
         grad = torch.autograd.grad(loss, self.base_learner.parameters())
@@ -120,11 +123,10 @@ class MTLPretrain(FinetuningModel):  # use image-size=80 in repo
                 zip(grad, self.base_learner.parameters()),
             )
         )
-
         for _ in range(1, self.inner_param["iter"]):
             logit = self.base_learner(support_feat, fast_parameters)
             loss = F.cross_entropy(logit, support_target)
             grad = torch.autograd.grad(loss, fast_parameters)
             fast_parameters = list(map(lambda p: p[1] - 0.01 * p[0], zip(grad, fast_parameters)))
 
-        return classifier, fast_parameters
+        return fast_parameters
