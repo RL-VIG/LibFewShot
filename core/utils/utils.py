@@ -182,16 +182,15 @@ def prepare_device(rank, device_ids, n_gpu_use, backend, dist_url):
         )
         dist.barrier()
 
-    logger = getLogger(__name__)
     os.environ["CUDA_VISIBLE_DEVICES"] = str(device_ids)
 
     n_gpu = torch.cuda.device_count()
     if n_gpu_use > 0 and n_gpu == 0:
-        logger.warning("the model will be performed on CPU.")
+        print("the model will be performed on CPU.")
         n_gpu_use = 0
 
     if n_gpu_use > n_gpu:
-        logger.warning(
+        print(
             "only {} are available on this machine, "
             "but the number of the GPU in config is {}.".format(n_gpu, n_gpu_use)
         )

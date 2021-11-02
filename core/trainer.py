@@ -73,6 +73,7 @@ class Trainer(object):
             if self.distribute and self.model_type == ModelType.FINETUNING:
                 self.train_loader.sampler.set_epoch(epoch_idx)
             print("============ Train on the train set ============")
+            print("learning rate: {}".format(self.scheduler.get_last_lr()))
             train_acc = self._train(epoch_idx)
             print(" * Acc@1 {:.3f} ".format(train_acc))
             print("============ Validation on the val set ============")
@@ -121,7 +122,7 @@ class Trainer(object):
         episode_size = 1 if self.model_type == ModelType.FINETUNING else self.config["episode_size"]
 
         end = time()
-        log_scale = 1 if self.config["n_gpu"] == 0 else self.config["n_gpu"]
+        log_scale = 1 if self.model_type == ModelType.FINETUNING else  episode_size
 
         prefetcher = data_prefetcher(self.train_loader)
         batch = prefetcher.next()
@@ -212,7 +213,7 @@ class Trainer(object):
 
         end = time()
         enable_grad = self.model_type != ModelType.METRIC
-        log_scale = 1 if self.config["n_gpu"] == 0 else self.config["n_gpu"]
+        log_scale = self.config["episode_size"]
         with torch.set_grad_enabled(enable_grad):
             loader = self.test_loader if is_test else self.val_loader
             prefetcher = data_prefetcher(loader)

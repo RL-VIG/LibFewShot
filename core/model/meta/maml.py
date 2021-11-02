@@ -107,7 +107,7 @@ class MAML(MetaModel):
 
         self.emb_func.train()
         self.classifier.train()
-        for i in range(self.inner_param["iter"]):
+        for i in range(self.inner_param["train_iter"] if self.training else self.inner_param["test_iter"]):
             output = self.forward_output(support_set)
             loss = self.loss_func(output, support_target)
             grad = torch.autograd.grad(loss, fast_parameters, create_graph=True)
