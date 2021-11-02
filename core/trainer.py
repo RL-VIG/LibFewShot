@@ -18,7 +18,6 @@ from core.utils import (
     TensorboardWriter,
     count_parameters,
     create_dirs,
-    force_symlink,
     get_local_time,
     init_logger,
     init_seed,
