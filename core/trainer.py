@@ -122,7 +122,7 @@ class Trainer(object):
         episode_size = 1 if self.model_type == ModelType.FINETUNING else self.config["episode_size"]
 
         end = time()
-        log_scale = 1 if self.model_type == ModelType.FINETUNING else  episode_size
+        log_scale = 1 if self.model_type == ModelType.FINETUNING else episode_size
 
         prefetcher = data_prefetcher(self.train_loader)
         batch = prefetcher.next()
@@ -159,7 +159,7 @@ class Trainer(object):
             meter.update("batch_time", time() - end)
 
             # print the intermediate results
-            if ((batch_idx + 1) % self.config["log_interval"] == 0) or (
+            if ((batch_idx + 1) * log_scale % self.config["log_interval"] == 0) or (
                 batch_idx + 1
             ) * episode_size >= len(self.train_loader) * log_scale:
                 info_str = (
@@ -242,7 +242,7 @@ class Trainer(object):
                 # measure elapsed time
                 meter.update("batch_time", time() - end)
 
-                if ((batch_idx + 1) % self.config["log_interval"] == 0) or (
+                if ((batch_idx + 1) * log_scale % self.config["log_interval"] == 0) or (
                     batch_idx + 1
                 ) * episode_size >= len(self.val_loader) * log_scale:
                     info_str = (
