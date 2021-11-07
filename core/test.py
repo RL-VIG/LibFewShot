@@ -20,6 +20,7 @@ from core.utils import (
     TensorboardWriter,
     mean_confidence_interval,
     get_instance,
+    data_prefetcher,
 )
 
 
@@ -88,40 +89,52 @@ class Test(object):
         accuracies = []
 
         end = time()
-        if self.model_type == ModelType.METRIC:
-            enable_grad = False
-        else:
-            enable_grad = True
-
+        enable_grad = self.model_type != ModelType.METRIC
+        log_scale = self.config["episode_size"]
         with torch.set_grad_enabled(enable_grad):
-            for episode_idx, batch in enumerate(self.test_loader):
-                self.writer.set_step(epoch_idx * len(self.test_loader) + episode_idx * episode_size)
+            prefetcher = data_prefetcher(self.test_loader)
+            batch = prefetcher.next()
+            batch_idx = -1
+            while batch is not None:
+                batch_idx += 1
+                if self.rank == 0:
+                    self.writer.set_step(
+                        int(
+                            (epoch_idx * len(self.test_loader) + batch_idx * episode_size)
+                            * self.config["tb_scale"]
+                        )
+                    )
 
                 meter.update("data_time", time() - end)
 
                 # calculate the output
+                calc_begin = time()
                 output, acc = self.model(batch)
                 accuracies.append(acc)
+                meter.update("calc_time", time() - calc_begin)
+
                 # measure accuracy and record loss
                 meter.update("acc", acc)
 
                 # measure elapsed time
                 meter.update("batch_time", time() - end)
-                end = time()
 
-                if (
-                    episode_idx != 0 and (episode_idx + 1) % self.config["log_interval"] == 0
-                ) or episode_idx * episode_size + 1 >= len(self.test_loader):
+                if ((batch_idx + 1) * log_scale % self.config["log_interval"] == 0) or (
+                    batch_idx + 1
+                ) * episode_size >= len(self.test_loader) * log_scale:
                     info_str = (
                         "Epoch-({}): [{}/{}]\t"
                         "Time {:.3f} ({:.3f})\t"
+                        "Calc {:.3f} ({:.3f})\t"
                         "Data {:.3f} ({:.3f})\t"
                         "Acc@1 {:.3f} ({:.3f})".format(
                             epoch_idx,
-                            (episode_idx + 1) * episode_size,
-                            len(self.test_loader),
+                            (batch_idx + 1) * log_scale,
+                            len(self.test_loader) * log_scale,
                             meter.last("batch_time"),
                             meter.avg("batch_time"),
+                            meter.last("calc_time"),
+                            meter.avg("calc_time"),
                             meter.last("data_time"),
                             meter.avg("data_time"),
                             meter.last("acc"),
@@ -129,6 +142,9 @@ class Test(object):
                         )
                     )
                     print(info_str)
+                end = time()
+
+                batch = prefetcher.next()
         if self.distribute:
             self.model.module.reverse_setting_info()
         else:
@@ -143,7 +159,7 @@ class Test(object):
             config (dict): Parsed config file.
 
         Returns:
-            tuple: A tuple of (result_path, log_path, checkpoints_path, viz_path).
+            tuple: A tuple of (viz_path, checkpoints_path).
         """
         if self.result_path is not None:
             result_path = self.result_path
@@ -157,7 +173,6 @@ class Test(object):
                 config["shot_num"],
             )
             result_path = os.path.join(config["result_root"], result_dir)
-        # self.logger.log("Result DIR: " + result_path)
         log_path = os.path.join(result_path, "log_files")
         viz_path = os.path.join(log_path, "tfboard_files")
 
@@ -176,7 +191,7 @@ class Test(object):
     def _init_logger(self):
         self.logger = getLogger(__name__)
 
-        # hack print
+        # Hack print
         def use_logger(msg, level="info"):
             if self.rank != 0:
                 return
@@ -191,13 +206,13 @@ class Test(object):
 
     def _init_dataloader(self, config):
         """
-        Init dataloaders.(train_loader, val_loader and test_loader)
+        Init the Test dataloader.
 
         Args:
             config (dict): Parsed config file.
 
         Returns:
-            tuple: A tuple of (train_loader, val_loader and test_loader).
+            Dataloader: Test_loader.
         """
         self._check_data_config()
         distribute = self.distribute
@@ -223,7 +238,7 @@ class Test(object):
 
     def _init_model(self, config):
         """
-        Init model(backbone+classifier) from the config dict and load the best checkpoint, then parallel if necessary .
+        Init model (backbone+classifier) from the config dict and load the best checkpoint, then parallel if necessary .
 
         Args:
             config (dict): Parsed config file.
@@ -245,9 +260,8 @@ class Test(object):
         model = get_instance(arch, "classifier", config, **model_kwargs)
 
         print(model)
-        print("Trainable params in the model: {}".format(count_parameters(model)))
-
-        print("load the state dict from {}.".format(self.state_dict_path))
+        print("Trainable params in the model: {}.".format(count_parameters(model)))
+        print("Loading the state dict from {}.".format(self.state_dict_path))
         state_dict = torch.load(self.state_dict_path, map_location="cpu")
         model.load_state_dict(state_dict)
 
@@ -282,7 +296,7 @@ class Test(object):
             config (dict): Parsed config file.
 
         Returns:
-            tuple: A tuple of deviceand list_ids.
+            tuple: A tuple of devices and list_ids.
         """
         init_seed(config["seed"], config["deterministic"])
         device, list_ids = prepare_device(
@@ -300,11 +314,13 @@ class Test(object):
 
     def _init_meter(self):
         """
-        Init the AverageMeter of test stage to cal avg... of batch_time, data_time,calc_time ,loss and acc1.
+        Init the AverageMeter of test stage to cal avg... of batch_time, data_time, calc_time and acc.
 
         Returns:
-            tuple: A tuple of train_meter, val_meter, test_meter.
+            AverageMeter: Test_meter.
         """
-        test_meter = AverageMeter("test", ["batch_time", "data_time", "acc"], self.writer)
+        test_meter = AverageMeter(
+            "test", ["batch_time", "data_time", "calc_time", "acc"], self.writer
+        )
 
         return test_meter
