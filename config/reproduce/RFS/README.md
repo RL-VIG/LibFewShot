@@ -36,7 +36,7 @@ Cite this work with:
 
 |   | Config | Embedding | miniImageNet (5,1) | miniImageNet (5,5) |
 |---|---|-----------|--------------------|--------------------|
-| 1 | [rfs-simple](RFS-simple-miniImageNet-ResNet12M-Table1.yaml) |  [ResNet12](https://drive.google.com/drive/folders/1COMUhto08xtSaOazlMw1GndEAfeIZ-XQ?usp=sharing)  [^metaopt] | 62.797 ± 0.517    | 79.566 ± 0.388       |
+| 1 | [rfs-simple](./RFS-simple-miniImageNet-ResNet12M-Table1.yaml) |  [ResNet12](https://drive.google.com/drive/folders/1COMUhto08xtSaOazlMw1GndEAfeIZ-XQ?usp=sharing)  [^metaopt] | 62.797 ± 0.517    | 79.566 ± 0.388       |
 
 
 
