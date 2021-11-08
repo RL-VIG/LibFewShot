@@ -68,7 +68,6 @@ class Trainer(object):
             self.logger.info("============ Train on the train set ============")
             train_acc = self._train(epoch_idx)
             self.logger.info(" * Acc@1 {:.3f} ".format(train_acc))
-            self.logger.info("{}".format(epoch_idx))
             if self.skip_val_epochs <= epoch_idx + 1:
                 self.logger.info("============ Validation on the val set ============")
                 val_acc = self._validate(epoch_idx, is_test=False)

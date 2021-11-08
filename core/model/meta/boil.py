@@ -41,7 +41,10 @@ class BOIL(MetaModel):
         self.classifier = BOILLayer(feat_dim, way_num=self.way_num)
         self.inner_param = inner_param
         self.testing_method = testing_method
-
+        print(
+            "BOIL will use {} for val/test.",
+            self.testing_method if self.testing_method in ["NIL", "Directly"] else "Once_update",
+        )
         convert_maml_module(self)
 
     def forward_output(self, x):
