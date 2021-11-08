@@ -7,12 +7,9 @@ includes:
   - classifiers/BOIL.yaml
   - backbones/Conv64F.yaml
 
-# This config can reach
-# (66.629+-0.308) (NIL test)
-# reported 66.45 ± 0.37
 
 way_num: 5
-shot_num: 5
+shot_num: 1
 query_num: 15
 data_root: /data/wzy/miniImageNet--ravi
 image_size: 84
@@ -21,12 +18,11 @@ augment: False
 augment_times: 1
 augment_times_query: 1
 episode_size: 4
-train_episode: 1000
-test_episode: 50
-# actually BOIL uses idiot_train (train without validation, then test)
-skip_val_epochs: 200
-# so we add a skip_val_epochs(idiot_train) option
-epoch: 200
+train_episode: 300
+test_episode: 1000
+# actually BOIL uses skip_val_epochs (train without validation, then test)
+skip_val_epochs: 100
+epoch: 100
 device_ids: 0
 n_gpu: 1
 
@@ -52,7 +48,7 @@ classifier:
       classifier_lr: 0.0
       extractor_lr: 0.5
     feat_dim: 1600
-    testing_method: NIL
+    testing_method: Once_update
 
 backbone:
   name: Conv64F
