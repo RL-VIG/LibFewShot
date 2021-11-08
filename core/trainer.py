@@ -68,7 +68,8 @@ class Trainer(object):
             self.logger.info("============ Train on the train set ============")
             train_acc = self._train(epoch_idx)
             self.logger.info(" * Acc@1 {:.3f} ".format(train_acc))
-            if self.skip_val_epochs <= epoch_idx:
+            self.logger.info("{}".format(epoch_idx))
+            if self.skip_val_epochs <= epoch_idx + 1:
                 self.logger.info("============ Validation on the val set ============")
                 val_acc = self._validate(epoch_idx, is_test=False)
                 self.logger.info(" * Acc@1 {:.3f} Best acc {:.3f}".format(val_acc, best_val_acc))
@@ -78,7 +79,7 @@ class Trainer(object):
             time_scheduler = self._cal_time_scheduler(experiment_begin, epoch_idx)
             self.logger.info(" * Time: {}".format(time_scheduler))
 
-            if self.skip_val_epochs <= epoch_idx:
+            if self.skip_val_epochs <= epoch_idx + 1:
                 if val_acc > best_val_acc:
                     best_val_acc = val_acc
                     best_test_acc = test_acc
