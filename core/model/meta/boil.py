@@ -41,17 +41,13 @@ class BOIL(MetaModel):
         self.classifier = BOILLayer(feat_dim, way_num=self.way_num)
         self.inner_param = inner_param
         self.testing_method = testing_method
-        print(
-            "BOIL will use {} for val/test.".format(
-                self.testing_method if self.testing_method in ["NIL", "Directly"] else "Once_update"
-            )
-        )
+
         convert_maml_module(self)
 
     def forward_output(self, x):
-        out1 = self.emb_func(x)
-        out2 = self.classifier(out1)
-        return out1, out2
+        feat_wo_head = self.emb_func(x)
+        feat_w_head = self.classifier(feat_wo_head)
+        return feat_wo_head, feat_w_head
 
     def set_forward(self, batch):
         image, global_target = batch
@@ -66,23 +62,25 @@ class BOIL(MetaModel):
             episode_support_image = support_image[i].contiguous().reshape(-1, c, h, w)
             episode_query_image = query_image[i].contiguous().reshape(-1, c, h, w)
             episode_support_target = support_target[i].reshape(-1)
-            # episode_query_target = query_target[i].reshape(-1)
             if self.testing_method == "Directly":
                 _, output = self.forward_output(episode_query_image)
-            else:
+            elif self.testing_method == "Once_update":
                 self.set_forward_adaptation(episode_support_image, episode_support_target)
                 _, output = self.forward_output(episode_query_image)
-                if self.testing_method == "NIL":
-                    support_features, _ = self.forward_output(episode_support_image)
-                    query_features, _ = self.forward_output(episode_query_image)
-                    cos = nn.CosineSimilarity()
-                    support_features_mean = torch.mean(
-                        support_features.reshape(self.way_num, self.shot_num, -1), dim=1
-                    )
-                    output = cos(
-                        query_features.unsqueeze(-1),
-                        support_features_mean.transpose(-1, -2).unsqueeze(0),
-                    )
+            elif self.testing_method == "NIL":
+                support_features, _ = self.forward_output(episode_support_image)
+                query_features, _ = self.forward_output(episode_query_image)
+                support_features_mean = torch.mean(
+                    support_features.reshape(self.way_num, self.shot_num, -1), dim=1
+                )
+                output = nn.CosineSimilarity()(
+                    query_features.unsqueeze(-1),
+                    support_features_mean.transpose(-1, -2).unsqueeze(0),
+                )
+            else:
+                raise NotImplementedError(
+                    'Unknown testing method. The testing_method should in ["NIL", "Directly","Once_update"]'
+                )
             output_list.append(output)
 
         output = torch.cat(output_list, dim=0)
