@@ -83,7 +83,7 @@ class MTL(MetaModel):
 
         output = classifier(query_feat, base_learner_weight)
 
-        acc = accuracy(output, query_target)
+        acc = accuracy(output, query_target.contiguous().reshape(-1))
 
         return output, acc
 
@@ -102,7 +102,7 @@ class MTL(MetaModel):
         classifier, base_learner_weight = self.set_forward_adaptation(support_feat, support_target)
 
         output = classifier(query_feat, base_learner_weight)
-        loss = self.loss_func(output, query_target)
+        loss = self.loss_func(output, query_target.contiguous().reshape(-1))
         acc = accuracy(output, query_target)
 
         return output, acc, loss

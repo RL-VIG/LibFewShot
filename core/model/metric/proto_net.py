@@ -41,9 +41,9 @@ class ProtoLayer(nn.Module):
         _, ws, _ = support_feat.size()
 
         # t, wq, c
-        query_feat = query_feat.view(t, way_num * query_num, c)
+        query_feat = query_feat.reshape(t, way_num * query_num, c)
         # t, w, c
-        support_feat = support_feat.view(t, way_num, shot_num, c)
+        support_feat = support_feat.reshape(t, way_num, shot_num, c)
         proto_feat = torch.mean(support_feat, dim=2)
 
         return {
@@ -81,8 +81,8 @@ class ProtoNet(MetricModel):
 
         output = self.proto_layer(
             query_feat, support_feat, self.way_num, self.shot_num, self.query_num
-        ).view(episode_size * self.way_num * self.query_num, self.way_num)
-        acc = accuracy(output, query_target.view(-1))
+        ).reshape(episode_size * self.way_num * self.query_num, self.way_num)
+        acc = accuracy(output, query_target.reshape(-1))
 
         return output, acc
 
@@ -100,8 +100,8 @@ class ProtoNet(MetricModel):
 
         output = self.proto_layer(
             query_feat, support_feat, self.way_num, self.shot_num, self.query_num
-        ).view(episode_size * self.way_num * self.query_num, self.way_num)
-        loss = self.loss_func(output, query_target.view(-1))
-        acc = accuracy(output, query_target.view(-1))
+        ).reshape(episode_size * self.way_num * self.query_num, self.way_num)
+        loss = self.loss_func(output, query_target.reshape(-1))
+        acc = accuracy(output, query_target.reshape(-1))
 
         return output, acc, loss

@@ -117,10 +117,10 @@ class ConvMNet(MetricModel):
             query_target,
         ) = self.split_by_episode(feat, mode=2)
 
-        output = self.convm_layer(query_feat, support_feat).view(
+        output = self.convm_layer(query_feat, support_feat).reshape(
             episode_size * self.way_num * self.query_num, self.way_num
         )
-        acc = accuracy(output, query_target.view(-1))
+        acc = accuracy(output, query_target.reshape(-1))
 
         return output, acc
 
@@ -141,10 +141,10 @@ class ConvMNet(MetricModel):
             query_target,
         ) = self.split_by_episode(feat, mode=2)
 
-        output = self.convm_layer(query_feat, support_feat).view(
+        output = self.convm_layer(query_feat, support_feat).reshape(
             episode_size * self.way_num * self.query_num, self.way_num
         )
-        loss = self.loss_func(output, query_target.view(-1))
-        acc = accuracy(output, query_target.view(-1))
+        loss = self.loss_func(output, query_target.reshape(-1))
+        acc = accuracy(output, query_target.reshape(-1))
 
         return output, acc, loss

@@ -130,7 +130,7 @@ class R2D2(MetaModel):
             self.way_num, self.shot_num, query_feat, support_feat, support_target
         )
 
-        output = output.contiguous().view(-1, self.way_num)
+        output = output.contiguous().reshape(-1, self.way_num)
         acc = accuracy(output.squeeze(), query_target.contiguous().reshape(-1))
         return output, acc
 
@@ -144,7 +144,7 @@ class R2D2(MetaModel):
             self.way_num, self.shot_num, query_feat, support_feat, support_target
         )
 
-        output = output.contiguous().view(-1, self.way_num)
+        output = output.contiguous().reshape(-1, self.way_num)
         loss = self.loss_func(output, query_target.contiguous().reshape(-1))
         acc = accuracy(output.squeeze(), query_target.contiguous().reshape(-1))
         return output, acc, loss

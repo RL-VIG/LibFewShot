@@ -86,7 +86,7 @@ class MTLPretrain(FinetuningModel):  # use image-size=80 in repo
 
         output = classifier(query_feat, fast_weight)
 
-        acc = accuracy(output, query_target)
+        acc = accuracy(output, query_target.contiguous().reshape(-1))
 
         return output, acc
 
