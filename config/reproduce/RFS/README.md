@@ -34,9 +34,9 @@ Cite this work with:
 
 **Classification**
 
-|   | Config | Embedding | miniImageNet (5,1) | miniImageNet (5,5) |
-|---|---|-----------|--------------------|--------------------|
-| 1 | [rfs-simple](./RFS-simple-miniImageNet-ResNet12M-Table1.yaml) |  [ResNet12](https://drive.google.com/drive/folders/1COMUhto08xtSaOazlMw1GndEAfeIZ-XQ?usp=sharing)  [^metaopt] | 62.797 ± 0.517    | 79.566 ± 0.388       |
+|   | Embedding | miniImageNet (5,1) | miniImageNet (5,5) | Comments |
+|---|-----------|--------------------|--------------------|---|
+| 1 | ResNet12  [^metaopt] | 62.797 ± 0.517 [:arrow_down:](https://drive.google.com/drive/folders/1COMUhto08xtSaOazlMw1GndEAfeIZ-XQ?usp=sharing)  [:clipboard:](./RFS-simple-miniImageNet-ResNet12M-Table1.yaml)   | 79.566 ± 0.388   [:arrow_down:](https://drive.google.com/drive/folders/1COMUhto08xtSaOazlMw1GndEAfeIZ-XQ?usp=sharing)  [:clipboard:](./RFS-simple-miniImageNet-ResNet12M-Table1.yaml)    | rfs-simple |
 
 
 
