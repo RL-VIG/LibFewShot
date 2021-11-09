@@ -7,3 +7,4 @@ backbone:
     negative_slope: 0.2
     last_pool: False
     maxpool_last2: True
+    use_running_statistics: True
