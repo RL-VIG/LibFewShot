@@ -101,18 +101,18 @@ class MultiHeadAttention(nn.Module):
         sz_b, len_v, _ = v.size()
 
         residual = q
-        q = self.w_qs(q).view(sz_b, len_q, n_head, d_k)
-        k = self.w_ks(k).view(sz_b, len_k, n_head, d_k)
-        v = self.w_vs(v).view(sz_b, len_v, n_head, d_v)
+        q = self.w_qs(q).reshape(sz_b, len_q, n_head, d_k)
+        k = self.w_ks(k).reshape(sz_b, len_k, n_head, d_k)
+        v = self.w_vs(v).reshape(sz_b, len_v, n_head, d_v)
 
-        q = q.permute(2, 0, 1, 3).contiguous().view(-1, len_q, d_k)  # (n*b) x lq x dk
-        k = k.permute(2, 0, 1, 3).contiguous().view(-1, len_k, d_k)  # (n*b) x lk x dk
-        v = v.permute(2, 0, 1, 3).contiguous().view(-1, len_v, d_v)  # (n*b) x lv x dv
+        q = q.permute(2, 0, 1, 3).contiguous().reshape(-1, len_q, d_k)  # (n*b) x lq x dk
+        k = k.permute(2, 0, 1, 3).contiguous().reshape(-1, len_k, d_k)  # (n*b) x lk x dk
+        v = v.permute(2, 0, 1, 3).contiguous().reshape(-1, len_v, d_v)  # (n*b) x lv x dv
 
         output, attn, log_attn = self.attention(q, k, v)
 
-        output = output.view(n_head, sz_b, len_q, d_v)
-        output = output.permute(1, 2, 0, 3).contiguous().view(sz_b, len_q, -1)  # b x lq x (n*dv)
+        output = output.reshape(n_head, sz_b, len_q, d_v)
+        output = output.permute(1, 2, 0, 3).contiguous().reshape(sz_b, len_q, -1)  # b x lq x (n*dv)
 
         output = self.dropout(self.fc(output))
         output = self.layer_norm(output + residual)
@@ -146,9 +146,9 @@ class FEAT(MetricModel):
             self.feat, mode=1
         )
 
-        logits = self._calc_logits().view(-1, self.way_num)
+        logits = self._calc_logits().reshape(-1, self.way_num)
 
-        acc = accuracy(logits, query_target.view(-1))
+        acc = accuracy(logits, query_target.reshape(-1))
         return logits, acc
 
     def set_forward_loss(self, batch):
@@ -166,17 +166,17 @@ class FEAT(MetricModel):
         )
 
         target_aux = torch.cat(
-            [support_target.view(-1).contiguous(), query_target.view(-1).contiguous()]
+            [support_target.reshape(-1).contiguous(), query_target.reshape(-1).contiguous()]
         )
 
-        logits = self._calc_logits().view(-1, self.way_num)
-        reg_logits = self._calc_reg_logits().view(-1, self.way_num)
+        logits = self._calc_logits().reshape(-1, self.way_num)
+        reg_logits = self._calc_reg_logits().reshape(-1, self.way_num)
 
-        loss1 = self.loss_func(logits, query_target.view(-1))
+        loss1 = self.loss_func(logits, query_target.reshape(-1))
 
         loss_reg = self.loss_func(reg_logits, target_aux)
 
-        acc = accuracy(logits, query_target.view(-1))
+        acc = accuracy(logits, query_target.reshape(-1))
         loss = loss1 * self.balance + loss_reg
         return logits, acc, loss
 
@@ -208,18 +208,18 @@ class FEAT(MetricModel):
         )
         # e w sq d
         num_query = np.prod(aux_task.shape[1:3])  # wsq*d
-        aux_task = aux_task.view(
+        aux_task = aux_task.reshape(
             self.episode_size * self.way_num, self.shot_num + self.query_num, self.hdim
         )
 
         # apply the transformation over the Aug Task
-        aux_emb = self.slf_attn(aux_task, aux_task, aux_task).view(
+        aux_emb = self.slf_attn(aux_task, aux_task, aux_task).reshape(
             self.episode_size, self.way_num, self.shot_num + self.query_num, self.hdim
         )  # e w qs d
         # compute class mean
         aux_center = aux_emb.mean(2)  # e w d # same as proto
         aux_task = (
-            aux_task.view(
+            aux_task.reshape(
                 self.episode_size * self.way_num * (self.shot_num + self.query_num),
                 self.hdim,
             )

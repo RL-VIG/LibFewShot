@@ -49,7 +49,7 @@ class RelationLayer(nn.Module):
     def forward(self, x):
         # print(x.shape)
         out = self.layers(x)
-        out = out.view(x.size(0), -1)
+        out = out.reshape(x.size(0), -1)
         out = self.fc(out)
         return out
 
@@ -76,9 +76,9 @@ class RelationNet(MetricModel):
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
 
         relation_pair = self._calc_pairs(query_feat, support_feat)
-        output = self.relation_layer(relation_pair).view(-1, self.way_num)
+        output = self.relation_layer(relation_pair).reshape(-1, self.way_num)
 
-        acc = accuracy(output, query_target.view(-1))
+        acc = accuracy(output, query_target.reshape(-1))
         return output, acc
 
     def set_forward_loss(self, batch):
@@ -94,10 +94,10 @@ class RelationNet(MetricModel):
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
 
         relation_pair = self._calc_pairs(query_feat, support_feat)
-        output = self.relation_layer(relation_pair).view(-1, self.way_num)
+        output = self.relation_layer(relation_pair).reshape(-1, self.way_num)
 
-        loss = self.loss_func(output, query_target.view(-1))
-        acc = accuracy(output, query_target.view(-1))
+        loss = self.loss_func(output, query_target.reshape(-1))
+        acc = accuracy(output, query_target.reshape(-1))
         return output, acc, loss
 
     def _calc_pairs(self, query_feat, support_feat):
@@ -113,7 +113,7 @@ class RelationNet(MetricModel):
         query_feat = torch.transpose(query_feat, 1, 2)
 
         # t, w, s, c, h, w -> t, 1, w, c, h, w -> t, wq, w, c, h, w
-        support_feat = support_feat.view(t, self.way_num, self.shot_num, c, h, w)
+        support_feat = support_feat.reshape(t, self.way_num, self.shot_num, c, h, w)
         support_feat = (
             torch.sum(support_feat, dim=(2,))
             .unsqueeze(1)
@@ -121,5 +121,5 @@ class RelationNet(MetricModel):
         )
 
         # t, wq, w, 2c, h, w -> twqw, 2c, h, w
-        relation_pair = torch.cat((query_feat, support_feat), dim=3).view(-1, c * 2, h, w)
+        relation_pair = torch.cat((query_feat, support_feat), dim=3).reshape(-1, c * 2, h, w)
         return relation_pair

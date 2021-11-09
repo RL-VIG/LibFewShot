@@ -49,8 +49,8 @@ class AEAModule(nn.Module):
         t, wq, hw, c = x.size()
 
         # t, wq, hw, c -> t, wq, hw, 1
-        clamp_value = self.f_psi(x.view(t * wq * hw, c)) * self.value_interval + self.from_value
-        clamp_value = clamp_value.view(t, wq, hw, 1)
+        clamp_value = self.f_psi(x.reshape(t * wq * hw, c)) * self.value_interval + self.from_value
+        clamp_value = clamp_value.reshape(t, wq, hw, 1)
         clamp_fx = torch.sigmoid(self.scale_value * (f_x - clamp_value))
         attention_mask = F.normalize(clamp_fx, p=1, dim=-1)
 
@@ -99,17 +99,17 @@ class ATL_Layer(nn.Module):
         # t, wq, c, hw -> t, wq, hw, c
         # t, ws, c, hw -> t, c, ws, hw -> t, 1, c, wshw
         w_query = (
-            self.W(query_feat.view(t * wq, c, h, w))
-            .view(t, wq, c, h * w)
+            self.W(query_feat.reshape(t * wq, c, h, w))
+            .reshape(t, wq, c, h * w)
             .permute(0, 1, 3, 2)
             .contiguous()
         )
         w_support = (
-            self.W(support_feat.view(t * ws, c, h, w))
-            .view(t, ws, c, h * w)
+            self.W(support_feat.reshape(t * ws, c, h, w))
+            .reshape(t, ws, c, h * w)
             .permute(0, 2, 1, 3)
             .contiguous()
-            .view(t, 1, c, ws * h * w)
+            .reshape(t, 1, c, ws * h * w)
         )
 
         w_query = F.normalize(w_query, dim=3)
@@ -121,12 +121,12 @@ class ATL_Layer(nn.Module):
 
         # t, wq, c, hw -> t, wq, hw, c
         # t, ws, c, hw -> t, c, ws, hw -> t, 1, c, wshw
-        query_feat = query_feat.view(t, wq, c, h * w).permute(0, 1, 3, 2).contiguous()
+        query_feat = query_feat.reshape(t, wq, c, h * w).permute(0, 1, 3, 2).contiguous()
         support_feat = (
-            support_feat.view(t, ws, c, h * w)
+            support_feat.reshape(t, ws, c, h * w)
             .permute(0, 2, 1, 3)
             .contiguous()
-            .view(t, 1, c, ws * h * w)
+            .reshape(t, 1, c, ws * h * w)
         )
 
         query_feat = F.normalize(query_feat, dim=3)
@@ -138,7 +138,7 @@ class ATL_Layer(nn.Module):
 
         atten_match_score = (
             torch.mul(atten_score, match_score)
-            .view(t, wq, h * w, way_num, shot_num, h * w)
+            .reshape(t, wq, h * w, way_num, shot_num, h * w)
             .permute(0, 1, 3, 4, 2, 5)
         )
         score = torch.sum(atten_match_score, dim=5)
@@ -185,10 +185,10 @@ class ATLNet(MetricModel):
             query_target,
         ) = self.split_by_episode(feat, mode=2)
 
-        output = self.atlLayer(self.way_num, self.shot_num, query_feat, support_feat).view(
+        output = self.atlLayer(self.way_num, self.shot_num, query_feat, support_feat).reshape(
             episode_size * self.way_num * self.query_num, self.way_num
         )
-        acc = accuracy(output, query_target.view(-1))
+        acc = accuracy(output, query_target.reshape(-1))
 
         return output, acc
 
@@ -209,10 +209,10 @@ class ATLNet(MetricModel):
             query_target,
         ) = self.split_by_episode(feat, mode=2)
 
-        output = self.atlLayer(self.way_num, self.shot_num, query_feat, support_feat).view(
+        output = self.atlLayer(self.way_num, self.shot_num, query_feat, support_feat).reshape(
             episode_size * self.way_num * self.query_num, self.way_num
         )
-        loss = self.loss_func(output, query_target.view(-1))
-        acc = accuracy(output, query_target.view(-1))
+        loss = self.loss_func(output, query_target.reshape(-1))
+        acc = accuracy(output, query_target.reshape(-1))
 
         return output, acc, loss

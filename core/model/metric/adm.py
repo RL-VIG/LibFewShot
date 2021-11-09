@@ -50,7 +50,7 @@ class ADMLayer(nn.Module):
 
     def _cal_cov_batch(self, feat):  # feature: e * 25 * 64 * 21 * 21
         e, b, c, h, w = feat.size()
-        feat = feat.view(e, b, c, -1).permute(0, 1, 3, 2)
+        feat = feat.reshape(e, b, c, -1).permute(0, 1, 3, 2)
         feat_mean = torch.mean(feat, 2, True)  # e * Batch * 1 * 64
         feat = feat - feat_mean
         cov_matrix = torch.matmul(feat.permute(0, 1, 3, 2), feat)
@@ -116,11 +116,11 @@ class ADMLayer(nn.Module):
 
         query_mean, query_cov = self._cal_cov_batch(query_feat)
 
-        query_feat = query_feat.view(e, b, c, -1).permute(0, 1, 3, 2).contiguous()
+        query_feat = query_feat.reshape(e, b, c, -1).permute(0, 1, 3, 2).contiguous()
 
         # Calculate the mean and covariance of the support set
-        support_feat = support_feat.view(e, s, c, -1).permute(0, 1, 3, 2).contiguous()
-        support_set = support_feat.view(e, self.way_num, self.shot_num * h * w, c)
+        support_feat = support_feat.reshape(e, s, c, -1).permute(0, 1, 3, 2).contiguous()
+        support_set = support_feat.reshape(e, self.way_num, self.shot_num * h * w, c)
 
         # s_mean: e * 5 * 1 * 64  s_cov: e * 5 * 64 * 64
         s_mean, s_cov = self._cal_cov_matrix_batch(support_set)
@@ -131,7 +131,7 @@ class ADMLayer(nn.Module):
         # Calculate the Image-to-Class Similarity
         query_norm = F.normalize(query_feat, p=2, dim=3)
         support_norm = F.normalize(support_feat, p=2, dim=3)
-        support_norm = support_norm.view(e, self.way_num, self.shot_num * h * w, c)
+        support_norm = support_norm.reshape(e, self.way_num, self.shot_num * h * w, c)
 
         # cosine similarity between a query set and a support set
         # e * 75 * 5 * 441 * 2205
@@ -180,10 +180,10 @@ class ADM(MetricModel):
         feat = self.emb_func(image)
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
 
-        output = self.adm_layer(query_feat, support_feat).view(
+        output = self.adm_layer(query_feat, support_feat).reshape(
             episode_size * self.way_num * self.query_num, -1
         )
-        acc = accuracy(output, query_target.view(-1))
+        acc = accuracy(output, query_target.reshape(-1))
         return output, acc
 
     def set_forward_loss(self, batch):
@@ -198,9 +198,9 @@ class ADM(MetricModel):
         feat = self.emb_func(image)
         support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
         # assume here we will get n_dim=5
-        output = self.adm_layer(query_feat, support_feat).view(
+        output = self.adm_layer(query_feat, support_feat).reshape(
             episode_size * self.way_num * self.query_num, -1
         )
-        loss = self.loss_func(output, query_target.view(-1))
-        acc = accuracy(output, query_target.view(-1))
+        loss = self.loss_func(output, query_target.reshape(-1))
+        acc = accuracy(output, query_target.reshape(-1))
         return output, acc, loss
