@@ -22,11 +22,11 @@ Cite this work with (template):
 
 **Classification**
 
-|   | Config | Embedding | miniImageNet (5,1) | miniImageNet (5,5) |
-|---|---| -----------|--------------------|--------------------|
-| 1 | [Config-Name](Link-to-config) | Conv64F   | [50.00 ± 0.05](Link-to-download-url)       | 50.00 ± 0.05       |
-| 2 | Config-Name | ResNet12[^1]  | 50.00 ± 0.05        | 50.00 ± 0.05       |
-| 3 | Config-Name |ResNet12[^metaopt] | 50.00 ± 0.05       | 50.00 ± 0.05       |
+|   | Embedding | miniImageNet (5,1) | miniImageNet (5,5) | Comments |
+|---| -----------|--------------------|--------------------|---|
+| 1 | Conv64F | 50.00 ± 0.05 [:arrow_down:](Link-to-model-url) [:clipboard:](Link-to-config-url) | 50.00 ± 0.05 | Comments |
+| 2 | ResNet12[^1] | 50.00 ± 0.05 | 50.00 ± 0.05 | Comments |
+| 3 | ResNet12[^metaopt] | 50.00 ± 0.05 | 50.00 ± 0.05 | Comments |
 
 
 
