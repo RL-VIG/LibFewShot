@@ -1,5 +1,5 @@
 epoch: 50
-skip_val_epochs: 100000
+val_per_epoch: 1
 test_epoch: 5
 
 parallel_part:

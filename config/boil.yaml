@@ -7,6 +7,8 @@ includes:
   - classifiers/BOIL.yaml
   - backbones/Conv64F.yaml
 
+# batch-iter = epoch
+# train-batches = train_episode
 
 way_num: 5
 shot_num: 1
@@ -18,12 +20,12 @@ augment: False
 augment_times: 1
 augment_times_query: 1
 episode_size: 4
-train_episode: 300
-test_episode: 1000
-# actually BOIL uses skip_val_epochs (train without validation, then test)
-skip_val_epochs: 100
-epoch: 100
-device_ids: 0
+train_episode: 100
+test_episode: 2500
+# actually BOIL uses val_per_epoch (train without validation, then test)
+val_per_epoch: 50
+epoch: 300
+device_ids: 1
 n_gpu: 1
 
 

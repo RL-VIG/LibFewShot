@@ -42,8 +42,9 @@ class BOIL(MetaModel):
         self.inner_param = inner_param
         self.testing_method = testing_method
         print(
-            "BOIL will use {} for val/test.",
-            self.testing_method if self.testing_method in ["NIL", "Directly"] else "Once_update",
+            "BOIL will use {} for val/test.".format(
+                self.testing_method if self.testing_method in ["NIL", "Directly"] else "Once_update"
+            )
         )
         convert_maml_module(self)
 
@@ -109,7 +110,7 @@ class BOIL(MetaModel):
             output_list.append(output)
 
         output = torch.cat(output_list, dim=0)
-        loss = self.loss_func(output, query_target.contiguous().view(-1))
+        loss = self.loss_func(output, query_target.contiguous().view(-1)) / episode_size
         acc = accuracy(output, query_target.contiguous().view(-1))
         return output, acc, loss
 
