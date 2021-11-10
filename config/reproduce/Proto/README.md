@@ -27,6 +27,6 @@ Cite this work with:
 
 **Classification**
 
-|   | Embedding | miniImageNet (5,1) | miniImageNet (5,5) | Comments |
-|---| -----------|--------------------|--------------------|---|
-| 1 | Conv64F | 47.050 ± 0.354 [:arrow_down:](https://drive.google.com/drive/folders/1OjobWtwiGbH9kkI7Zzh2tg5Y0Eh8O3zM?usp=sharing) [:clipboard:](./ProtoNet-miniImageNet-Conv64F-5-1-Table2.yaml) | 68.564 ± 0.164 [:arrow_down:](https://drive.google.com/drive/folders/1kekt2wiecx4TVgKiDCAiXM-cBfrQ3YC3?usp=sharing) [:clipboard:](./ProtoNet-miniImageNet-Conv64F-5-5-Table2.yaml) | Table.2 |
+|   | Embedding | :book: miniImageNet (5,1) | :computer: miniImageNet (5,1) | :book:miniImageNet (5,5) | :computer: miniImageNet (5,5) | :memo: Comments  |
+|---|-----------|--------------------|--------------------|--------------------|--------------------|---|
+| 1 | Conv64F | 46.14 ± 0.77 | 47.05 ± 0.354[:arrow_down:](https://drive.google.com/drive/folders/1OjobWtwiGbH9kkI7Zzh2tg5Y0Eh8O3zM?usp=sharing) [:clipboard:](./ProtoNet-miniImageNet-Conv64F-5-1-Table2.yaml)| 65.77 ± 0.70 | 68.56 ± 0.16 [:arrow_down:](https://drive.google.com/drive/folders/1kekt2wiecx4TVgKiDCAiXM-cBfrQ3YC3?usp=sharing) [:clipboard:](./ProtoNet-miniImageNet-Conv64F-5-5-Table2.yaml) | Table.2 |

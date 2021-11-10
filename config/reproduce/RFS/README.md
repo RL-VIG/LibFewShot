@@ -34,9 +34,10 @@ Cite this work with:
 
 **Classification**
 
-|   | Embedding | miniImageNet (5,1) | miniImageNet (5,5) | Comments |
-|---|-----------|--------------------|--------------------|---|
-| 1 | ResNet12  [^metaopt] | 62.797 ± 0.517 [:arrow_down:](https://drive.google.com/drive/folders/1COMUhto08xtSaOazlMw1GndEAfeIZ-XQ?usp=sharing)  [:clipboard:](./RFS-simple-miniImageNet-ResNet12M-Table1.yaml)   | 79.566 ± 0.388   [:arrow_down:](https://drive.google.com/drive/folders/1COMUhto08xtSaOazlMw1GndEAfeIZ-XQ?usp=sharing)  [:clipboard:](./RFS-simple-miniImageNet-ResNet12M-Table1.yaml)    | rfs-simple |
+|   | Embedding | :book: miniImageNet (5,1) | :computer: miniImageNet (5,1) | :book:miniImageNet (5,5) | :computer: miniImageNet (5,5) | :memo: Comments  |
+|---|-----------|--------------------|--------------------|--------------------|--------------------|---|
+| 1 | ResNet12  [^metaopt] | 62.02 ± 0.63 | 62.80 ± 0.52 [:arrow_down:](https://drive.google.com/drive/folders/1COMUhto08xtSaOazlMw1GndEAfeIZ-XQ?usp=sharing)  [:clipboard:](./RFS-simple-miniImageNet-ResNet12M-Table1.yaml) | 79.64 ± 0.44 | 79.57± 0.39   [:arrow_down:](https://drive.google.com/drive/folders/1COMUhto08xtSaOazlMw1GndEAfeIZ-XQ?usp=sharing)  [:clipboard:](./RFS-simple-miniImageNet-ResNet12M-Table1.yaml)    | rfs-simple-Table-1 |
+
 
 
 
