@@ -5,7 +5,7 @@
 | Embed.:  | Conv64F |
 | Type:    | Metric       |
 | Venue:   | NeurIPS'17                      |
-| Codes:   | [*Prototypical-Networks-for-Few-shot-Learning-PyTorch*]((https://github.com/orobix/Prototypical-Networks-for-Few-shot-Learning-PyTorch))                   |
+| Codes:   | [*Prototypical-Networks-for-Few-shot-Learning-PyTorch*](https://github.com/orobix/Prototypical-Networks-for-Few-shot-Learning-PyTorch) |
 
 Cite this work with:
 ```bibtex
