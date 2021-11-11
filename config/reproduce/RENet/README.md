@@ -28,4 +28,8 @@ Cite this work with:
 
 |   | Embedding | :book: miniImageNet (5,1) | :computer: miniImageNet (5,1) | :book:miniImageNet (5,5) | :computer: miniImageNet (5,5) | :memo: Comments  |
 |---|-----------|--------------------|--------------------|--------------------|--------------------|---|
-| 1 | ResNet12 | 67.60 ± 0.44 |  66.83 ± 0.36[:arrow_down:](https://drive.google.com/drive/folders/1vU3vprzjwxLTa9wgzi5HPXughkmxhMHS?usp=sharing) [:clipboard:](./RENet-miniImageNet--ravi-resnet12-5-1-Reproduce.yaml)| 82.58 ± 0.30| - | Reproduce |
+| 1 | ResNet12 | 67.60 ± 0.44 | 66.83 ± 0.36[:arrow_down:](https://drive.google.com/drive/folders/1vU3vprzjwxLTa9wgzi5HPXughkmxhMHS?usp=sharing) [:clipboard:](./RENet-miniImageNet--ravi-resnet12-5-1-Reproduce.yaml)| 82.58 ± 0.30| 82.13 ± 0.26[:arrow_down:](https://drive.google.com/drive/folders/1JH1olkacMQdZTUq3zTHX_55KL48Fzloi?usp=sharing) [:clipboard:](./RENet-miniImageNet--ravi-resnet12-5-5-Reproduce.yaml)| Reproduce |
+
+|   | Embedding | :book: tieredImageNet (5,1) | :computer: tieredImageNet (5,1) | :book:tieredImageNet (5,5) | :computer: tieredImageNet (5,5) | :memo: Comments  |
+|---|-----------|--------------------|--------------------|--------------------|--------------------|---|
+| 1 | ResNet12 | 71.61 ± 0.5 | - | 85.28 ± 0.35 | - | Reproduce |
