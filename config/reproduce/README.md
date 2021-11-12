@@ -50,7 +50,7 @@ This folder contains:
       <td>73.63</td>
   </tr>
   <tr>
-      <td>RFS-simple</td>
+      <td><a href="./RFS/">RFS-simple</a></td>
       <td>ResNet12</td>
       <td>62.02</td>
       <td>63.06</td>
@@ -58,7 +58,7 @@ This folder contains:
       <td>80.09</td>
   </tr>
   <tr>
-      <td>RFS-distill</td>
+      <td><a href="./RFS/">RFS-distill</a></td>
       <td>ResNet12</td>
       <td>64.82</td>
       <td>63.44</td>
@@ -80,6 +80,14 @@ This folder contains:
       <td>67.35</td>
       <td>83.54</td>
       <td>80.30</td>
+  </tr>
+  <tr>
+      <td><a href="./RENet/">RENet</a></td>
+      <td>ResNet12</td>
+      <td>67.60</td>
+      <td>66.83</td>
+      <td>82.58</td>
+      <td>82.13</td>
   </tr>
   <tr>
       <td>MAML</td>
@@ -120,6 +128,28 @@ This folder contains:
       <td>61.50</td>
       <td>64.35</td>
   </tr>
+    <tr>
+      <td rowspan="3"><a href="./BOIL/">BOIL</a></td>
+      <td>Conv64F</td>
+      <td>49.61</td>
+      <td>48.00</td>
+      <td>66.45</td>
+      <td> - </td>
+  </tr>
+  <tr>
+      <td>ResNet12</td>
+      <td> - </td>
+      <td> - </td>
+      <td>70.50</td>
+      <td> - </td>
+  </tr>
+  <tr>
+      <td>ResNet12(wo LSC)</td>
+      <td> - </td>
+      <td> - </td>
+      <td>71.30</td>
+      <td> - </td>
+  </tr>
   <tr>
       <td>MTL</td>
       <td>ResNet12</td>
@@ -129,7 +159,7 @@ This folder contains:
       <td>75.86</td>
   </tr>
   <tr>
-      <td>ProtoNet†</td>
+      <td><a href="./Proto/">ProtoNet†</a></td>
       <td>Conv64F</td>
       <td>46.14</td>
       <td>46.30</td>
@@ -180,12 +210,11 @@ This folder contains:
 
 ## The overview picture of the SOTAs
 
-
+## Conv64F
 <table>
     <tr>
         <td rowspan="2">Method</td>
         <td rowspan="2">Venue</td>
-        <td rowspan="2">Embed.</td>
         <td rowspan="2">Type</td>
         <td colspan="2">miniImageNet</td>
         <td colspan="2">tieredImageNet</td>
@@ -199,7 +228,6 @@ This folder contains:
     <tr>
         <td>Baseline</td>
         <td>ICLR’19</td>
-        <td>Conv64F</td>
         <td>Fine-tuning</td>
         <td>42.32</td>
         <td>61.73</td>
@@ -209,7 +237,6 @@ This folder contains:
     <tr>
         <td>Baseline++</td>
         <td>ICML’19</td>
-        <td>Conv64F</td>
         <td>Fine-tuning</td>
         <td>42.10</td>
         <td>55.47</td>
@@ -219,7 +246,6 @@ This folder contains:
     <tr>
         <td>RFS-simple</td>
         <td>ECCV’20</td>
-        <td>Conv64F</td>
         <td>Fine-tuning</td>
         <td>47.43</td>
         <td>65.70</td>
@@ -229,7 +255,6 @@ This folder contains:
     <tr>
         <td>RFS-distill</td>
         <td>ECCV’20</td>
-        <td>Conv64F</td>
         <td>Fine-tuning</td>
         <td>47.71</td>
         <td>65.40</td>
@@ -239,7 +264,6 @@ This folder contains:
     <tr>
         <td>SKD-GEN0</td>
         <td>arXiv’20</td>
-        <td>Conv64F</td>
         <td>Fine-tuning</td>
         <td>48.14</td>
         <td>66.36</td>
@@ -249,7 +273,6 @@ This folder contains:
     <tr>
         <td>SKD-GEN1</td>
         <td>arXiv’20</td>
-        <td>Conv64F</td>
         <td>Fine-tuning</td>
         <td>46.47</td>
         <td>64.56</td>
@@ -257,9 +280,17 @@ This folder contains:
         <td>69.94</td>
     </tr>
     <tr>
+        <td>RENet</td>
+        <td>ICCV’21</td>
+        <td>Fine-tuning</td>
+        <td> - </td>
+        <td> - </td>
+        <td> - </td>
+        <td> - </td>
+    </tr>
+    <tr>
         <td>MAML</td>
         <td>ICML’17</td>
-        <td>Conv64F</td>
         <td>Meta</td>
         <td>45.85</td>
         <td>65.93</td>
@@ -269,7 +300,6 @@ This folder contains:
     <tr>
         <td>Versa</td>
         <td>NeurIPS’18</td>
-        <td>Conv64F</td>
         <td>Meta</td>
         <td>50.66</td>
         <td>65.12</td>
@@ -279,7 +309,6 @@ This folder contains:
     <tr>
         <td>R2D2</td>
         <td>ICLR’19</td>
-        <td>Conv64F</td>
         <td>Meta</td>
         <td>47.57</td>
         <td>66.68</td>
@@ -289,7 +318,6 @@ This folder contains:
     <tr>
         <td>LEO</td>
         <td>ICLR’19</td>
-        <td>Conv64F</td>
         <td>Meta</td>
         <td>52.15</td>
         <td>67.48</td>
@@ -299,7 +327,6 @@ This folder contains:
     <tr>
         <td>MTL</td>
         <td>CVPR’19</td>
-        <td>Conv64F</td>
         <td>Meta</td>
         <td>40.97</td>
         <td>57.12</td>
@@ -309,7 +336,6 @@ This folder contains:
     <tr>
         <td>ANIL</td>
         <td>ICLR’20</td>
-        <td>Conv64F</td>
         <td>Meta</td>
         <td>45.97</td>
         <td>62.10</td>
@@ -317,9 +343,17 @@ This folder contains:
         <td>63.96</td>
     </tr>
     <tr>
+        <td>BOIL</td>
+        <td>ICLR’21</td>
+        <td>Meta</td>
+        <td> - </td>
+        <td> - </td>
+        <td> - </td>
+        <td> - </td>
+    </tr>
+    <tr>
         <td>ProtoNet</td>
         <td>NeurIPS’17</td>
-        <td>Conv64F</td>
         <td>Metric</td>
         <td>47.05</td>
         <td>68.56</td>
@@ -329,7 +363,6 @@ This folder contains:
     <tr>
         <td>RelationNet</td>
         <td>CVPR’18</td>
-        <td>Conv64F</td>
         <td>Metric</td>
         <td>49.40</td>
         <td>66.17</td>
@@ -339,7 +372,6 @@ This folder contains:
     <tr>
         <td>CovaMNet</td>
         <td>AAAI’19</td>
-        <td>Conv64F</td>
         <td>Metric</td>
         <td>50.81</td>
         <td>66.81</td>
@@ -349,7 +381,6 @@ This folder contains:
     <tr>
         <td>DN4</td>
         <td>CVPR’19</td>
-        <td>Conv64F</td>
         <td>Metric</td>
         <td>52.45</td>
         <td>68.91</td>
@@ -359,17 +390,32 @@ This folder contains:
     <tr>
         <td>CAN</td>
         <td>NeurIPS’19</td>
-        <td>Conv64F</td>
         <td>Metric</td>
         <td>52.04</td>
         <td>65.64</td>
         <td>52.45</td>
         <td>66.81</td>
     </tr>
+</table>
+
+## ResNet12
+<table>
+    <tr>
+        <td rowspan="2">Method</td>
+        <td rowspan="2">Venue</td>
+        <td rowspan="2">Type</td>
+        <td colspan="2">miniImageNet</td>
+        <td colspan="2">tieredImageNet</td>
+    </tr>
+        <tr>
+        <td>1-shot</td>
+        <td>5-shot</td>
+        <td>1-shot</td>
+        <td>5-shot</td>
+    </tr>
     <tr>
         <td>Baseline</td>
         <td>ICLR’19</td>
-        <td>ResNet12</td>
         <td>Fine-tuning</td>
         <td>57.47</td>
         <td>77.10</td>
@@ -379,7 +425,6 @@ This folder contains:
     <tr>
         <td>Baseline++</td>
         <td>ICML’19</td>
-        <td>ResNet12</td>
         <td>Fine-tuning</td>
         <td>51.15</td>
         <td>69.69</td>
@@ -389,7 +434,6 @@ This folder contains:
     <tr>
         <td>RFS-simple</td>
         <td>ECCV’20</td>
-        <td>ResNet12</td>
         <td>Fine-tuning</td>
         <td>61.00</td>
         <td>78.14</td>
@@ -399,7 +443,6 @@ This folder contains:
     <tr>
         <td>RFS-distill</td>
         <td>ECCV’20</td>
-        <td>ResNet12</td>
         <td>Fine-tuning</td>
         <td>63.27</td>
         <td>80.46</td>
@@ -409,7 +452,6 @@ This folder contains:
     <tr>
         <td>SKD-GEN0</td>
         <td>arXiv’20</td>
-        <td>ResNet12</td>
         <td>Fine-tuning</td>
         <td>64.52</td>
         <td>81.77</td>
@@ -419,17 +461,24 @@ This folder contains:
     <tr>
         <td>SKD-GEN1</td>
         <td>arXiv’20</td>
-        <td>ResNet12</td>
         <td>Fine-tuning</td>
         <td>65.50</td>
         <td>82.20</td>
         <td>69.92</td>
         <td>84.91</td>
     </tr>
+        <tr>
+        <td>RENet</td>
+        <td>ICCV’21</td>
+        <td>Fine-tuning</td>
+        <td> - </td>
+        <td> - </td>
+        <td> - </td>
+        <td> - </td>
+    </tr>
     <tr>
         <td>Versa</td>
         <td>NeurIPS’18</td>
-        <td>ResNet12</td>
         <td>Meta</td>
         <td>52.81</td>
         <td>72.49</td>
@@ -439,7 +488,6 @@ This folder contains:
     <tr>
         <td>R2D2</td>
         <td>ICLR’19</td>
-        <td>ResNet12</td>
         <td>Meta</td>
         <td>53.66</td>
         <td>72.86</td>
@@ -449,7 +497,6 @@ This folder contains:
     <tr>
         <td>LEO</td>
         <td>ICLR’19</td>
-        <td>ResNet12</td>
         <td>Meta</td>
         <td>57.24</td>
         <td>72.80</td>
@@ -459,7 +506,6 @@ This folder contains:
     <tr>
         <td>MTL</td>
         <td>CVPR’19</td>
-        <td>ResNet12</td>
         <td>Meta</td>
         <td>61.18</td>
         <td>79.14</td>
@@ -469,7 +515,6 @@ This folder contains:
     <tr>
         <td>ANIL</td>
         <td>ICLR’20</td>
-        <td>ResNet12</td>
         <td>Meta</td>
         <td>51.50</td>
         <td>65.42</td>
@@ -477,9 +522,17 @@ This folder contains:
         <td>66.14</td>
     </tr>
     <tr>
+        <td>BOIL</td>
+        <td>ICLR’21</td>
+        <td>Meta</td>
+        <td> - </td>
+        <td> - </td>
+        <td> - </td>
+        <td> - </td>
+    </tr>
+    <tr>
         <td>ProtoNet</td>
         <td>NeurIPS’17</td>
-        <td>ResNet12</td>
         <td>Metric</td>
         <td>55.36</td>
         <td>73.31</td>
@@ -489,7 +542,6 @@ This folder contains:
     <tr>
         <td>RelationNet</td>
         <td>CVPR’18</td>
-        <td>ResNet12</td>
         <td>Metric</td>
         <td>53.84</td>
         <td>70.42</td>
@@ -499,7 +551,6 @@ This folder contains:
     <tr>
         <td>CovaMNet</td>
         <td>AAAI’19</td>
-        <td>ResNet12</td>
         <td>Metric</td>
         <td>54.69</td>
         <td>70.72</td>
@@ -509,7 +560,6 @@ This folder contains:
     <tr>
         <td>DN4</td>
         <td>CVPR’19</td>
-        <td>ResNet12</td>
         <td>Metric</td>
         <td>58.14</td>
         <td>74.18</td>
@@ -519,17 +569,32 @@ This folder contains:
     <tr>
         <td>CAN</td>
         <td>NeurIPS’19</td>
-        <td>ResNet12</td>
         <td>Metric</td>
         <td>63.74</td>
         <td>79.06</td>
         <td>62.70</td>
         <td>80.60</td>
     </tr>
+</table>
+
+## ResNet18
+<table>
+    <tr>
+        <td rowspan="2">Method</td>
+        <td rowspan="2">Venue</td>
+        <td rowspan="2">Type</td>
+        <td colspan="2">miniImageNet</td>
+        <td colspan="2">tieredImageNet</td>
+    </tr>
+    <tr>
+        <td>1-shot</td>
+        <td>5-shot</td>
+        <td>1-shot</td>
+        <td>5-shot</td>
+    </tr>
     <tr>
         <td>Baseline</td>
         <td>ICLR’19</td>
-        <td>ResNet18</td>
         <td>Fine-tuning</td>
         <td>56.53</td>
         <td>76.03</td>
@@ -539,7 +604,6 @@ This folder contains:
     <tr>
         <td>Baseline++</td>
         <td>ICML’19</td>
-        <td>ResNet18</td>
         <td>Fine-tuning</td>
         <td>52.70</td>
         <td>75.36</td>
@@ -549,7 +613,6 @@ This folder contains:
     <tr>
         <td>RFS-simple</td>
         <td>ECCV’20</td>
-        <td>ResNet18</td>
         <td>Fine-tuning</td>
         <td>61.06</td>
         <td>77.39</td>
@@ -559,7 +622,6 @@ This folder contains:
     <tr>
         <td>RFS-distill</td>
         <td>ECCV’20</td>
-        <td>ResNet18</td>
         <td>Fine-tuning</td>
         <td>63.24</td>
         <td>79.13</td>
@@ -569,7 +631,6 @@ This folder contains:
     <tr>
         <td>SKD-GEN0</td>
         <td>arXiv’20</td>
-        <td>ResNet18</td>
         <td>Fine-tuning</td>
         <td>66.18</td>
         <td>82.20</td>
@@ -579,17 +640,24 @@ This folder contains:
     <tr>
         <td>SKD-GEN1</td>
         <td>arXiv’20</td>
-        <td>ResNet18</td>
         <td>Fine-tuning</td>
         <td>66.70</td>
         <td>82.60</td>
         <td>69.26</td>
         <td>84.31</td>
     </tr>
+        <tr>
+        <td>RENet</td>
+        <td>ICCV’21</td>
+        <td>Fine-tuning</td>
+        <td> - </td>
+        <td> - </td>
+        <td> - </td>
+        <td> - </td>
+    </tr>
     <tr>
         <td>Versa</td>
         <td>NeurIPS’18</td>
-        <td>ResNet18</td>
         <td>Meta</td>
         <td>50.18</td>
         <td>69.91</td>
@@ -599,7 +667,6 @@ This folder contains:
     <tr>
         <td>R2D2</td>
         <td>ICLR’19</td>
-        <td>ResNet18</td>
         <td>Meta</td>
         <td>54.30</td>
         <td>74.32</td>
@@ -609,7 +676,6 @@ This folder contains:
     <tr>
         <td>LEO</td>
         <td>ICLR’19</td>
-        <td>ResNet18</td>
         <td>Meta</td>
         <td>54.67</td>
         <td>69.26</td>
@@ -619,7 +685,6 @@ This folder contains:
     <tr>
         <td>MTL</td>
         <td>CVPR’19</td>
-        <td>ResNet18</td>
         <td>Meta</td>
         <td>60.29</td>
         <td>76.25</td>
@@ -629,17 +694,24 @@ This folder contains:
     <tr>
         <td>ANIL</td>
         <td>ICLR’20</td>
-        <td>ResNet18</td>
         <td>Meta</td>
         <td>53.10</td>
         <td>66.14</td>
         <td>52.09</td>
         <td>65.07</td>
     </tr>
+        <tr>
+        <td>BOIL</td>
+        <td>ICLR’21</td>
+        <td>Meta</td>
+        <td> - </td>
+        <td> - </td>
+        <td> - </td>
+        <td> - </td>
+    </tr>
     <tr>
         <td><a href="./Proto/">ProtoNet</a></td>
         <td>NeurIPS’17</td>
-        <td>ResNet18</td>
         <td>Metric</td>
         <td>47.05</td>
         <td>68.56</td>
@@ -649,7 +721,6 @@ This folder contains:
     <tr>
         <td>RelationNet</td>
         <td>CVPR’18</td>
-        <td>ResNet18</td>
         <td>Metric</td>
         <td>54.40</td>
         <td>69.20</td>
@@ -659,7 +730,6 @@ This folder contains:
     <tr>
         <td>DN4</td>
         <td>CVPR’19</td>
-        <td>ResNet18</td>
         <td>Metric</td>
         <td>56.70</td>
         <td>73.60</td>
@@ -669,7 +739,6 @@ This folder contains:
     <tr>
         <td>CAN</td>
         <td>NeurIPS’19</td>
-        <td>ResNet18</td>
         <td>Metric</td>
         <td>59.65</td>
         <td>76.93</td>
