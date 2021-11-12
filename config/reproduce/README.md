@@ -210,7 +210,7 @@ This folder contains:
 
 ## The overview picture of the SOTAs
 
-## Conv64F
+### Conv64F
 <table>
     <tr>
         <td rowspan="2">Method</td>
@@ -398,7 +398,7 @@ This folder contains:
     </tr>
 </table>
 
-## ResNet12
+### ResNet12
 <table>
     <tr>
         <td rowspan="2">Method</td>
@@ -577,7 +577,7 @@ This folder contains:
     </tr>
 </table>
 
-## ResNet18
+### ResNet18
 <table>
     <tr>
         <td rowspan="2">Method</td>
