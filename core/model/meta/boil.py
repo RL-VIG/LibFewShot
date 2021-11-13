@@ -122,10 +122,13 @@ class BOIL(MetaModel):
         self.classifier.train()
         features, output = self.forward_output(support_set)
         loss = self.loss_func(output, support_target)
-        grad = torch.autograd.grad(loss, fast_parameters, create_graph=True)
+        grad = torch.autograd.grad(loss, fast_parameters, create_graph=True, allow_unused=True)
+        assert len(grad) == len(fast_parameters)
         fast_parameters = []
 
         for k, weight in enumerate(self.named_parameters()):
+            if grad[k] is None:
+                continue
             lr = classifier_lr if "Linear" in weight[0] else extractor_lr
             if weight[1].fast is None:
                 weight[1].fast = weight[1] - lr * grad[k]
