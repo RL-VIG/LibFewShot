@@ -34,22 +34,8 @@ Cite this work with:
 
 **Classification**
 
-|   | Embedding | :book: miniImageNet (5,1) | :computer: miniImageNet (5,1) | :book:miniImageNet (5,5) | :computer: miniImageNet (5,5) | :memo: Comments  |
+|   | Embedding | :book: *mini*ImageNet (5,1) | :computer: *mini*ImageNet (5,1) | :book:*mini*ImageNet (5,5) | :computer: *mini*ImageNet (5,5) | :memo: Comments  |
 |---|-----------|--------------------|--------------------|--------------------|--------------------|---|
 | 1 | ResNet12  [^metaopt] | 62.02 ± 0.63 | 62.80 ± 0.52 [:arrow_down:](https://drive.google.com/drive/folders/1COMUhto08xtSaOazlMw1GndEAfeIZ-XQ?usp=sharing)  [:clipboard:](./RFS-simple-miniImageNet-ResNet12M-Table1.yaml) | 79.64 ± 0.44 | 79.57± 0.39   [:arrow_down:](https://drive.google.com/drive/folders/1COMUhto08xtSaOazlMw1GndEAfeIZ-XQ?usp=sharing)  [:clipboard:](./RFS-simple-miniImageNet-ResNet12M-Table1.yaml)    | rfs-simple-Table-1 |
 
-
-
-
-
-<!-- **CrossDomain**
-
-|   | Embedding | mini -> CUB (5,1) | mini -> CUB (5,5) |
-|---|-----------|--------------------|--------------------|
-| 1 | Conv64F   | 50.00 ± 0.05       | 50.00 ± 0.05       |
-| 2 | ResNet12[^1]| 50.00 ± 0.05       | 50.00 ± 0.05       |
-| 3 | ResNet12[^metaopt] | 50.00 ± 0.05       | 50.00 ± 0.05       |
-
-[^1]: (Ordered footnote) ResNet12-TADAM with [64,128,256,512]
-[^metaopt]: (Named footnote) ResNet12-MetaOpt with [64,160,320,640] -->
 [^metaopt]: ResNet12-MetaOpt with [64,160,320,640].

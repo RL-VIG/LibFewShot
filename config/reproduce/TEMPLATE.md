@@ -22,7 +22,7 @@ Cite this work with (template):
 
 **Classification**
 
-|   | Embedding | :book: miniImageNet (5,1) | :computer: miniImageNet (5,1) | :book:miniImageNet (5,5) | :computer: miniImageNet (5,5) | :memo: Comments  |
+|   | Embedding | :book: *mini*ImageNet (5,1) | :computer: *mini*ImageNet (5,1) | :book:*mini*ImageNet (5,5) | :computer: *mini*ImageNet (5,5) | :memo: Comments  |
 |---|-----------|--------------------|--------------------|--------------------|--------------------|---|
 | 1 | Conv64F | 50.00 ± 0.05 | 50.00 ± 0.05 [:arrow_down:](Link-to-model-url) [:clipboard:](Link-to-config-url) | 50.00 ± 0.05 | 50.00 ± 0.05 | Comments |
 | 2 | ResNet12[^1] | 50.00 ± 0.05 | 50.00 ± 0.05 | 50.00 ± 0.05 | 50.00 ± 0.05 | Comments |
@@ -33,7 +33,7 @@ Cite this work with (template):
 
 **CrossDomain**
 
-|   | Embedding | mini -> CUB (5,1) | mini -> CUB (5,5) |
+|   | Embedding | *mini* -> CUB (5,1) | *mini* -> CUB (5,5) |
 |---|-----------|--------------------|--------------------|
 | 1 | Conv64F   | 50.00 ± 0.05       | 50.00 ± 0.05       |
 | 2 | ResNet12[^1]| 50.00 ± 0.05       | 50.00 ± 0.05       |
