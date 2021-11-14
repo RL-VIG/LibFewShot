@@ -38,4 +38,4 @@ Cite this work with:
 |   | Embedding | :book: *tiered*ImageNet (5,1) | :computer: *tiered*ImageNet (5,1) | :book:*tiered*ImageNet (5,5) | :computer: *tiered*ImageNet (5,5) | :memo: Comments  |
 |---|-----------|--------------------|--------------------|--------------------|--------------------|---|
 | 1 | Conv64F | 48.58 ± 0.27 | - | 69.37 ± 0.12 | - | Once_update |
-| 2| ResNet12woLSC | - | - | 73.44 | - | Once_update |
+| 2 | ResNet12woLSC | - | - | 73.44 | - | Once_update |
