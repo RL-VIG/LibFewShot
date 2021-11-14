@@ -29,7 +29,7 @@ Cite this work with:
 |   | Embedding | :book: *mini*ImageNet (5,1) | :computer: *miniI*mageNet (5,1) | :book:*mini*ImageNet (5,5) | :computer: *mini*ImageNet (5,5) | :memo: Comments  |
 |---|-----------|--------------------|--------------------|--------------------|--------------------|---|
 | 1 | ResNet12 | 67.60 ± 0.44 | 66.83 ± 0.36 [:arrow_down:](https://drive.google.com/drive/folders/1vU3vprzjwxLTa9wgzi5HPXughkmxhMHS?usp=sharing) [:clipboard:](./RENet-miniImageNet--ravi-resnet12-5-1-Reproduce.yaml)| 82.58 ± 0.30 | 82.13 ± 0.26 [:arrow_down:](https://drive.google.com/drive/folders/1JH1olkacMQdZTUq3zTHX_55KL48Fzloi?usp=sharing) [:clipboard:](./RENet-miniImageNet--ravi-resnet12-5-5-Reproduce.yaml)| Reproduce |
-| 2 | Conv64F | - | 57.62 ± 0.36 [:arrow_down:](https://drive.google.com/drive/folders/12SuX47W1hJTWuxUGu588ZcuGHpta34lE?usp=sharing) [:clipboard:](./RENet-miniImageNet--ravi-Conv64F-5-1-Table2.yaml) | - | - | Table.2 |
+| 2 | Conv64F | - | 57.62 ± 0.36 [:arrow_down:](https://drive.google.com/drive/folders/12SuX47W1hJTWuxUGu588ZcuGHpta34lE?usp=sharing) [:clipboard:](./RENet-miniImageNet--ravi-Conv64F-5-1-Table2.yaml) | - | 74.14 ± 0.27 [:arrow_down:](https://drive.google.com/drive/folders/1NUYKt1-BhK4TkwOr0kRCMuWhGw-02tCx?usp=sharing) [:clipboard:](./RENet-miniImageNet--ravi-Conv64F-5-5-Table2.yaml) | Table.2 |
 
 |   | Embedding | :book: *tiered*ImageNet (5,1) | :computer: *tiered*ImageNet (5,1) | :book:*tiered*ImageNet (5,5) | :computer: *tiered*ImageNet (5,5) | :memo: Comments  |
 |---|-----------|--------------------|--------------------|--------------------|--------------------|---|
