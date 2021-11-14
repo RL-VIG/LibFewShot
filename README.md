@@ -37,15 +37,15 @@ Please refer to [install.md](https://libfewshot-en.readthedocs.io/en/latest/inst
 Complete tutorials can be found at [document](https://libfewshot-en.readthedocs.io/en/latest/)([中文文档](https://libfewshot-en.readthedocs.io/zh_CN/latest/index.html)).
 
 ## :computer: Reproduction
-We provide some validated configs is [reproduce](./config/reproduce/), please refer to `./config/reproduce/<Method_Name>/README.md` for further infomations. The meaning of the symbols is as follows:
+We provide some validated configs in [reproduce](./config/reproduce/), please refer to `./config/reproduce/<Method_Name>/README.md` for further infomations. The meanings of the symbols are as follows:
 
-> :book:: The accuracies reproted by the papers.
-> 
-> :computer:: The accuracies reproted by the ourselves.
-> 
-> :arrow_down:: Hyperlinks to download the checkpoints folder. (Containing `config.yaml`, `model_best.pth` and the `train/test log`)
-> 
-> :clipboard:: Hyperlinks to the config file.
+> :book: The accuracies reproted by the papers.
+>
+> :computer: The accuracies reproted by ourselves.
+>
+> :arrow_down: Hyperlinks to download the checkpoints folder. (Containing `config.yaml`, `model_best.pth` and the `train/test log`)
+>
+> :clipboard: Hyperlinks to the config file.
 
 You can also find these checkpoints at [model_zoo](https://drive.google.com/drive/u/1/folders/16DWKKqjzALoq4qb8LZQ6oELD9SGlYWe_).
 
