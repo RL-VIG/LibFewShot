@@ -32,4 +32,4 @@ Cite this work with:
 
 |   | Embedding | :book: *tiered*ImageNet (5,1) | :computer: *tiered*ImageNet (5,1) | :book:*tiered*ImageNet (5,5) | :computer: *tiered*ImageNet (5,5) | :memo: Comments  |
 |---|-----------|--------------------|--------------------|--------------------|--------------------|---|
-| 1 | ResNet12 | 71.61 ± 0.5 | - | 85.28 ± 0.35 | 84.781 ± 0.285 [:arrow_down:](https://drive.google.com/drive/folders/11n6Lk2vPJPYBwGFOh2WY8EKzC4gSwOEE?usp=sharing) [:clipboard:](./RENet-tiered_imagenet-resnet12-5-5-Reproduce.yaml) | Reproduce |
+| 1 | ResNet12 | 71.61 ± 0.5 | 71.23 ± 0.42 [:arrow_down:](https://drive.google.com/drive/folders/1DKt-3Bs6u7hDorxWoRLQbdklQVwqDNew?usp=sharing) [:clipboard:](./RENet-tiered_imagenet-resnet12-5-1-Reproduce.yaml) | 85.28 ± 0.35 | 84.78 ± 0.29 [:arrow_down:](https://drive.google.com/drive/folders/11n6Lk2vPJPYBwGFOh2WY8EKzC4gSwOEE?usp=sharing) [:clipboard:](./RENet-tiered_imagenet-resnet12-5-5-Reproduce.yaml) | Reproduce |
