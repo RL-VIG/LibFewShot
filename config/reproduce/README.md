@@ -663,8 +663,8 @@ This folder contains:
         <td><a href="./SKD">SKD-GEN0</a></td>
         <td>arXiv’20</td>
         <td>Fine-tuning</td>
-        <td> - </td>
-        <td> - </td>
+        <td> 66.18 ± 0.37 </td>
+        <td> 82.21 ± 0.24 </td>
         <td> - </td>
         <td> - </td>
     </tr>
@@ -672,10 +672,10 @@ This folder contains:
         <td><a href="SKD">SKD-GEN1</a></td>
         <td>arXiv’20</td>
         <td>Fine-tuning</td>
-        <td> 66.18 ± 0.37 </td>
-        <td> 82.21 ± 0.24 </td>
         <td> 66.70 ± 0.37 </td>
         <td> 82.60 ±  0.24 </td>
+        <td>  </td>
+        <td>  </td>
     </tr>
     <tr>
         <td><a href="./RENet">RENet</a></td>
