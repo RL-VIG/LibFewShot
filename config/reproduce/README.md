@@ -300,8 +300,8 @@ This folder contains:
         <td>Fine-tuning</td>
         <td> 57.62 ± 0.36 </td>
         <td> 74.14 ± 0.27 </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 61.62 ± 0.40 </td>
+        <td> 76.74 ± 0.33 </td>
     </tr>
     <tr>
         <td><a href="./MAML">MAML</a></td>
