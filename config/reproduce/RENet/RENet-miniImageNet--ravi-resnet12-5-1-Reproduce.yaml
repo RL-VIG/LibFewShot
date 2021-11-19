@@ -1,0 +1,78 @@
+augment: true
+augment_method: null
+augment_times: 1
+augment_times_query: 1
+backbone:
+  kwargs:
+    avg_pool: false
+    drop_rate: 0.0
+    is_flatten: false
+    keep_prob: 0.0
+    maxpool_last2: true
+  name: resnet12
+batch_size: 128
+classifier:
+  kwargs:
+    feat_dim: 640
+    lambda_epi: 0.25
+    num_classes: 64
+    temperature: 0.2
+    temperature_attn: 5.0
+  name: RENet
+data_root: /data/wzy/miniImageNet--ravi
+deterministic: true
+device_ids: 2
+episode_size: 1
+epoch: 80
+image_size: 84
+includes:
+- headers/data.yaml
+- headers/device.yaml
+- headers/misc.yaml
+- headers/model.yaml
+- headers/optimizer.yaml
+- classifiers/RENet.yaml
+- backbones/resnet12.yaml
+log_interval: 100
+log_level: info
+log_name: null
+log_paramerter: false
+lr_scheduler:
+  kwargs:
+    gamma: 0.05
+    milestones:
+    - 60
+    - 70
+  name: MultiStepLR
+n_gpu: 1
+optimizer:
+  kwargs:
+    lr: 0.1
+    momentum: 0.9
+    nesterov: true
+    weight_decay: 0.0005
+  name: SGD
+  other:
+    emb_func: 0.1
+parallel_part:
+- emb_func
+pretrain_path: null
+query_num: 15
+result_root: ./results
+resume: true
+resume_path: ./results/RENet-miniImageNet--ravi-resnet12-5-1-Nov-11-2021-13-27-27
+save_interval: 10
+save_part:
+- emb_func
+seed: 0
+shot_num: 1
+tag: null
+tb_scale: 1.5
+test_episode: 200
+test_epoch: 5
+test_query: 15
+test_shot: 1
+test_way: 5
+train_episode: 300
+use_memory: false
+way_num: 5

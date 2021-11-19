@@ -1,0 +1,81 @@
+augment: true
+augment_times: 5
+augment_times_query: 1
+backbone:
+  kwargs:
+    avg_pool: true
+    is_feature: false
+    is_flatten: true
+  name: resnet18
+batch_size: 64
+classifier:
+  kwargs:
+    alpha: 2.0
+    cls_classifier_path: ./results/SKDModel-miniImageNet-resnet12-5-1-1615448697/checkpoints/cls_classifier_best.pth
+    emb_func_path: ./results/SKDModel-miniImageNet-resnet12-5-1-1615448697/checkpoints/emb_func_best.pth
+    feat_dim: 512
+    gamma: 1.0
+    is_distill: false
+    num_class: 64
+  name: SKDModel
+data_root: /data/wzy/miniImageNet--ravi
+deterministic: true
+device_ids: 2
+episode_size: 1
+epoch: 65
+image_size: 84
+includes:
+- headers/data.yaml
+- headers/device.yaml
+- headers/misc.yaml
+- headers/model.yaml
+- headers/optimizer.yaml
+- classifiers/SKD.yaml
+- backbones/resnet18.yaml
+log_interval: 100
+log_level: info
+log_name: null
+log_paramerter: false
+loss:
+  kwargs: null
+  name: CrossEntropyLoss
+lr_scheduler:
+  kwargs:
+    gamma: 0.1
+    milestones:
+    - 60
+  name: MultiStepLR
+n_gpu: 1
+optimizer:
+  kwargs:
+    lr: 0.05
+    momentum: 0.9
+    weight_decay: 0.0005
+  name: SGD
+  other:
+    emb_func: 0.05
+parallel_part:
+- emb_func
+- cls_classifier
+- rot_classifier
+pretrain_path: null
+query_num: 15
+result_root: ./results
+resume: false
+save_interval: 10
+save_part:
+- emb_func
+- cls_classifier
+- rot_classifier
+seed: 0
+shot_num: 1
+tb_scale: 0.16666666666666666
+test_episode: 600
+test_epoch: 5
+test_query: 15
+test_shot: 1
+test_way: 5
+train_episode: 100
+use_loss_yaml: true
+use_memory: false
+way_num: 5

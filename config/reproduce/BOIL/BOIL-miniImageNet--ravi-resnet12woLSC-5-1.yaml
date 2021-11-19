@@ -1,0 +1,71 @@
+augment: false
+augment_times: 1
+augment_times_query: 1
+backbone:
+  kwargs:
+    avg_pool: true
+    is_flatten: true
+    keep_prob: 0.0
+    maxpool_last2: true
+  name: resnet12woLSC
+batch_size: 128
+classifier:
+  kwargs:
+    feat_dim: 512
+    inner_param:
+      classifier_lr: 0.0
+      extractor_lr: 0.3
+    testing_method: Once_update
+  name: BOIL
+data_root: /data/wzy/miniImageNet--ravi
+deterministic: true
+device_ids: 0
+episode_size: 4
+epoch: 100
+image_size: 84
+includes:
+- headers/data.yaml
+- headers/device.yaml
+- headers/misc.yaml
+- headers/model.yaml
+- headers/optimizer.yaml
+- classifiers/BOIL.yaml
+- backbones/resnet12.yaml
+log_interval: 100
+log_level: info
+log_name: null
+log_paramerter: false
+lr_scheduler:
+  kwargs:
+    gamma: 1.0
+    step_size: 10
+  name: StepLR
+n_gpu: 1
+optimizer:
+  kwargs:
+    lr: 0.0006
+  name: Adam
+  other:
+    emb_func: 0.0006
+parallel_part:
+- emb_func
+pretrain_path: null
+query_num: 15
+result_root: ./results
+resume: false
+save_interval: 10
+save_part:
+- emb_func
+seed: 0
+shot_num: 1
+tag: null
+tb_scale: 3.3333333333333335
+test_episode: 600
+test_epoch: 5
+test_query: 15
+test_shot: 1
+test_way: 5
+train_episode: 2000
+use_memory: false
+val_per_epoch: 100
+way_num: 5

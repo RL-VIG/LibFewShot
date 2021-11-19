@@ -50,9 +50,9 @@ class FEAT_Pretrain(FinetuningModel):
 
         output = self.val_classifier(
             query_feat, support_feat, self.way_num, self.shot_num, self.query_num, mode=self.mode
-        ).view(-1, self.way_num)
+        ).reshape(-1, self.way_num)
 
-        acc = accuracy(output, query_target.view(-1))
+        acc = accuracy(output, query_target.reshape(-1))
 
         return output, acc
 

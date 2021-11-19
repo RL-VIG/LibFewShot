@@ -90,7 +90,7 @@ class MTLPretrain(FinetuningModel):  # use image-size=80 in repo
 
         output = torch.cat(output_list, dim=0)
 
-        acc = accuracy(output, query_target.view(-1))
+        acc = accuracy(output, query_target.contiguous().reshape(-1))
 
         return output, acc
 

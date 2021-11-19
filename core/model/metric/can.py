@@ -132,8 +132,8 @@ class CAM(nn.Module):
         n2 = f2.size(1)
 
         # Flatten
-        f1 = f1.view(b, n1, c, -1)
-        f2 = f2.view(b, n2, c, -1)
+        f1 = f1.reshape(b, n1, c, -1)
+        f2 = f2.reshape(b, n2, c, -1)
 
         f1_norm = F.normalize(f1, p=2, dim=2, eps=1e-12)  # [1, 5, 512, 36]
         f2_norm = F.normalize(f2, p=2, dim=2, eps=1e-12)  # [1, 75, 512, 36]
@@ -148,9 +148,9 @@ class CAM(nn.Module):
         a2 = self.get_attention(a2)  # [1, 5, 75, 36]
 
         f1 = f1.unsqueeze(2) * a1.unsqueeze(3)
-        f1 = f1.view(b, n1, n2, c, h, w)
+        f1 = f1.reshape(b, n1, n2, c, h, w)
         f2 = f2.unsqueeze(1) * a2.unsqueeze(3)
-        f2 = f2.view(b, n1, n2, c, h, w)
+        f2 = f2.reshape(b, n1, n2, c, h, w)
         return f1.transpose(1, 2), f2.transpose(1, 2)
 
 
@@ -190,7 +190,7 @@ class CAMLayer(nn.Module):
         # feat = support_feat.size(-1)
 
         # flatten feature
-        support_feat = support_feat.view(batch_size, n_support, -1)
+        support_feat = support_feat.reshape(batch_size, n_support, -1)
 
         labels_train_transposed = support_targets.transpose(1, 2)  # [1, 5, 5]
 
@@ -216,13 +216,13 @@ class CAMLayer(nn.Module):
         proto_norm = proto_norm.unsqueeze(4)
         proto_norm = proto_norm.unsqueeze(5)
         cls_scores = self.scale_cls * torch.sum(query_norm * proto_norm, dim=3)
-        cls_scores = cls_scores.view(batch_size * n_query, *cls_scores.size()[2:])
+        cls_scores = cls_scores.reshape(batch_size * n_query, *cls_scores.size()[2:])
 
-        query_feat = query_feat.view(batch_size, n_query, way_num, -1)
+        query_feat = query_feat.reshape(batch_size, n_query, way_num, -1)
         query_feat = query_feat.transpose(2, 3)
         query_targets = query_targets.unsqueeze(3)
         query_feat = torch.matmul(query_feat, query_targets)
-        query_feat = query_feat.view(batch_size * n_query, -1, *original_feat_shape[-2:])
+        query_feat = query_feat.reshape(batch_size * n_query, -1, *original_feat_shape[-2:])
         query_targets = self.classifier(query_feat)
 
         return query_targets, cls_scores
@@ -234,11 +234,11 @@ class CAMLayer(nn.Module):
         b, n, c, h, w = support_feat.size()
 
         support_targets_transposed = support_targets.transpose(1, 2)
-        support_feat = torch.bmm(support_targets_transposed, support_feat.view(b, n, -1))
+        support_feat = torch.bmm(support_targets_transposed, support_feat.reshape(b, n, -1))
         support_feat = support_feat.div(
             support_targets_transposed.sum(dim=2, keepdim=True).expand_as(support_feat)
         )
-        support_feat = support_feat.view(b, -1, c, h, w)
+        support_feat = support_feat.reshape(b, -1, c, h, w)
 
         support_feat, query_feat = self.cam(support_feat, query_feat)
         support_feat = support_feat.mean(-1).mean(-1)
@@ -305,15 +305,15 @@ class CAN(MetricModel):
 
         # convert to one-hot
         support_targets_one_hot = one_hot(
-            support_targets.view(episode_size * self.way_num * self.shot_num), self.way_num
+            support_targets.reshape(episode_size * self.way_num * self.shot_num), self.way_num
         )
-        support_targets_one_hot = support_targets_one_hot.view(
+        support_targets_one_hot = support_targets_one_hot.reshape(
             episode_size, self.way_num * self.shot_num, self.way_num
         )
         query_targets_one_hot = one_hot(
-            query_targets.view(episode_size * self.way_num * self.query_num), self.way_num
+            query_targets.reshape(episode_size * self.way_num * self.query_num), self.way_num
         )
-        query_targets_one_hot = query_targets_one_hot.view(
+        query_targets_one_hot = query_targets_one_hot.reshape(
             episode_size, self.way_num * self.query_num, self.way_num
         )
         cls_scores = self.cam_layer(
@@ -323,8 +323,8 @@ class CAN(MetricModel):
         #        support_feat, query_feat, support_targets_one_hot, query_targets_one_hot
         # )
 
-        cls_scores = cls_scores.view(episode_size * self.way_num * self.query_num, -1)
-        acc = accuracy(cls_scores, query_targets, topk=1)
+        cls_scores = cls_scores.reshape(episode_size * self.way_num * self.query_num, -1)
+        acc = accuracy(cls_scores, query_targets.reshape(-1), topk=1)
         return cls_scores, acc
 
     def set_forward_loss(self, batch):
@@ -341,7 +341,7 @@ class CAN(MetricModel):
             emb, mode=2
         )  # [4,5,512,6,6] [4,
         # 75, 512,6,6] [4, 5] [300]
-        support_targets = support_targets.view(episode_size, self.way_num).contiguous()
+        support_targets = support_targets.reshape(episode_size, self.way_num).contiguous()
         support_global_targets, query_global_targets = (
             global_targets[:, :, : self.shot_num],
             global_targets[:, :, self.shot_num :],
@@ -358,15 +358,15 @@ class CAN(MetricModel):
 
         # convert to one-hot
         support_targets_one_hot = one_hot(
-            support_targets.view(episode_size * self.way_num * self.shot_num), self.way_num
+            support_targets.reshape(episode_size * self.way_num * self.shot_num), self.way_num
         )
-        support_targets_one_hot = support_targets_one_hot.view(
+        support_targets_one_hot = support_targets_one_hot.reshape(
             episode_size, self.way_num * self.shot_num, self.way_num
         )
         query_targets_one_hot = one_hot(
-            query_targets.view(episode_size * self.way_num * self.query_num), self.way_num
+            query_targets.reshape(episode_size * self.way_num * self.query_num), self.way_num
         )
-        query_targets_one_hot = query_targets_one_hot.view(
+        query_targets_one_hot = query_targets_one_hot.reshape(
             episode_size, self.way_num * self.query_num, self.way_num
         )
         # print(support_feat.shape, query_feat.shape, support_targets_one_hot.shape, query_targets_one_hot.shape)
@@ -374,9 +374,9 @@ class CAN(MetricModel):
         output, cls_scores = self.cam_layer(
             support_feat, query_feat, support_targets_one_hot, query_targets_one_hot
         )
-        loss1 = self.loss_func(output, query_global_targets.contiguous().view(-1))
-        loss2 = self.loss_func(cls_scores, query_targets.view(-1))
+        loss1 = self.loss_func(output, query_global_targets.contiguous().reshape(-1))
+        loss2 = self.loss_func(cls_scores, query_targets.reshape(-1))
         loss = loss1 + 0.5 * loss2
-        cls_scores = torch.sum(cls_scores.view(*cls_scores.size()[:2], -1), dim=-1)  # [300, 5]
-        acc = accuracy(cls_scores, query_targets.view(-1), topk=1)
+        cls_scores = torch.sum(cls_scores.reshape(*cls_scores.size()[:2], -1), dim=-1)  # [300, 5]
+        acc = accuracy(cls_scores, query_targets.reshape(-1), topk=1)
         return output, acc, loss
