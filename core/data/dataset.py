@@ -125,12 +125,10 @@ class GeneralDataset(Dataset):
             tuple: A tuple of (data list, label list, class-label dict)
         """
         if os.path.exists(cache_path):
-            # FIXME logger will conflit with DDP dataloader
             print("load cache from {}...".format(cache_path))
             with open(cache_path, "rb") as fin:
                 data_list, label_list, class_label_dict = pickle.load(fin)
         else:
-            # FIXME logger will conflit with DDP dataloader
             print("dump the cache to {}, please wait...".format(cache_path))
             data_list, label_list, class_label_dict = self._save_cache(cache_path)
 
