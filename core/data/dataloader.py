@@ -17,6 +17,94 @@ from queue import Queue
 from threading import Thread
 
 
+def get_dataloader(config, mode, model_type, distribute):
+    """Get the dataloader corresponding to the model type and training phase.
+
+    According to the config dict, the training phase and model category, select the appropriate transforms, set the corresponding sampler and collate_fn, and return the corresponding dataloader.
+
+    Args:
+        config (dict): A LibFewShot setting dict
+        mode (str): mode in train/test/val
+        model_type (ModelType): model type in meta/metric//finetuning
+
+    Returns:
+        Dataloader: The corresponding dataloader.
+    """
+    assert model_type != ModelType.ABSTRACT
+
+    trfms_list = []
+
+    # Add user's trfms here (or in get_augment_method())
+    if mode == "train" and config["augment"]:
+        if config["image_size"] == 224:
+            trfms_list.append(transforms.Resize((256, 256)))
+            trfms_list.append(transforms.RandomCrop((224, 224)))
+        elif config["image_size"] == 84:
+            trfms_list.append(transforms.Resize((96, 96)))
+            trfms_list.append(transforms.RandomCrop((84, 84)))
+        # for MTL -> alternative solution: use avgpool(ks=11)
+        elif config["image_size"] == 80:
+            # MTL use another MEAN and STD
+            trfms_list.append(transforms.Resize((92, 92)))
+            trfms_list.append(transforms.RandomResizedCrop(88))
+            trfms_list.append(transforms.CenterCrop((80, 80)))
+            trfms_list.append(transforms.RandomHorizontalFlip())
+        else:
+            raise RuntimeError
+
+        aug_method = get_augment_method(config)
+        trfms_list += aug_method
+    else:
+        if config["image_size"] == 224:
+            trfms_list.append(transforms.Resize((256, 256)))
+            trfms_list.append(transforms.CenterCrop((224, 224)))
+        elif config["image_size"] == 84:
+            trfms_list.append(transforms.Resize((96, 96)))
+            trfms_list.append(transforms.CenterCrop((84, 84)))
+        # for MTL -> alternative solution: use avgpool(ks=11)
+        elif config["image_size"] == 80:
+            trfms_list.append(transforms.Resize((92, 92)))
+            trfms_list.append(transforms.CenterCrop((80, 80)))
+        else:
+            raise RuntimeError
+
+    trfms_list.append(transforms.ToTensor())
+    trfms_list.append(transforms.Normalize(mean=MEAN, std=STD))
+    trfms = transforms.Compose(trfms_list)
+
+    dataset = GeneralDataset(
+        data_root=config["data_root"],
+        mode=mode,
+        use_memory=config["use_memory"],
+    )
+
+    collate_function = get_collate_function(config, trfms, mode, model_type)
+
+    few_shot = not (model_type == ModelType.FINETUNING and mode == "train")
+
+    sampler = get_sampler(
+        dataset=dataset, few_shot=few_shot, distribute=distribute, mode=mode, config=config
+    )
+
+    data_scale = 1 if config["n_gpu"] == 0 else config["n_gpu"]
+    dataloader = MultiEpochsDataLoader(
+        dataset=dataset,
+        sampler=None if few_shot else sampler,
+        batch_sampler=sampler if few_shot else None,
+        batch_size=1 if few_shot else (config["batch_size"] // data_scale),  # batch_size is default set to 1
+        shuffle=False if few_shot or distribute else True,
+        num_workers=4,  # num_workers for each gpu
+        drop_last=False if few_shot else True,
+        pin_memory=True,
+        collate_fn=collate_function,
+    )
+
+    # if torch.cuda.is_available():
+    #     dataloader = CudaDataLoader(dataloader, config["rank"])
+
+    return dataloader
+
+
 # https://www.zhihu.com/question/307282137/answer/1560137140
 class CudaDataLoader:
     """
@@ -131,91 +219,3 @@ class MultiEpochsDataLoader(DataLoader):
                 yield next(self.iterator)
         else:
             super().__iter__()
-
-
-def get_dataloader(config, mode, model_type, distribute):
-    """Get the dataloader corresponding to the model type and training phase.
-
-    According to the config dict, the training phase and model category, select the appropriate transforms, set the corresponding sampler and collate_fn, and return the corresponding dataloader.
-
-    Args:
-        config (dict): A LibFewShot setting dict
-        mode (str): mode in train/test/val
-        model_type (ModelType): model type in meta/metric//finetuning
-
-    Returns:
-        Dataloader: The corresponding dataloader.
-    """
-    assert model_type != ModelType.ABSTRACT
-
-    trfms_list = []
-
-    # Add user's trfms here (or in get_augment_method())
-    if mode == "train" and config["augment"]:
-        if config["image_size"] == 224:
-            trfms_list.append(transforms.Resize((256, 256)))
-            trfms_list.append(transforms.RandomCrop((224, 224)))
-        elif config["image_size"] == 84:
-            trfms_list.append(transforms.Resize((96, 96)))
-            trfms_list.append(transforms.RandomCrop((84, 84)))
-        # for MTL -> alternative solution: use avgpool(ks=11)
-        elif config["image_size"] == 80:
-            # MTL use another MEAN and STD
-            trfms_list.append(transforms.Resize((92, 92)))
-            trfms_list.append(transforms.RandomResizedCrop(88))
-            trfms_list.append(transforms.CenterCrop((80, 80)))
-            trfms_list.append(transforms.RandomHorizontalFlip())
-        else:
-            raise RuntimeError
-
-        aug_method = get_augment_method(config)
-        trfms_list += aug_method
-    else:
-        if config["image_size"] == 224:
-            trfms_list.append(transforms.Resize((256, 256)))
-            trfms_list.append(transforms.CenterCrop((224, 224)))
-        elif config["image_size"] == 84:
-            trfms_list.append(transforms.Resize((96, 96)))
-            trfms_list.append(transforms.CenterCrop((84, 84)))
-        # for MTL -> alternative solution: use avgpool(ks=11)
-        elif config["image_size"] == 80:
-            trfms_list.append(transforms.Resize((92, 92)))
-            trfms_list.append(transforms.CenterCrop((80, 80)))
-        else:
-            raise RuntimeError
-
-    trfms_list.append(transforms.ToTensor())
-    trfms_list.append(transforms.Normalize(mean=MEAN, std=STD))
-    trfms = transforms.Compose(trfms_list)
-
-    dataset = GeneralDataset(
-        data_root=config["data_root"],
-        mode=mode,
-        use_memory=config["use_memory"],
-    )
-
-    collate_function = get_collate_function(config, trfms, mode, model_type)
-
-    few_shot = not (model_type == ModelType.FINETUNING and mode == "train")
-
-    sampler = get_sampler(
-        dataset=dataset, few_shot=few_shot, distribute=distribute, mode=mode, config=config
-    )
-
-    data_scale = 1 if config["n_gpu"] == 0 else config["n_gpu"]
-    dataloader = MultiEpochsDataLoader(
-        dataset=dataset,
-        sampler=None if few_shot else sampler,
-        batch_sampler=sampler if few_shot else None,
-        batch_size=1 if few_shot else (config["batch_size"] // data_scale),  # batch_size is default set to 1
-        shuffle=False if few_shot or distribute else True,
-        num_workers=4,  # num_workers for each gpu
-        drop_last=False if few_shot else True,
-        pin_memory=True,
-        collate_fn=collate_function,
-    )
-
-    # if torch.cuda.is_available():
-    #     dataloader = CudaDataLoader(dataloader, config["rank"])
-
-    return dataloader

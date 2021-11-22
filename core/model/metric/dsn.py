@@ -39,7 +39,11 @@ class DSNLayer(nn.Module):
         # add way dim
         query_feat = query_feat.unsqueeze(1)
 
-        UU, _, _ = torch.svd(support_feat.permute(0, 1, 3, 2).double()) # [episode_size, way_num, dim, dim]
+        try:
+            # faster but need pytorch>=1.8.0
+            UU, _, _ = torch.linalg.svd(support_feat.permute(0, 1, 3, 2).double()) # [episode_size, way_num, dim, dim]
+        except AttributeError:
+            UU, _, _ = torch.svd(support_feat.permute(0, 1, 3, 2).double()) # [episode_size, way_num, dim, dim]
         UU = UU.float()
         subspace = UU[:, :, :, :shot_num-1].permute(0, 1, 3, 2) # [episode_size, way_num, subspace_dim, dim]
 
@@ -53,10 +57,11 @@ class DSNLayer(nn.Module):
         
         disc_loss = 0
         if discriminative:
-            subspace_metric = torch.norm(torch.matmul(subspace.unsqueeze(1).transpose(-2, -1), subspace.unsqueeze(2)), p="fro", dim=[-2,-1])  # [episode_size, way_num, way_num]
+            # P is [dim, subspace_dim] while subspace here is [subspace_dim, dim]
+            subspace_metric = torch.norm(torch.matmul(subspace.unsqueeze(1), subspace.unsqueeze(2).transpose(-2, -1)), p="fro", dim=[-2,-1])  # [episode_size, way_num, way_num]
             mask = torch.eye(way_num).bool()
             subspace_metric = subspace_metric[:, ~mask]
-            disc_loss = torch.sum(subspace)
+            disc_loss = torch.sum(subspace_metric**2)
             
         return logits, disc_loss
 
@@ -82,31 +87,25 @@ class DSN(MetricModel):
         episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
 
         if self.shot_num == 1:
-            # B, C, H, W
-            support_images, query_images, support_target, query_target = self.split_by_episode(image, mode=2)
-
-            # change shot_num
+            _, c, h, w = image.size()
+            support_image = image.reshape(episode_size, self.way_num, -1, c, h, w)[:,:,:self.shot_num,:,:,:]
+            query_image = image.reshape(episode_size, self.way_num, -1, c, h, w)[:,:,self.shot_num:,:,:,:]
+            
+            support_image = torch.stack([support_image, torch.flip(support_image, dims=[3])]).permute(1, 2, 3, 0, 4, 5, 6).reshape(episode_size, self.way_num, -1, c, h, w)
+            
+            image = torch.cat([support_image, query_image], dim=2).reshape(-1, c, h, w)
+            
             self.shot_num = 2
-            # eouside, way, shot, channel, height, width
-            flipped_images = torch.flip(support_images, dims=[-1])
-            support_images = torch.stack([support_images, flipped_images], dim=2)
-
-            e, w, s, c, h_, w_ = support_images.size()
-            support_images = support_images.reshape(e*w*s, c, h_, w_)
-            query_images = query_images.reshape(-1, c, h_, w_)
-
-            all_images = torch.cat([support_images, query_images], dim=0)
-
-            all_feat = self.emb_func(all_images)
-            support_feat = all_feat[:e*w*s].reshape(episode_size, -1, all_feat.size(-1))
-            query_feat = all_feat[e*w*s:].reshape(episode_size, -1, all_feat.size(-1))
             
+            feat = self.emb_func(image)
+            
+            support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+
+            smoothed_query_target = F.one_hot(query_target.reshape(-1), self.way_num)
+            smoothed_query_target = smoothed_query_target * (1 - self.eps) + (1 - smoothed_query_target) * self.eps / (self.way_num - 1)
+
             output, _ = self.dsn_layer(query_feat, support_feat, self.way_num, self.shot_num)
-            output = output.reshape(episode_size * self.way_num * self.query_num, self.way_num)
-            output = output * self.scale if self.enable_scale else output
-            acc = accuracy(output, query_target.reshape(-1))
             
-            # change shot_num
             self.shot_num = 1
         else:
             feat = self.emb_func(image)
@@ -114,9 +113,10 @@ class DSN(MetricModel):
             support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
 
             output, _ = self.dsn_layer(query_feat, support_feat, self.way_num, self.shot_num)
-            output = output.reshape(episode_size * self.way_num * self.query_num, self.way_num)
-            output = output * self.scale if self.enable_scale else output
-            acc = accuracy(output, query_target.reshape(-1))
+            
+        output = output.reshape(episode_size * self.way_num * self.query_num, self.way_num)
+        output = output * self.scale if self.enable_scale else output
+        acc = accuracy(output, query_target.reshape(-1))
 
         return output, acc
 
@@ -129,14 +129,38 @@ class DSN(MetricModel):
         image, global_target = batch
         image = image.to(self.device)
         episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
-        feat = self.emb_func(image)
+        
+        if self.shot_num == 1:
+            _, c, h, w = image.size()
+            support_image = image.reshape(episode_size, self.way_num, -1, c, h, w)[:,:,:self.shot_num,:,:,:]
+            query_image = image.reshape(episode_size, self.way_num, -1, c, h, w)[:,:,self.shot_num:,:,:,:]
+            
+            support_image = torch.stack([support_image, torch.flip(support_image, dims=[3])]).permute(1, 2, 3, 0, 4, 5, 6).reshape(episode_size, self.way_num, -1, c, h, w)
+            
+            image = torch.cat([support_image, query_image], dim=2).reshape(-1, c, h, w)
+            
+            self.shot_num = 2
+            
+            feat = self.emb_func(image)
+            
+            support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
 
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+            smoothed_query_target = F.one_hot(query_target.reshape(-1), self.way_num)
+            smoothed_query_target = smoothed_query_target * (1 - self.eps) + (1 - smoothed_query_target) * self.eps / (self.way_num - 1)
 
-        smoothed_query_target = F.one_hot(query_target.reshape(-1), self.way_num)
-        smoothed_query_target = smoothed_query_target * (1 - self.eps) + (1 - smoothed_query_target) * self.eps / (self.way_num - 1)
+            output, disc_loss = self.dsn_layer(query_feat, support_feat, self.way_num, self.shot_num, discriminative=self.discriminative)
+            
+            self.shot_num = 1
+        else:
+            feat = self.emb_func(image)
 
-        output, disc_loss = self.dsn_layer(query_feat, support_feat, self.way_num, self.shot_num, discriminative=self.discriminative)
+            support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+
+            smoothed_query_target = F.one_hot(query_target.reshape(-1), self.way_num)
+            smoothed_query_target = smoothed_query_target * (1 - self.eps) + (1 - smoothed_query_target) * self.eps / (self.way_num - 1)
+
+            output, disc_loss = self.dsn_layer(query_feat, support_feat, self.way_num, self.shot_num, discriminative=self.discriminative)
+        
         output = output.reshape(episode_size * self.way_num * self.query_num, self.way_num)
         output = output * self.scale if self.enable_scale else output
         # loss = self.loss_fn(output, query_target.reshape(-1))
