@@ -370,10 +370,10 @@ This folder contains:
         <td><a href="./ProtoNet">ProtoNet</a></td>
         <td>NeurIPS’17</td>
         <td>Metric</td>
-        <td> 46.14 ± 0.77 </td>
         <td> 47.05 ± 0.35 </td>
-        <td> 65.77 ± 0.70 </td>
         <td> 68.56 ± 0.16 </td>
+        <td> - </td>
+        <td> - </td>
     </tr>
     <tr>
         <td><a href="./RelationNet">RelationNet</a></td>
