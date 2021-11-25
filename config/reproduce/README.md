@@ -37,10 +37,10 @@ This folder contains:
   <tr>
       <td rowspan="2"><a href="./Baseline++">Baseline++</a></td>
       <td>Conv64F</td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
+      <td> 48.24 </td>
+      <td> 46.21 </td>
+      <td> 66.43 </td>
+      <td> 65.18 </td>
   </tr>
   <tr>
       <td>ResNet18</td>
@@ -134,13 +134,6 @@ This folder contains:
       <td> 49.61 ± 0.16 </td>
       <td> 48.00 ± 0.36 </td>
       <td> 66.45 ± 0.37 </td>
-      <td> - </td>
-  </tr>
-  <tr>
-      <td>ResNet12</td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
       <td> - </td>
   </tr>
   <tr>
@@ -244,10 +237,10 @@ This folder contains:
         <td><a href="./Baseline">Baseline</a></td>
         <td>ICLR’19</td>
         <td>Fine-tuning</td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 42.11 </td>
+        <td> 42.34 </td>
+        <td> 62.53 </td>
+        <td> 62.18 </td>
     </tr>
     <tr>
         <td><a href="./Baseline++">Baseline++</a></td>
@@ -415,6 +408,7 @@ This folder contains:
       <td><a href="./DSN">DSN</a></td>
       <td>Conv64F</td>
       <td>Metric</td>
+      <td> - </td>
       <td> - </td>
       <td> - </td>
       <td> - </td>
@@ -605,6 +599,7 @@ This folder contains:
       <td> - </td>
       <td> - </td>
       <td> - </td>
+      <td> - </td>
   </tr>
 </table>
 
@@ -789,6 +784,7 @@ This folder contains:
       <td><a href="./DSN">DSN</a></td>
       <td>Conv64F</td>
       <td>Metric</td>
+      <td> - </td>
       <td> - </td>
       <td> - </td>
       <td> - </td>
