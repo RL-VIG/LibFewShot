@@ -220,6 +220,14 @@ This folder contains:
       <td> - </td>
       <td> - </td>
   </tr>
+  <tr>
+      <td><a href="./Negative_Margin">Negative_Margin</a></td>
+      <td>ResNet12</td>
+      <td> 63.85 ± 0.81 </td>
+      <td> 63.28 ± 0.36 </td>
+      <td> 81.57 ± 0.56 </td>
+      <td> 81.24 ± 0.26 </td>
+  </tr>
 </table>
 
 
