@@ -263,10 +263,10 @@ This folder contains:
         <td><a href="./RFS">RFS-simple</a></td>
         <td>ECCV’20</td>
         <td>Fine-tuning</td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 47.97 ± 0.33 </td>
+        <td> 65.88 ± 0.30 </td>
+        <td> 52.21 ± 0.37 </td>
+        <td> 71.82 ± 0.32 </td>
     </tr>
     <tr>
         <td><a href="./RFS">RFS-distill</a></td>
@@ -460,8 +460,8 @@ This folder contains:
         <td><a href="./RFS">RFS-simple</a></td>
         <td>ECCV’20</td>
         <td>Fine-tuning</td>
-        <td> - </td>
-        <td> - </td>
+        <td> 60.96 ± 0.35 </td>
+        <td> 77.36 ± 0.27 </td>
         <td> - </td>
         <td> - </td>
     </tr>
@@ -648,8 +648,8 @@ This folder contains:
         <td><a href="./RFS">RFS-simple</a></td>
         <td>ECCV’20</td>
         <td>Fine-tuning</td>
-        <td> - </td>
-        <td> - </td>
+        <td> 61.65 ± 0.37 </td>
+        <td> 76.60 ± 0.28 </td>
         <td> - </td>
         <td> - </td>
     </tr>
