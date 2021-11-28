@@ -31,7 +31,7 @@ Cite this work with:
 
 |   | Embedding | :book: *mini*ImageNet (5,1) | :computer: *mini*ImageNet (5,1) | :book:*mini*ImageNet (5,5) | :computer: *mini*ImageNet (5,5) | :memo: Comments  |
 |---|-----------|--------------------|--------------------|--------------------|--------------------|---|
-| 1 | Conv64F | 42.11 | 42.34 ± 0.31 [:arrow_down:](https://drive.google.com/drive/folders/1GKt_Y-CZqgzsm4YQEkeP0j_xTvjKhlng?usp=sharing) [:clipboard:](./Baseline-miniImageNet--ravi-Conv64F-5-Reproduce.yaml) | 62.53 | 62.18 ± 0.30 [:arrow_down:](https://drive.google.com/drive/folders/1GKt_Y-CZqgzsm4YQEkeP0j_xTvjKhlng?usp=sharing) [:clipboard:](./Baseline-miniImageNet--ravi-Conv64F-5-Reproduce.yaml) | Table2 |
+| 1 | Conv64F | 42.11 | 42.34 ± 0.31 [:arrow_down:](https://drive.google.com/drive/folders/1GKt_Y-CZqgzsm4YQEkeP0j_xTvjKhlng?usp=sharing) [:clipboard:](./Baseline-miniImageNet--ravi-Conv64F-5-Reproduce.yaml) | 62.53 | 62.18 ± 0.30 [:arrow_down:](https://drive.google.com/drive/folders/1GKt_Y-CZqgzsm4YQEkeP0j_xTvjKhlng?usp=sharing) [:clipboard:](./Baseline-miniImageNet--ravi-Conv64F-5-Reproduce.yaml) | Reproduce |
 
 
 

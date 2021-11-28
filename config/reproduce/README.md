@@ -22,10 +22,10 @@ This folder contains:
   <tr>
       <td rowspan="2"> <a href="./Baseline">Baseline</a></td>
       <td>Conv64F</td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
+      <td> 42.11 </td>
+      <td> 42.34 ± 0.31 </td>
+      <td> 62.53 </td>
+      <td> 62.18 ± 0.30 </td>
   </tr>
   <tr>
       <td>ResNet18</td>
@@ -129,7 +129,7 @@ This folder contains:
       <td> - </td>
   </tr>
     <tr>
-      <td rowspan="3"><a href="./BOIL/">BOIL</a></td>
+      <td rowspan="2"><a href="./BOIL/">BOIL</a></td>
       <td>Conv64F</td>
       <td> 49.61 ± 0.16 </td>
       <td> 48.00 ± 0.36 </td>
@@ -245,10 +245,10 @@ This folder contains:
         <td><a href="./Baseline">Baseline</a></td>
         <td>ICLR’19</td>
         <td>Fine-tuning</td>
-        <td> 42.11 </td>
-        <td> 42.34 </td>
-        <td> 62.53 </td>
-        <td> 62.18 </td>
+        <td> - </td>
+        <td> - </td>
+        <td> - </td>
+        <td> - </td>
     </tr>
     <tr>
         <td><a href="./Baseline++">Baseline++</a></td>
