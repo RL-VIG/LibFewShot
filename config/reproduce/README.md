@@ -407,8 +407,8 @@ This folder contains:
         <td><a href="./CAN">CAN</a></td>
         <td>NeurIPS’19</td>
         <td>Metric</td>
-        <td> - </td>
-        <td> - </td>
+        <td> 55.88 ± 0.38 </td>
+        <td> 70.98 ± 0.3 </td>
         <td> - </td>
         <td> - </td>
     </tr>
@@ -462,8 +462,8 @@ This folder contains:
         <td>Fine-tuning</td>
         <td> 60.96 ± 0.35 </td>
         <td> 77.36 ± 0.27 </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 70.55 ± 0.42 </td>
+        <td> 84.74 ± 0.29 </td>
     </tr>
     <tr>
         <td><a href="./RFS">RFS-distill</a></td>
@@ -595,7 +595,7 @@ This folder contains:
         <td><a href="./CAN">CAN</a></td>
         <td>NeurIPS’19</td>
         <td>Metric</td>
-        <td> - </td>
+        <td> 59.82 ± 0.38 </td>
         <td> - </td>
         <td> - </td>
         <td> - </td>
@@ -783,8 +783,8 @@ This folder contains:
         <td><a href="./CAN">CAN</a></td>
         <td>NeurIPS’19</td>
         <td>Metric</td>
-        <td> - </td>
-        <td> - </td>
+        <td> 60.78 ± 0.40  </td>
+        <td> 75.05 ± 0.29 </td>
         <td> - </td>
         <td> - </td>
     </tr>
