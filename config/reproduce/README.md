@@ -409,7 +409,7 @@ This folder contains:
         <td>Metric</td>
         <td> 55.88 ± 0.38 </td>
         <td> 70.98 ± 0.3 </td>
-        <td> - </td>
+        <td> 55.96 ± 0.42 </td>
         <td> - </td>
     </tr>
     <tr>
@@ -514,7 +514,7 @@ This folder contains:
         <td><a href="./R2D2">R2D2</a></td>
         <td>ICLR’19</td>
         <td>Meta</td>
-        <td> - </td>
+        <td> 59.52 ± 0.39 </td>
         <td> - </td>
         <td> - </td>
         <td> - </td>
@@ -650,8 +650,8 @@ This folder contains:
         <td>Fine-tuning</td>
         <td> 61.65 ± 0.37 </td>
         <td> 76.60 ± 0.28 </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 69.14 ± 0.42 </td>
+        <td> 83.21 ± 0.31 </td>
     </tr>
     <tr>
         <td><a href="./RFS">RFS-distill</a></td>
