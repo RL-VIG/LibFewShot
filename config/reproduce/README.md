@@ -410,7 +410,7 @@ This folder contains:
         <td> 55.88 ± 0.38 </td>
         <td> 70.98 ± 0.3 </td>
         <td> 55.96 ± 0.42 </td>
-        <td> - </td>
+        <td> 70.52 ± 0.35 </td>
     </tr>
     <tr>
       <td><a href="./DSN">DSN</a></td>

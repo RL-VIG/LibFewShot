@@ -38,5 +38,5 @@ Cite this work with:
 
 |   | Embedding | :book: *tiered*ImageNet (5,1) | :computer: *tiered*ImageNet (5,1) | :book:*tiered*ImageNet (5,5) | :computer: *tiered*ImageNet (5,5) | :memo: Comments  |
 |---|-----------|--------------------|--------------------|--------------------|--------------------|---|
-| 1 | Conv64F | - | 55.96 ± 0.42 [:arrow_down:](https://drive.google.com/drive/folders/1zr1s6f1CnfXVbumQ2xmOHTHTKZZugADT?usp=sharing) [:clipboard:](./CAN-tiered_imagenet-Conv64F-5-1-Table2.yaml) | - | - [:arrow_down:]() [:clipboard:]() | Table.2 |
+| 1 | Conv64F | - | 55.96 ± 0.42 [:arrow_down:](https://drive.google.com/drive/folders/1zr1s6f1CnfXVbumQ2xmOHTHTKZZugADT?usp=sharing) [:clipboard:](./CAN-tiered_imagenet-Conv64F-5-1-Table2.yaml) | - | 70.52 ± 0.35 [:arrow_down:](https://drive.google.com/drive/folders/1wFzz0RkdTdFN9-mIIuAilKhPslX5gutM?usp=sharing) [:clipboard:](./CAN-tiered_imagenet-Conv64F-5-5-Table2.yaml) | Table.2 |
 | 2 | ResNet18 | - | 71.70 ± 0.43 [:arrow_down:](https://drive.google.com/drive/folders/1mUoTy-VE1xZJXrrf2BUwwl00XB6A8RVn?usp=sharing) [:clipboard:](./CAN-tiered_imagenet-resnet18-5-1-Table2.yaml) | - | - [:arrow_down:]() [:clipboard:]() | Table.2 |
