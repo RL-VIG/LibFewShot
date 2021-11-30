@@ -46,5 +46,6 @@ Cite this work with:
 |---|-----------|--------------------|--------------------|--------------------|--------------------|---|
 | 1 | Conv64F | - | 52.21 ± 0.37 [:arrow_down:](https://drive.google.com/drive/folders/14rJGCWpjrcWINvGAO6bPv1gV70MsLb4S?usp=sharing)  [:clipboard:](./RFS-simple-tiered_imagenet-Conv64F-Table2.yaml) | - | 71.82 ± 0.32 [:arrow_down:](https://drive.google.com/drive/folders/14rJGCWpjrcWINvGAO6bPv1gV70MsLb4S?usp=sharing) [:clipboard:](./RFS-simple-tiered_imagenet-Conv64F-Table2.yaml) | Table.2 |
 | 2 | ResNet12 | - | 70.55 ± 0.42 [:arrow_down:](https://drive.google.com/drive/folders/1vht82-xCd191LH95uhPKDXEyv6TbLNxT?usp=sharing)  [:clipboard:](./RFS-simple-tiered_imagenet-resnet12-Table2.yaml) | - | 84.74 ± 0.29 [:arrow_down:](https://drive.google.com/drive/folders/1vht82-xCd191LH95uhPKDXEyv6TbLNxT?usp=sharing) [:clipboard:](./RFS-simple-tiered_imagenet-resnet12-Table2.yaml) | Table.2 |
+| 3 | ResNet18| - | 69.14 ± 0.42 [:arrow_down:](https://drive.google.com/drive/folders/1w4A1ttxZ7oq9GuMq-1nNacufqWO0uPvl?usp=sharing)  [:clipboard:](./RFS-simple-tiered_imagenet-resnet18-Table2.yaml) | - | 83.21 ± 0.31 [:arrow_down:](https://drive.google.com/drive/folders/1w4A1ttxZ7oq9GuMq-1nNacufqWO0uPvl?usp=sharing) [:clipboard:](./RFS-simple-tiered_imagenet-resnet18-Table2.yaml) | Table.2 |
 
 [^metaopt]: ResNet12-MetaOpt with [64,160,320,640].
