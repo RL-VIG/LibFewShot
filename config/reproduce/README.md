@@ -785,7 +785,7 @@ This folder contains:
         <td>Metric</td>
         <td> 60.78 ± 0.40  </td>
         <td> 75.05 ± 0.29 </td>
-        <td> - </td>
+        <td> 71.70 ± 0.43 </td>
         <td> - </td>
     </tr>
     <tr>
