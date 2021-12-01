@@ -87,20 +87,24 @@ def get_dataloader(config, mode, model_type, distribute):
     )
 
     data_scale = 1 if config["n_gpu"] == 0 else config["n_gpu"]
+    workers = config["workers"] // data_scale
+    if workers == 0:
+        print("with zero workers, the training phase will be very slow", level="warning")
+
     dataloader = MultiEpochsDataLoader(
         dataset=dataset,
         sampler=None if few_shot else sampler,
         batch_sampler=sampler if few_shot else None,
         batch_size=1 if few_shot else (config["batch_size"] // data_scale),  # batch_size is default set to 1
         shuffle=False if few_shot or distribute else True,
-        num_workers=4,  # num_workers for each gpu
+        num_workers=workers,  # num_workers for each gpu
         drop_last=False if few_shot else True,
         pin_memory=True,
         collate_fn=collate_function,
     )
 
-    # if torch.cuda.is_available():
-    #     dataloader = CudaDataLoader(dataloader, config["rank"])
+    if torch.cuda.is_available():
+        dataloader = CudaDataLoader(dataloader, config["rank"])
 
     return dataloader
 

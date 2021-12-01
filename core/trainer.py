@@ -328,6 +328,8 @@ class Trainer(object):
         def use_logger(msg, level="info"):
             if level == "info":
                 self.logger.info(msg)
+            elif level == "warning":
+                self.logger.warning(msg)
             else:
                 raise("Not implemente {} level log".format(level))
             
@@ -459,7 +461,7 @@ class Trainer(object):
         """
         params_idx = []
         params_dict_list = []
-        if config["optimizer"]["other"] is not None:
+        if "other" in config["optimizer"] and config["optimizer"]["other"] is not None:
             for key, value in config["optimizer"]["other"].items():
                 if self.distribute:
                     sub_model = getattr(self.model.module, key)
