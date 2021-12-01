@@ -373,15 +373,15 @@ This folder contains:
         <td>Metric</td>
         <td> 47.05 ± 0.35 </td>
         <td> 68.56 ± 0.16 </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 46.11 ± 0.39 </td>
+        <td> 70.07 ± 0.34 </td>
     </tr>
     <tr>
         <td><a href="./RelationNet">RelationNet</a></td>
         <td>CVPR’18</td>
         <td>Metric</td>
         <td> - </td>
-        <td> - </td>
+        <td> 66.76 ± 0.30 </td>
         <td> - </td>
         <td> - </td>
     </tr>
@@ -596,9 +596,9 @@ This folder contains:
         <td>NeurIPS’19</td>
         <td>Metric</td>
         <td> 59.82 ± 0.38 </td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 76.54 ± 0.29 </td>
+        <td> 70.46 ± 0.43 </td>
+        <td> 84.50 ± 0.30 </td>
     </tr>
     <tr>
       <td><a href="./DSN">DSN</a></td>
@@ -780,13 +780,13 @@ This folder contains:
         <td> - </td>
     </tr>
     <tr>
-        <td><a href="./CAN">CAN</a></td>
+        <td><a href="./CAN">CAN(!re-run,h2=11!)</a></td>
         <td>NeurIPS’19</td>
         <td>Metric</td>
         <td> 60.78 ± 0.40  </td>
         <td> 75.05 ± 0.29 </td>
         <td> 71.70 ± 0.43 </td>
-        <td> - </td>
+        <td> 84.61 ± 0.37 </td>
     </tr>
     <tr>
       <td><a href="./DSN">DSN</a></td>
