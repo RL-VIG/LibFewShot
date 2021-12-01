@@ -514,7 +514,7 @@ class Trainer(object):
             config["device_ids"],
             config["n_gpu"],
             backend="nccl" if "dist_backend" not in self.config else self.config["dist_backend"],
-            dist_url="tcp://127.0.0.1:25000"
+            dist_url="tcp://127.0.0.1:" + str(config["port"])
             if "dist_url" not in self.config
             else self.config["dist_url"],
         )

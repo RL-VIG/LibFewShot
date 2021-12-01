@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import argparse
 import os
+import random
 import re
 
 import yaml
@@ -219,6 +220,8 @@ class Config(object):
             config_dict["test_shot"] = config_dict["shot_num"]
         if config_dict["test_query"] is None:
             config_dict["test_query"] = config_dict["query_num"]
+        if config_dict["port"] is None:
+            config_dict["port"] = random.randint(25000, 55000)
 
         # Modify or add some configs
         config_dict["resume"] = self.is_resume

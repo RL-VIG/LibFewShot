@@ -280,7 +280,10 @@ class Test(object):
                 )
             model = model.to(self.rank)
             model = nn.parallel.DistributedDataParallel(
-                model, device_ids=[self.rank], output_device=self.rank, find_unused_parameters=True
+                model,
+                device_ids=[self.rank],
+                output_device=self.rank,
+                find_unused_parameters=True,
             )
 
             return model, model.module.model_type
@@ -305,7 +308,7 @@ class Test(object):
             config["device_ids"],
             config["n_gpu"],
             backend="nccl" if "dist_backend" not in self.config else self.config["dist_backend"],
-            dist_url="tcp://127.0.0.1:32512"
+            dist_url="tcp://127.0.0.1:" + str(config["port"])
             if "dist_url" not in self.config
             else self.config["dist_url"],
         )
