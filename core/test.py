@@ -188,20 +188,6 @@ class Test(object):
         state_dict_path = os.path.join(result_path, "checkpoints", "model_best.pth")
 
         return viz_path, state_dict_path
-    
-    def _init_logger(self):
-        self.logger = getLogger(__name__)
-        
-        # hack print
-        def use_logger(msg, level="info"):
-            if level == "info":
-                self.logger.info(msg)
-            else:
-                raise("Not implemente {} level log".format(level))
-            
-        builtins.print = use_logger
-        
-        return self.logger
 
     def _init_logger(self):
         self.logger = getLogger(__name__)

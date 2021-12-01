@@ -320,22 +320,6 @@ class Trainer(object):
         )
 
         return result_path, log_path, checkpoints_path, viz_path
-    
-    def _init_logger(self):
-        self.logger = getLogger(__name__)
-        
-        # hack print
-        def use_logger(msg, level="info"):
-            if level == "info":
-                self.logger.info(msg)
-            elif level == "warning":
-                self.logger.warning(msg)
-            else:
-                raise("Not implemente {} level log".format(level))
-            
-        builtins.print = use_logger
-        
-        return self.logger
 
     def _init_logger(self):
         self.logger = getLogger(__name__)
@@ -486,7 +470,11 @@ class Trainer(object):
         )
         optimizer = get_instance(torch.optim, "optimizer", config, params=params_dict_list)
         if config["lr_scheduler"]["name"] == "LambdaLR":
-            scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=eval(config["lr_scheduler"]["kwargs"]["lr_lambda"]), last_epoch=-1)
+            scheduler = torch.optim.lr_scheduler.LambdaLR(
+                optimizer,
+                lr_lambda=eval(config["lr_scheduler"]["kwargs"]["lr_lambda"]),
+                last_epoch=-1,
+            )
         else:
             scheduler = get_instance(
                 torch.optim.lr_scheduler, "lr_scheduler", config, optimizer=optimizer
