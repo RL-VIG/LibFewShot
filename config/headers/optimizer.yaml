@@ -14,5 +14,5 @@ optimizer:
 lr_scheduler:
   name: StepLR
   kwargs:
-    gamma: 0.5
+    gamma: 1.0
     step_size: 20
