@@ -171,8 +171,14 @@ class VERSA(MetaModel):
             bias_logvar,
         )
         acc = accuracy(output, query_target.reshape(-1))
+        task_score = self.drop_nan(task_score)
         loss = -torch.mean(task_score, dim=0)
         return output, acc, loss
 
     def set_forward_adaptation(self, *args, **kwargs):
         raise NotImplementedError
+
+    def drop_nan(self, tensor):
+        tensor = torch.where(torch.isnan(tensor), torch.full_like(tensor, 0), tensor)
+            
+        return tensor
