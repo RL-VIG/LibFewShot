@@ -380,10 +380,10 @@ This folder contains:
         <td><a href="./RelationNet">RelationNet</a></td>
         <td>CVPR’18</td>
         <td>Metric</td>
-        <td> - </td>
+        <td> 51.52 ± 0.37 </td>
         <td> 66.76 ± 0.30 </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 54.37 ± 0.44 </td>
+        <td> 71.93 ± 0.35 </td>
     </tr>
     <tr>
         <td><a href="./CovaMNet">CovaMNet</a></td>
