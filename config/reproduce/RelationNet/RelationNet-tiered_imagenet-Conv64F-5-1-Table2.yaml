@@ -17,9 +17,9 @@ classifier:
     feat_height: 3
     feat_width: 3
   name: RelationNet
-data_root: /data/wzy/miniImageNet--ravi
+data_root: /data/wzy/tiered_imagenet
 deterministic: true
-device_ids: 1
+device_ids: 2
 episode_size: 4
 epoch: 100
 image_size: 84
@@ -48,7 +48,7 @@ optimizer:
   other: null
 parallel_part:
 - emb_func
-port: 46260
+port: 27962
 pretrain_path: null
 query_num: 15
 rank: 0
@@ -58,15 +58,15 @@ save_interval: 10
 save_part:
 - emb_func
 seed: 2147483647
-shot_num: 5
+shot_num: 1
 tag: null
-tb_scale: 3.3333333333333335
+tb_scale: 8.333333333333334
 test_episode: 600
 test_epoch: 5
 test_query: 15
-test_shot: 5
+test_shot: 1
 test_way: 5
-train_episode: 2000
+train_episode: 5000
 use_memory: false
 way_num: 5
 workers: 32
