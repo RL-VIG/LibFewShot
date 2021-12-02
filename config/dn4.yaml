@@ -7,6 +7,18 @@ includes:
   - classifiers/DN4.yaml
   - backbones/Conv64F.yaml
 
+optimizer:
+  name: Adam
+  kwargs:
+    lr: 1e-3
+  other: ~
+
+lr_scheduler:
+  name: StepLR
+  kwargs:
+    step_size: 50
+    gamma: 0.5
+
 classifier:
   name: DN4
   kwargs:
@@ -27,12 +39,12 @@ backbone:
 #     maxpool_last2: False
 #     is_flatten: False
 
-# need to modify: core/model/backbone/resnet_18.py:114 stride=1
 # backbone:
 #   name: resnet18
 #   kwargs:
 #     is_flatten: False
 #     avg_pool: False
+#     last_block_stride: 1
 
 # backbone:
 #   name: WRN

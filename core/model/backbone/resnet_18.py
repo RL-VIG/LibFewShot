@@ -98,6 +98,7 @@ class ResNet(nn.Module):
         is_feature=False,
         avg_pool=True,
         is_flatten=True,
+        last_block_stride=2,
     ):
         super(ResNet, self).__init__()
 
@@ -111,7 +112,7 @@ class ResNet(nn.Module):
         self.layer1 = self._make_layer(block, 64, layers[0])
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
         self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
-        self.layer4 = self._make_layer(block, 512, layers[3], stride=2)
+        self.layer4 = self._make_layer(block, 512, layers[3], stride=last_block_stride)
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
 
         for m in self.modules():
@@ -178,7 +179,7 @@ def resnet18(**kwargs):
 if __name__ == "__main__":
     import torch
 
-    model = resnet18().cuda()
+    model = resnet18(is_flatten=False, avg_pool=False, last_block_stride=1).cuda()
     data = torch.rand(10, 3, 84, 84).cuda()
     output = model(data)
     print(output.size())

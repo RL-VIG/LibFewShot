@@ -4,3 +4,4 @@ use_memory: False
 augment: True
 augment_times: 1
 augment_times_query: 1
+workers: 16
