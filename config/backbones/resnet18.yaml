@@ -4,3 +4,4 @@ backbone:
     is_feature: False
     avg_pool: True
     is_flatten: True
+    last_block_stride: 2 # 1 for spatial size =11, 2 for spatial size =5

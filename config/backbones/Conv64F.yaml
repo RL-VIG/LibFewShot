@@ -6,4 +6,4 @@ backbone:
     leaky_relu: False
     negative_slope: 0.2
     last_pool: False
-    maxpool_last2: True
+    maxpool_last2: True #  False for spatial size =11, True for spatial size =5
