@@ -4,6 +4,7 @@ import logging
 import os
 import builtins
 from logging import getLogger
+import time
 from time import time
 
 import torch
@@ -104,6 +105,8 @@ class Trainer(object):
                 )
             )
             print("Result DIR: {}".format(self.result_path))
+            
+        time.sleep(1)
 
     def _train(self, epoch_idx):
         """

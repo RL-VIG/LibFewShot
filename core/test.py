@@ -2,6 +2,7 @@
 import os
 import builtins
 from logging import getLogger
+import time
 from time import time
 
 import numpy as np
@@ -14,6 +15,7 @@ from core.utils import (
     init_logger_config,
     prepare_device,
     init_seed,
+    create_dirs,
     AverageMeter,
     count_parameters,
     ModelType,
@@ -40,7 +42,7 @@ class Test(object):
         self.viz_path, self.state_dict_path = self._init_files(config)
         self.logger = self._init_logger()
         self.device, self.list_ids = self._init_device(rank, config)
-        self.writer = TensorboardWriter(self.viz_path)
+        self.writer = self._init_writer(self.viz_path)
         self.test_meter = self._init_meter()
         print(config)
         self.model, self.model_type = self._init_model(config)
@@ -66,6 +68,8 @@ class Test(object):
         aver_accuracy, h = mean_confidence_interval(total_accuracy_vector)
         print("Aver Accuracy: {:.3f}\t Aver h: {:.3f}".format(aver_accuracy, h))
         print("............Testing is end............")
+        
+        time.sleep(1)
 
     def _validate(self, epoch_idx):
         """
@@ -183,9 +187,12 @@ class Test(object):
             config["classifier"]["name"],
             config["backbone"]["name"],
             is_train=False,
+            rank=self.rank,
         )
 
         state_dict_path = os.path.join(result_path, "checkpoints", "model_best.pth")
+        if self.rank == 0:
+            create_dirs([result_path, log_path, viz_path])
 
         return viz_path, state_dict_path
 
@@ -198,6 +205,8 @@ class Test(object):
                 return
             if level == "info":
                 self.logger.info(msg)
+            elif level == "warning":
+                self.logger.warning(msg)
             else:
                 raise ("Not implemente {} level log".format(level))
 
@@ -328,3 +337,16 @@ class Test(object):
         )
 
         return test_meter
+
+    def _init_writer(self, viz_path):
+        """
+        Init the tensorboard writer.
+
+        Return:
+            writer: tensorboard writer
+        """
+        if self.rank == 0:
+            writer = TensorboardWriter(viz_path)
+            return writer
+        else:
+            return None
