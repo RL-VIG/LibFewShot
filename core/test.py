@@ -69,7 +69,8 @@ class Test(object):
         print("Aver Accuracy: {:.3f}\t Aver h: {:.3f}".format(aver_accuracy, h))
         print("............Testing is end............")
         
-        time.sleep(1)
+        if self.writer is not None:
+            self.writer.close()
 
     def _validate(self, epoch_idx):
         """

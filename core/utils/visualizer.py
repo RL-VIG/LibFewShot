@@ -43,3 +43,7 @@ class TensorboardWriter(object):
             return wrapper
         else:
             raise RuntimeError
+
+
+    def close(self, ):
+        self.writer.close()

@@ -106,7 +106,8 @@ class Trainer(object):
             )
             print("Result DIR: {}".format(self.result_path))
             
-        time.sleep(1)
+        if self.writer is not None:
+            self.writer.close()
 
     def _train(self, epoch_idx):
         """
