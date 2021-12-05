@@ -32,6 +32,7 @@ Cite this work with:
 |   | Embedding | :book: *mini*ImageNet (5,1) | :computer: *mini*ImageNet (5,1) | :book:*mini*ImageNet (5,5) | :computer: *mini*ImageNet (5,5) | :memo: Comments  |
 |---|-----------|--------------------|--------------------|--------------------|--------------------|---|
 | 1 | Conv64F | 42.11 | 42.34 ± 0.31 [:arrow_down:](https://drive.google.com/drive/folders/1GKt_Y-CZqgzsm4YQEkeP0j_xTvjKhlng?usp=sharing) [:clipboard:](./Baseline-miniImageNet--ravi-Conv64F-5-Reproduce.yaml) | 62.53 | 62.18 ± 0.30 [:arrow_down:](https://drive.google.com/drive/folders/1GKt_Y-CZqgzsm4YQEkeP0j_xTvjKhlng?usp=sharing) [:clipboard:](./Baseline-miniImageNet--ravi-Conv64F-5-Reproduce.yaml) | Reproduce |
+| 2 | Conv64F | - | 44.90 ± 0.32 [:arrow_down:](https://drive.google.com/drive/folders/14KXSJnGnX7TCp3-h0IRPKDKgKDQlqy8N?usp=sharing) [:clipboard:](./Baseline-miniImageNet--ravi-Conv64F-Table2) | - | 63.96 ± 0.30 [:arrow_down:](https://drive.google.com/drive/folders/14KXSJnGnX7TCp3-h0IRPKDKgKDQlqy8N?usp=sharing) [:clipboard:](./Baseline-miniImageNet--ravi-Conv64F-Table2) | Table.2 |
 
 
 
