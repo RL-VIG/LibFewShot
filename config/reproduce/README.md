@@ -245,8 +245,8 @@ This folder contains:
         <td><a href="./Baseline">Baseline</a></td>
         <td>ICLR’19</td>
         <td>Fine-tuning</td>
-        <td> - </td>
-        <td> - </td>
+        <td> 44.90 ± 0.32 </td>
+        <td> 63.96 ± 0.30 </td>
         <td> - </td>
         <td> - </td>
     </tr>
@@ -756,8 +756,8 @@ This folder contains:
         <td><a href="./RelationNet">RelationNet</a></td>
         <td>CVPR’18</td>
         <td>Metric</td>
-        <td> - </td>
-        <td> - </td>
+        <td> 54.37 ± 0.44 </td>
+        <td> 71.93 ± 0.35 </td>
         <td> - </td>
         <td> - </td>
     </tr>
