@@ -107,6 +107,7 @@ class VERSA(MetaModel):
         self.bias_logvar = Predictor(d_theta, d_theta, 1)
         self.head = VERSALayer(sample_num)
 
+    @torch.no_grad()
     def set_forward(self, batch):
         image, global_target = batch
         image = image.to(self.device)
