@@ -8,6 +8,7 @@
 | Codes:   | [**CloserLookFewShot**](https://github.com/wyharveychen/CloserLookFewShot)|
 
 + When reproduceingthis method with the same setting in the original paper, you should skip validation during training-stage and choose the last model it saves.
++ Notice that baseline use N-cls-head to train, where N > num_base_classes.
 
 Cite this work with:
 ```bibtex
