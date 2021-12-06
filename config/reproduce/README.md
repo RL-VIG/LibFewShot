@@ -569,7 +569,7 @@ This folder contains:
         <td>CVPR’18</td>
         <td>Metric</td>
         <td> 55.22 ± 0.39  </td>
-        <td> - </td>
+        <td> 69.25 ± 0.31 </td>
         <td> - </td>
         <td> - </td>
     </tr>
@@ -756,7 +756,7 @@ This folder contains:
         <td><a href="./RelationNet">RelationNet</a></td>
         <td>CVPR’18</td>
         <td>Metric</td>
-        <td> - </td>
+        <td> 53.98 ± 0.37 </td>
         <td> 71.27 ± 0.31 </td>
         <td> - </td>
         <td> - </td>
