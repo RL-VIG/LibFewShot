@@ -7,16 +7,13 @@ includes:
   - classifiers/MAML.yaml
   - backbones/resnet12.yaml
 
-way_num: 5
-shot_num: 1
-query_num: 15
-test_way: 5 # use ~ -> test_* = *_num
-test_shot: 1
-test_query: 15
-episode_size: 1
-train_episode: 10
-test_episode: 10
+data_root: /data/fewshot/miniImageNet--ravi
 
+optimizer:
+  name: Adam
+  kwargs:
+    lr: 1e-3
+  other: ~
 
 backbone:
   name: Conv64F
@@ -32,7 +29,8 @@ classifier:
   kwargs:
     inner_param:
       lr: 1e-2
-      iter: 5
+      train_iter: 5
+      test_iter: 10
     feat_dim: 1600
 
 
@@ -46,7 +44,8 @@ classifier:
 #   kwargs:
 #     inner_param:
 #       lr: 1e-2
-#       iter: 5
+#       train_iter: 5
+#       test_iter: 10
 #     feat_dim: 640
 
 
@@ -59,7 +58,8 @@ classifier:
 #   kwargs:
 #     inner_param:
 #       lr: 1e-2
-#       iter: 5
+#       train_iter: 5
+#       test_iter: 10
 #     feat_dim: 512
 
 
@@ -74,5 +74,6 @@ classifier:
 #   kwargs:
 #     inner_param:
 #       lr: 1e-2
-#       iter: 5
+#       train_iter: 5
+#       test_iter: 10
 #     feat_dim: 640
