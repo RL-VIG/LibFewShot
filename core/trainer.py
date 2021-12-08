@@ -4,7 +4,6 @@ import logging
 import os
 import builtins
 from logging import getLogger
-import time
 from time import time
 
 import torch
@@ -105,7 +104,7 @@ class Trainer(object):
                 )
             )
             print("Result DIR: {}".format(self.result_path))
-            
+
         if self.writer is not None:
             self.writer.close()
 
@@ -616,14 +615,29 @@ class Trainer(object):
         # check: episode_size >= n_gpu and episode_size != 0
         assert (
             self.config["episode_size"] >= self.config["n_gpu"] and self.config["episode_size"] != 0
+        ), "episode_size {} should be >= n_gpu {} and != 0".format(
+            self.config["episode_size"], self.config["n_gpu"]
         )
 
         # check: episode_size % n_gpu == 0
-        assert self.config["episode_size"] % self.config["n_gpu"] == 0
+        assert (
+            self.config["episode_size"] % self.config["n_gpu"] == 0
+        ), "episode_size {} % n_gpu {} != 0".format(
+            self.config["episode_size"], self.config["n_gpu"]
+        )
 
         # check: episode_num % episode_size == 0
-        assert self.config["train_episode"] % self.config["episode_size"] == 0
-        assert self.config["test_episode"] % self.config["episode_size"] == 0
+        assert (
+            self.config["train_episode"] % self.config["episode_size"] == 0
+        ), "train_episode {} % episode_size  {} != 0".format(
+            self.config["train_episode"], self.config["episode_size"]
+        )
+
+        assert (
+            self.config["test_episode"] % self.config["episode_size"] == 0
+        ), "test_episode {} % episode_size  {} != 0".format(
+            self.config["test_episode"], self.config["episode_size"]
+        )
 
     def _cal_time_scheduler(self, start_time, epoch_idx):
         """
