@@ -247,8 +247,8 @@ This folder contains:
         <td>Fine-tuning</td>
         <td> 44.90 ± 0.32 </td>
         <td> 63.96 ± 0.30 </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 48.20 ± 0.35 </td>
+        <td> 68.96 ± 0.33 </td>
     </tr>
     <tr>
         <td><a href="./Baseline++">Baseline++</a></td>
@@ -442,8 +442,8 @@ This folder contains:
         <td><a href="./Baseline">Baseline</a></td>
         <td>ICLR’19</td>
         <td>Fine-tuning</td>
-        <td> - </td>
-        <td> - </td>
+        <td> 56.39 ± 0.36 </td>
+        <td> 76.18 ± 0.27 </td>
         <td> - </td>
         <td> - </td>
     </tr>
@@ -559,8 +559,8 @@ This folder contains:
         <td><a href="./ProtoNet">ProtoNet</a></td>
         <td>NeurIPS’17</td>
         <td>Metric</td>
-        <td> - </td>
-        <td> - </td>
+        <td> 54.25 ± 0.37 </td>
+        <td> 74.65 ± 0.29 </td>
         <td> - </td>
         <td> - </td>
     </tr>
@@ -630,8 +630,8 @@ This folder contains:
         <td><a href="./Baseline">Baseline</a></td>
         <td>ICLR’19</td>
         <td>Fine-tuning</td>
-        <td> - </td>
-        <td> - </td>
+        <td> 54.11 ± 0.35 </td>
+        <td> 74.44 ± 0.29 </td>
         <td> - </td>
         <td> - </td>
     </tr>
