@@ -326,8 +326,8 @@ This folder contains:
         <td><a href="./R2D2">R2D2</a></td>
         <td>ICLR’19</td>
         <td>Meta</td>
-        <td> - </td>
-        <td> - </td>
+        <td> 51.19 ± 0.36  </td>
+        <td> 67.29 ± 0.31 </td>
         <td> - </td>
         <td> - </td>
     </tr>
@@ -515,7 +515,7 @@ This folder contains:
         <td>ICLR’19</td>
         <td>Meta</td>
         <td> 59.52 ± 0.39 </td>
-        <td> - </td>
+        <td> 74.61 ± 0.30 </td>
         <td> - </td>
         <td> - </td>
     </tr>
