@@ -632,8 +632,8 @@ This folder contains:
         <td>Fine-tuning</td>
         <td> 54.11 ± 0.35 </td>
         <td> 74.44 ± 0.29 </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 64.65 ± 0.41 </td>
+        <td> 82.73 ± 0.29 </td>
     </tr>
     <tr>
         <td><a href="./Baseline++">Baseline++</a></td>
