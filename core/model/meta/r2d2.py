@@ -33,9 +33,11 @@ def computeGramMatrix(A, B):
     Returns: a (n_batch, n, m) Tensor.
     """
 
-    assert A.dim() == 3
-    assert B.dim() == 3
-    assert A.size(0) == B.size(0) and A.size(2) == B.size(2)
+    assert A.dim() == 3, "A must be a 3-D Tensor."
+    assert B.dim() == 3, "B must be a 3-D Tensor."
+    assert A.size(0) == B.size(0) and A.size(2) == B.size(
+        2
+    ), "A and B must have the same batch size and feature dimension."
 
     return torch.bmm(A, B.transpose(1, 2))
 
@@ -87,10 +89,14 @@ class R2D2Layer(nn.Module):
         n_support = support.size(1)
         support_target = support_target.squeeze()
 
-        assert query.dim() == 3
-        assert support.dim() == 3
-        assert query.size(0) == support.size(0) and query.size(2) == support.size(2)
-        assert n_support == way_num * shot_num  # n_support must equal to n_way * n_shot
+        assert query.dim() == 3, "query must be a 3-D Tensor."
+        assert support.dim() == 3, "support must be a 3-D Tensor."
+        assert query.size(0) == support.size(0) and query.size(2) == support.size(
+            2
+        ), "query and support must have the same batch size and feature dimension."
+        assert (
+            n_support == way_num * shot_num
+        ), "n_support must be equal to way_num * shot_num."  # n_support must equal to n_way * n_shot
 
         support_labels_one_hot = one_hot(support_target.view(tasks_per_batch * n_support), way_num)
         support_labels_one_hot = support_labels_one_hot.view(tasks_per_batch, n_support, way_num)

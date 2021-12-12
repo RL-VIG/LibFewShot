@@ -55,7 +55,11 @@ def orthogonality(weight):
     w2 = torch.mm(weight, weight.transpose(0, 1))
     wn = torch.norm(weight, dim=1, keepdim=True) + 1e-20
     correlation_matrix = w2 / torch.mm(wn, wn.transpose(0, 1))
-    assert correlation_matrix.size(0) == correlation_matrix.size(1)
+    assert correlation_matrix.size(0) == correlation_matrix.size(
+        1
+    ), "correlation_matrix is not square, correlation_matrix.shape is {}".format(
+        correlation_matrix.shape
+    )
     identity_matrix = torch.eye(correlation_matrix.size(0)).to(weight.device)
     return torch.mean((correlation_matrix - identity_matrix) ** 2)
 

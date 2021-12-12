@@ -63,7 +63,7 @@ class GeneralDataset(Dataset):
             trfms (list, optional): A transform list (in LFS, its useless). Defaults to None.
         """
         super(GeneralDataset, self).__init__()
-        assert mode in ["train", "val", "test"]
+        assert mode in ["train", "val", "test"], "mode must be in ['train', 'val', 'test']"
 
         self.data_root = data_root
         self.mode = mode

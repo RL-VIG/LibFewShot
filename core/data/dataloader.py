@@ -30,7 +30,7 @@ def get_dataloader(config, mode, model_type, distribute):
     Returns:
         Dataloader: The corresponding dataloader.
     """
-    assert model_type != ModelType.ABSTRACT
+    assert model_type != ModelType.ABSTRACT, "model_type should not be ModelType.ABSTRACT"
 
     trfms_list = []
 
@@ -95,7 +95,9 @@ def get_dataloader(config, mode, model_type, distribute):
         dataset=dataset,
         sampler=None if few_shot else sampler,
         batch_sampler=sampler if few_shot else None,
-        batch_size=1 if few_shot else (config["batch_size"] // data_scale),  # batch_size is default set to 1
+        batch_size=1
+        if few_shot
+        else (config["batch_size"] // data_scale),  # batch_size is default set to 1
         shuffle=False if few_shot or distribute else True,
         num_workers=workers,  # num_workers for each gpu
         drop_last=False if few_shot else True,
@@ -120,7 +122,6 @@ class _RepeatSampler(object):
 
     def set_epoch(self, epoch):
         self.sampler.set_epoch(epoch)
-
 
 
 class MultiEpochsDataLoader(DataLoader):
