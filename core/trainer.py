@@ -108,6 +108,10 @@ class Trainer(object):
             
         if self.writer is not None:
             self.writer.close()
+            if self.distribute:
+                dist.barrier()
+        elif self.distribute:
+            dist.barrier()
 
     def _train(self, epoch_idx):
         """
@@ -416,7 +420,7 @@ class Trainer(object):
 
         if self.distribute:
             # higher order grad of BN in multi gpu will conflict with syncBN
-            # FIXME MAML with multi GPU is conflict with syncBN
+            # FIXME MAML with multi GPU conflict with syncBN
             if not (self.config["classifier"]["name"] in ["MAML"] and self.config["n_gpu"] > 1):
                 model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
             else:
@@ -424,7 +428,7 @@ class Trainer(object):
                     "{} with multi GPU will conflict with syncBN".format(
                         self.config["classifier"]["name"]
                     ),
-                    level="warn",
+                    level="warning",
                 )
             model = model.to(self.rank)
             model = nn.parallel.DistributedDataParallel(

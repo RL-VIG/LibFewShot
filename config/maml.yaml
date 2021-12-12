@@ -4,10 +4,17 @@ includes:
   - headers/misc.yaml
   - headers/model.yaml
   - headers/optimizer.yaml
-  - classifiers/MAML.yaml
-  - backbones/resnet12.yaml
 
-data_root: /data/fewshot/miniImageNet--ravi
+way_num: 5
+shot_num: 1
+query_num: 15
+episode_size: 2
+train_episode: 2000
+test_episode: 600
+
+device_ids: 5
+n_gpu: 1
+epoch: 100
 
 optimizer:
   name: Adam
@@ -36,8 +43,7 @@ classifier:
 
 # backbone:
 #   name: resnet12
-#   kwargs:
-#     keep_prob: 0.0
+#   kwargs: ~
 
 # classifier:
 #   name: MAML

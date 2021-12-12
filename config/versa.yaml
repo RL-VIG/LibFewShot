@@ -5,19 +5,12 @@ includes:
   - headers/model.yaml
   - headers/optimizer.yaml
 
-data_root: /data/yxs/miniImageNet--ravi
-# data_root: /data/yxs/tiered_imagenet
-
-discriminative: True
-
-device_ids: 7
+device_ids: 0
 n_gpu: 1
 
 epoch: 200
 train_episode: 2000
 test_episode: 600
-
-workers: 16
 
 way_num: 5
 shot_num: 5
@@ -32,33 +25,33 @@ optimizer:
     weight_decay: 5e-4
   other: ~
 
-# backbone:
-#   name: Conv64F
-#   kwargs:
-#     is_flatten: True
-#     is_feature: False
-#     leaky_relu: True
-#     negative_slope: 0.2
-#     last_pool: True
-
-# classifier:
-#   name: VERSA
-#   kwargs:
-#     feat_dim: 1600
-#     d_theta: 256
-#     sample_num: 10
-#     drop_rate: 0.5
-
 backbone:
-  name: resnet12
-  kwargs: ~
+  name: Conv64F
+  kwargs:
+    is_flatten: True
+    is_feature: False
+    leaky_relu: True
+    negative_slope: 0.2
+    last_pool: True
 
 classifier:
   name: VERSA
   kwargs:
-    feat_dim: 640
-    hid_dim: 640
+    feat_dim: 1600
+    d_theta: 256
     sample_num: 10
+    drop_rate: 0.5
+
+# backbone:
+#   name: resnet12
+#   kwargs: ~
+
+# classifier:
+#   name: VERSA
+#   kwargs:
+#     feat_dim: 640
+#     hid_dim: 640
+#     sample_num: 10
 
 
 # backbone:

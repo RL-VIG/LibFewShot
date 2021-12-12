@@ -5,6 +5,7 @@ from .resnet_18 import resnet18
 from .wrn import WRN
 from .resnet_12_mtl_offcial import resnet12MTLofficial
 from .vit import ViT
+from .swin_transformer import swin_s, swin_l, swin_b, swin_t, swin_mini
 
 from core.model.backbone.utils.maml_module import convert_maml_module
 

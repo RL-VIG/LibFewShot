@@ -4,31 +4,40 @@ includes:
   - headers/misc.yaml
   - headers/model.yaml
   - headers/optimizer.yaml
-  - classifiers/LEO.yaml
-  - backbones/resnet12.yaml
 
-pretrain_path: ./results/checkpoint.pth
+pretrain_path: ~
 
-device_ids: 0
+device_ids: 2
+n_gpu: 1
+epoch: 100
+
 way_num: 5
 shot_num: 1
 query_num: 15
-test_way: 5 # use ~ -> test_* = *_num
-test_shot: 1
-test_query: 15
 episode_size: 1
-train_episode: 10
-test_episode: 10
+train_episode: 2000
+test_episode: 600
 
+optimizer:
+  name: Adam
+  kwargs:
+    lr: 5e-4
+    # lr: 1e-3
 
-# backbone:
-#   name: Conv64F
-#   kwargs:
-#     is_flatten: True
-#     is_feature: False
-#     leaky_relu: False
-#     negative_slope: 0.2
-#     last_pool: True
+lr_scheduler:
+  name: CosineAnnealingLR
+  kwargs:
+    T_max: 100
+    eta_min: 0
+
+backbone:
+  name: Conv64F
+  kwargs:
+    is_flatten: True
+    is_feature: False
+    leaky_relu: False
+    negative_slope: 0.2
+    last_pool: True
 
 # classifier:
 #   name: LEO
@@ -45,24 +54,23 @@ test_episode: 10
 #     orthogonality_penalty_weight: 1e-3
 
 
-backbone:
-  name: resnet12
-  kwargs:
-    keep_prob: 0.0
+# backbone:
+#   name: resnet12
+#   kwargs: ~
 
-classifier:
-  name: LEO
-  kwargs:
-    inner_para:
-      lr: 1e-2
-      iter: 5
-      finetune_lr: 1e-2
-      finetune_iter: 5
-    feat_dim: 640
-    hid_dim: 64
-    kl_weight: 1e-3
-    encoder_penalty_weight: 1e-9
-    orthogonality_penalty_weight: 1e-3
+# classifier:
+#   name: LEO
+#   kwargs:
+#     inner_para:
+#       lr: 1e-2
+#       iter: 5
+#       finetune_lr: 1e-2
+#       finetune_iter: 5
+#     feat_dim: 640
+#     hid_dim: 64
+#     kl_weight: 1e-3
+#     encoder_penalty_weight: 1e-9
+#     orthogonality_penalty_weight: 1e-3
 
 
 # backbone:

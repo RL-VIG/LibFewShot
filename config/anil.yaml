@@ -4,21 +4,22 @@ includes:
   - headers/misc.yaml
   - headers/model.yaml
   - headers/optimizer.yaml
-  - classifiers/ANIL.yaml
-  - backbones/resnet12.yaml
 
-
-device_ids: 0
+device_ids: 1
+n_gpu: 1
 way_num: 5
 shot_num: 1
 query_num: 15
-test_way: 5 # use ~ -> test_* = *_num
-test_shot: 1
-test_query: 15
-episode_size: 1
-train_episode: 100
-test_episode: 100
+episode_size: 4
+train_episode: 2000
+test_episode: 600
+epoch: 100
 
+optimizer:
+  name: Adam
+  kwargs:
+    lr: 1e-3
+  other: ~
 
 backbone:
   name: Conv64F
@@ -33,8 +34,9 @@ classifier:
   name: ANIL
   kwargs:
     inner_param:
-      lr: 1e-3
-      iter: 10
+      lr: 1e-2
+      train_iter: 5
+      test_iter: 10
     feat_dim: 1600
 
 
@@ -48,7 +50,8 @@ classifier:
 #   kwargs:
 #     inner_param:
 #       lr: 1e-3
-#       iter: 10
+#       train_iter: 5
+#       test_iter: 10
 #     feat_dim: 640
 
 
@@ -61,7 +64,8 @@ classifier:
 #   kwargs:
 #     inner_param:
 #       lr: 1e-3
-#       iter: 10
+#       train_iter: 5
+#       test_iter: 10
 #     feat_dim: 512
 
 
@@ -79,5 +83,6 @@ classifier:
 #   kwargs:
 #     inner_param:
 #       lr: 1e-3
-#       iter: 10
+      # train_iter: 5
+      # test_iter: 10
 #     feat_dim: 640

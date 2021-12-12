@@ -8,6 +8,7 @@ from time import time
 import numpy as np
 import torch
 from torch import nn
+import torch.distributed as dist
 
 import core.model as arch
 from core.data import get_dataloader
@@ -71,6 +72,10 @@ class Test(object):
         
         if self.writer is not None:
             self.writer.close()
+            if self.distribute:
+                dist.barrier()
+        elif self.distribute:
+            dist.barrier()
 
     def _validate(self, epoch_idx):
         """
@@ -286,7 +291,7 @@ class Test(object):
                     "{} with multi GPU will conflict with syncBN".format(
                         self.config["classifier"]["name"]
                     ),
-                    level="warn",
+                    level="warning",
                 )
             model = model.to(self.rank)
             model = nn.parallel.DistributedDataParallel(

@@ -112,9 +112,10 @@ class _RepeatSampler(object):
 
     def __init__(self, sampler):
         self.sampler = sampler
+        self.repeat_sample = True if len(self.sampler)>0 else False
 
     def __iter__(self):
-        while True:
+        while self.repeat_sample:
             yield from iter(self.sampler)
 
     def set_epoch(self, epoch):

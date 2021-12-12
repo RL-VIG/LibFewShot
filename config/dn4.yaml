@@ -5,24 +5,17 @@ includes:
   - headers/model.yaml
   - headers/optimizer.yaml
   - classifiers/DN4.yaml
-  - backbones/Conv64F.yaml
 
-optimizer:
-  name: Adam
-  kwargs:
-    lr: 1e-3
-  other: ~
+way_num: 5
+shot_num: 1
+query_num: 15
+episode_size: 1
+train_episode: 2000
+test_episode: 600
 
-lr_scheduler:
-  name: StepLR
-  kwargs:
-    step_size: 50
-    gamma: 0.5
-
-classifier:
-  name: DN4
-  kwargs:
-    n_k: 3
+device_ids: 2
+n_gpu: 1
+epoch: 200
 
 backbone:
   name: Conv64F
