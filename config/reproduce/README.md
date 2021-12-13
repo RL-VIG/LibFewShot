@@ -516,8 +516,8 @@ This folder contains:
         <td>Meta</td>
         <td> 59.52 ± 0.39 </td>
         <td> 74.61 ± 0.30 </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 65.07 ± 0.44 </td>
+        <td> 83.04 ± 0.30 </td>
     </tr>
     <tr>
         <td><a href="./LEO">LEO</a></td>
@@ -704,8 +704,8 @@ This folder contains:
         <td>Meta</td>
         <td> - </td>
         <td> - </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 64.73 ± 0.44 </td>
+        <td> 83.40 ± 0.31 </td>
     </tr>
     <tr>
         <td><a href="./LEO">LEO</a></td>
