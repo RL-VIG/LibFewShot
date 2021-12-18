@@ -71,7 +71,8 @@ class Conv64F(nn.Module):
         out3 = self.layer3(out2)
 
         if self.maxpool_last2:
-            out3 = self.layer3_maxpool(out3)  # for some methods(relation net etc.)
+            out3 = self.layer3_maxpool(out3)
+            # for some methods (relation net etc.)
 
         out4 = self.layer4(out3)
         if self.last_pool:
@@ -91,9 +92,6 @@ class Conv32F(nn.Module):
     Four convolutional blocks network, each of which consists of a Covolutional layer,
     a Batch Normalizaiton layer, a ReLU layer and a Maxpooling layer.
     Used in the original ProtoNet: https://github.com/jakesnell/prototypical-networks.git.
-
-    Input:  3 * 84 *84
-    Output: 32 * 5 * 5
     """
 
     def __init__(

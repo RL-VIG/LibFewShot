@@ -88,7 +88,6 @@ class FewShotAugCollateFunction(object):
             self.trfms_support, self.trfms_query = trfms
         except Exception:
             self.trfms_support = self.trfms_query = trfms
-        # self.trfms = trfms
         # Allow different trfms: when single T, apply to S and Q equally;
         # When trfms=(T,T), apply to S and Q separately;
         self.times = 1 if times == 0 else times
@@ -124,15 +123,16 @@ class FewShotAugCollateFunction(object):
                 [spt_qry[: self.shot_num], spt_qry[self.shot_num :]]
                 for spt_qry in images_split_by_label
             ]  # 11111,1;22222,2;  == [shot, query]
-
-            # aug support # fixme: should have a elegant method # 1111111111,1;2222222222,2 # (aug_time = 2 for example)
+            # aug support
+            # fixme: should have a elegant method
+            # 1111111111,1;2222222222,2 (aug_time = 2 for example)
             for cls in images_split_by_label_type:
                 cls[0] = cls[0] * self.times  # aug support
                 cls[1] = cls[1] * self.times_q  # aug query
-
             # flatten and apply trfms
             flat = lambda t: [x for sub in t for x in flat(sub)] if isinstance(t, Iterable) else [t]
-            images = flat(images_split_by_label_type)  # 1111111111122222222222
+            images = flat(images_split_by_label_type)
+            # 1111111111122222222222
             # images = [self.trfms(image) for image in images]  # list of tensors([c, h, w])
             images = [
                 self.trfms_support(image)
@@ -141,7 +141,6 @@ class FewShotAugCollateFunction(object):
                 for index, image in enumerate(images)
             ]  # list of tensors([c, h, w])
             images = torch.stack(images)  # [b', c, h, w] <- b' = b after aug
-
             # labels
             # global_labels = torch.tensor(labels,dtype=torch.int64)
             # global_labels = torch.tensor(labels,dtype=torch.int64).reshape(self.episode_size,self.way_num,
@@ -158,7 +157,6 @@ class FewShotAugCollateFunction(object):
                     self.shot_num * self.times + self.query_num * self.times_q,
                 )
             )
-
             return images, global_labels
             # images.shape = [e*w*(q+s) x c x h x w],  global_labels.shape = [e x w x (q+s)]
         except TypeError:

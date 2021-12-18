@@ -12,8 +12,6 @@ class DropBlock(nn.Module):
         self.block_size = block_size
 
     def forward(self, x, gamma):
-        # shape: (bsize, channels, height, width)
-
         if self.training:
             batch_size, channels, height, width = x.shape
             bernoulli = Bernoulli(gamma)
@@ -67,7 +65,6 @@ class DropBlock(nn.Module):
             offsets = offsets.long()
 
             block_idxs = non_zero_idxs + offsets
-            # block_idxs += left_padding
             padded_mask = F.pad(
                 mask,
                 (left_padding, right_padding, left_padding, right_padding),
@@ -84,5 +81,5 @@ class DropBlock(nn.Module):
                 (left_padding, right_padding, left_padding, right_padding),
             )
 
-        block_mask = 1 - padded_mask  # [:height, :width]
+        block_mask = 1 - padded_mask
         return block_mask

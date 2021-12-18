@@ -38,20 +38,25 @@ class ADMLayer(nn.Module):
         self.normLayer = nn.BatchNorm1d(self.way_num * 2, affine=True)
         self.fcLayer = nn.Conv1d(1, 1, kernel_size=2, stride=1, dilation=5, bias=False)
 
-    def _cal_cov_matrix_batch(self, feat):  # feature: e *  Batch * descriptor_num * 64
+    def _cal_cov_matrix_batch(self, feat):
+        # feature: e *  Batch * descriptor_num * 64
         e, _, n_local, c = feat.size()
-        feature_mean = torch.mean(feat, 2, True)  # e * Batch * 1 * 64
+        feature_mean = torch.mean(feat, 2, True)
+        # e * Batch * 1 * 64
         feat = feat - feature_mean
-        cov_matrix = torch.matmul(feat.permute(0, 1, 3, 2), feat)  # ebc1 * eb1c = ebcc
+        cov_matrix = torch.matmul(feat.permute(0, 1, 3, 2), feat)
+        # ebc1 * eb1c = ebcc
         cov_matrix = torch.div(cov_matrix, n_local - 1)
-        cov_matrix = cov_matrix + 0.01 * torch.eye(c).to(self.device)  # broadcast from the last dim
+        cov_matrix = cov_matrix + 0.01 * torch.eye(c).to(self.device)
 
         return feature_mean, cov_matrix
 
-    def _cal_cov_batch(self, feat):  # feature: e * 25 * 64 * 21 * 21
+    def _cal_cov_batch(self, feat):
+        # feature: e * 25 * 64 * 21 * 21
         e, b, c, h, w = feat.size()
         feat = feat.reshape(e, b, c, -1).permute(0, 1, 3, 2)
-        feat_mean = torch.mean(feat, 2, True)  # e * Batch * 1 * 64
+        feat_mean = torch.mean(feat, 2, True)
+        # e * Batch * 1 * 64
         feat = feat - feat_mean
         cov_matrix = torch.matmul(feat.permute(0, 1, 3, 2), feat)
         cov_matrix = torch.div(cov_matrix, h * w - 1)
@@ -69,30 +74,38 @@ class ADMLayer(nn.Module):
         :return:
         """
 
-        cov2_inverse = torch.inverse(cov2)  # e * 5 * 64 * 64
-        mean_diff = -(mean1 - mean2.squeeze(2).unsqueeze(1))  # e * 75 * 5 * 64
+        cov2_inverse = torch.inverse(cov2)
+        # e * 5 * 64 * 64
+        mean_diff = -(mean1 - mean2.squeeze(2).unsqueeze(1))
+        # e * 75 * 5 * 64
 
         # Calculate the trace
-        matrix_prod = torch.matmul(
-            cov1.unsqueeze(2), cov2_inverse.unsqueeze(1)
-        )  # e * 75 * 5 * 64 * 64
+        matrix_prod = torch.matmul(cov1.unsqueeze(2), cov2_inverse.unsqueeze(1))
+        # e * 75 * 5 * 64 * 64
+
+        # origin implementation:
         # trace_dist = [[torch.trace(matrix_prod[e][j][i]).unsqueeze(0) # modified for multi-task, stack for 64*64
         # tensors
         #                for j in range(matrix_prod.size(1))
         #                for i in range(matrix_prod.size(2))]
         #               for e in range(matrix_prod.size(0))] # list of trace_dist
-        # trace_dist = torch.stack([torch.cat(trace_dist_list, 0) for trace_dist_list in trace_dist]) #
-        trace_dist = torch.diagonal(matrix_prod, offset=0, dim1=-2, dim2=-1)  # e * 75 * 5 * 64
-        trace_dist = torch.sum(trace_dist, dim=-1)  # e * 75 * 5
+        # trace_dist = torch.stack([torch.cat(trace_dist_list, 0) for trace_dist_list in trace_dist])
         # trace_dist = trace_dist.view(matrix_prod.size(0),matrix_prod.size(1), matrix_prod.size(2))  # e * 75 * 5
 
+        # alternative implementation: (faster)
+        trace_dist = torch.diagonal(matrix_prod, offset=0, dim1=-2, dim2=-1)
+        # e * 75 * 5 * 64
+        trace_dist = torch.sum(trace_dist, dim=-1)
+        # e * 75 * 5
+
         # Calcualte the Mahalanobis Distance
-        maha_prod = torch.matmul(
-            mean_diff.unsqueeze(3), cov2_inverse.unsqueeze(1)
-        )  # e * 75 * 5 * 1 * 64
-        maha_prod = torch.matmul(maha_prod, mean_diff.unsqueeze(4))  # e * 75 * 5 * 1 * 1
+        maha_prod = torch.matmul(mean_diff.unsqueeze(3), cov2_inverse.unsqueeze(1))
+        # e * 75 * 5 * 1 * 64
+        maha_prod = torch.matmul(maha_prod, mean_diff.unsqueeze(4))
+        # e * 75 * 5 * 1 * 1
         maha_prod = maha_prod.squeeze(4)
-        maha_prod = maha_prod.squeeze(3)  # e * 75 * 5
+        maha_prod = maha_prod.squeeze(3)
+        # e * 75 * 5
 
         matrix_det = torch.slogdet(cov2).logabsdet.unsqueeze(1) - torch.slogdet(
             cov1

@@ -109,19 +109,12 @@ class CAM(nn.Module):
 
     def get_attention(self, a):
         input_a = a
-        # print('line ', sys._getframe().f_lineno, a.shape)
         a = a.mean(3)  # GAP
-        # print('line ', sys._getframe().f_lineno, a.shape)
         a = a.transpose(1, 3)
-        # print('line ', sys._getframe().f_lineno, a.shape)
         a = F.relu(self.conv1(a))
-        # print('line ', sys._getframe().f_lineno, a.shape)
         a = self.conv2(a)
-        # print('line ', sys._getframe().f_lineno, a.shape)
         a = a.transpose(1, 3)
-        # print('line ', sys._getframe().f_lineno, a.shape)
         a = a.unsqueeze(3)
-        # print('line ', sys._getframe().f_lineno, a.shape)
 
         a = torch.mean(input_a * a, -1)
         a = F.softmax(a / 0.025, dim=-1) + 1
@@ -137,13 +130,11 @@ class CAM(nn.Module):
 
         f1_norm = F.normalize(f1, p=2, dim=2, eps=1e-12)  # [1, 5, 512, 36]
         f2_norm = F.normalize(f2, p=2, dim=2, eps=1e-12)  # [1, 75, 512, 36]
-        # print('line ', sys._getframe().f_lineno, f1_norm.shape, f2_norm.shape)
         f1_norm = f1_norm.transpose(2, 3).unsqueeze(2)
         f2_norm = f2_norm.unsqueeze(1)
 
         a1 = torch.matmul(f1_norm, f2_norm)  # [1, 5, 75, 36, 36]
         a2 = a1.transpose(3, 4)  # [1, 5, 75, 36, 36]
-        # print('line ', sys._getframe().f_lineno, a1.shape, a2.shape)
         a1 = self.get_attention(a1)  # [1, 5, 75, 36]
         a2 = self.get_attention(a2)  # [1, 5, 75, 36]
 
@@ -187,26 +178,27 @@ class CAMLayer(nn.Module):
         n_support = support_feat.size(1)
         n_query = query_feat.size(1)
         way_num = support_targets.size(-1)
-        # feat = support_feat.size(-1)
 
         # flatten feature
         support_feat = support_feat.reshape(batch_size, n_support, -1)
 
-        labels_train_transposed = support_targets.transpose(1, 2)  # [1, 5, 5]
+        labels_train_transposed = support_targets.transpose(1, 2)
+        # [1, 5, 5]
 
         # calc the prototypes of support set
-        prototypes = torch.bmm(labels_train_transposed, support_feat)  # [1, 5, 5]x[1, 5, 640]
+        prototypes = torch.bmm(labels_train_transposed, support_feat)
+        # [1, 5, 5]x[1, 5, 640]
         prototypes = prototypes.div(
             labels_train_transposed.sum(dim=2, keepdim=True).expand_as(prototypes)
-        )  # [1, 5, 640]
-        prototypes = prototypes.reshape(
-            batch_size, -1, *original_feat_shape[2:]
-        )  # [1, 5, 512, 6, 6]
-        prototypes, query_feat = self.cam(
-            prototypes, query_feat
-        )  # [1, 75, 5, 512, 6, 6]  # [2, 75, 640, 1, 1]
+        )
+        # [1, 5, 640]
+        prototypes = prototypes.reshape(batch_size, -1, *original_feat_shape[2:])
+        # [1, 5, 512, 6, 6]
+        prototypes, query_feat = self.cam(prototypes, query_feat)
+        # [1, 75, 5, 512, 6, 6]  # [2, 75, 640, 1, 1]
         prototypes = prototypes.mean(4)
-        prototypes = prototypes.mean(4)  # [1, 75, 5, 512]
+        prototypes = prototypes.mean(4)
+        # [1, 75, 5, 512]
 
         if not self.training:
             return self.val(prototypes, query_feat)
@@ -248,33 +240,6 @@ class CAMLayer(nn.Module):
         support_feat = F.normalize(support_feat, p=2, dim=support_feat.dim() - 1, eps=1e-12)
         scores = self.scale_cls * torch.sum(query_feat * support_feat, dim=-1)
         return scores
-
-    # def val_transductive(self, support_feat, query_feat, support_targets, query_targets):
-    #     iter_num_prob = self.iter_num_prob
-    #     batch_size, num_train = support_feat.size(0), support_feat.size(1)
-    #     num_test = query_feat.size(1)
-    #     K = support_targets.size(2)
-    #
-    #     cls_scores = self.helper(support_feat, query_feat, support_targets)
-    #
-    #     num_images_per_iter = int(num_test * iter_num_prob)
-    #     num_iter = num_test // num_images_per_iter
-    #
-    #     for i in range(num_iter):
-    #         max_scores, preds = torch.max(cls_scores, 2)
-    #         chose_index = torch.argsort(max_scores.view(-1), descending=True)
-    #         chose_index = chose_index[: num_images_per_iter * (i + 1)]
-    #         ftest_iter = query_feat[0, chose_index].unsqueeze(0)
-    #         preds_iter = preds[0, chose_index].unsqueeze(0)
-    #
-    #         preds_iter = one_hot(preds_iter.view(-1), K).cuda()
-    #         preds_iter = preds_iter.view(batch_size, -1, K)
-    #
-    #         support_feat_iter = torch.cat((support_feat, ftest_iter), 1)
-    #         support_targets_iter = torch.cat((support_targets, preds_iter), 1)
-    #         cls_scores = self.helper(support_feat_iter, query_feat, support_targets_iter)
-    #
-    #     return cls_scores
 
 
 class CAN(MetricModel):
@@ -319,9 +284,6 @@ class CAN(MetricModel):
         cls_scores = self.cam_layer(
             support_feat, query_feat, support_targets_one_hot, query_targets_one_hot
         )
-        # cls_scores = self.cam_layer.val_transductive(
-        #        support_feat, query_feat, support_targets_one_hot, query_targets_one_hot
-        # )
 
         cls_scores = cls_scores.reshape(episode_size * self.way_num * self.query_num, -1)
         acc = accuracy(cls_scores, query_targets.reshape(-1), topk=1)
@@ -339,8 +301,8 @@ class CAN(MetricModel):
         emb = self.emb_func(images)  # [80, 640]
         support_feat, query_feat, support_targets, query_targets = self.split_by_episode(
             emb, mode=2
-        )  # [4,5,512,6,6] [4,
-        # 75, 512,6,6] [4, 5] [300]
+        )
+        # [4,5,512,6,6] [4,75, 512,6,6] [4, 5] [300]
         support_targets = support_targets.reshape(episode_size, self.way_num).contiguous()
         support_global_targets, query_global_targets = (
             global_targets[:, :, : self.shot_num],
@@ -369,14 +331,13 @@ class CAN(MetricModel):
         query_targets_one_hot = query_targets_one_hot.reshape(
             episode_size, self.way_num * self.query_num, self.way_num
         )
-        # print(support_feat.shape, query_feat.shape, support_targets_one_hot.shape, query_targets_one_hot.shape)
-        # [75, 64, 6, 6], [75, 5, 6, 6]
+
         output, cls_scores = self.cam_layer(
             support_feat, query_feat, support_targets_one_hot, query_targets_one_hot
         )
         loss1 = self.loss_func(output, query_global_targets.contiguous().reshape(-1))
         loss2 = self.loss_func(cls_scores, query_targets.reshape(-1))
         loss = loss1 + 0.5 * loss2
-        cls_scores = torch.sum(cls_scores.reshape(*cls_scores.size()[:2], -1), dim=-1)  # [300, 5]
+        cls_scores = torch.sum(cls_scores.reshape(*cls_scores.size()[:2], -1), dim=-1)
         acc = accuracy(cls_scores, query_targets.reshape(-1), topk=1)
         return output, acc, loss

@@ -33,7 +33,7 @@ class DistLinear(nn.Module):
     def __init__(self, in_channel, out_channel):
         super(DistLinear, self).__init__()
         self.fc = nn.Linear(in_channel, out_channel, bias=False)
-        # See the issue#4&8 in the github
+        # See the issue#4&8 in the official repo
         self.class_wise_learnable_norm = True
         # split the weight update component to direction and norm
         if self.class_wise_learnable_norm:

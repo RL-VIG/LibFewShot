@@ -7,17 +7,17 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-# FIXME bias=False
 class Linear_fw(nn.Linear):  # used in MAML to forward input with fast weight
     def __init__(self, in_features, out_features, bias=True):
         super(Linear_fw, self).__init__(in_features, out_features)
         self.weight.fast = None  # Lazy hack to add fast weight link
         self.bias.fast = None
+        self.has_bias = bias
 
     def forward(self, x):
         if self.weight.fast is not None and self.bias.fast is not None:
             out = F.linear(
-                x, self.weight.fast, self.bias.fast
+                x, self.weight.fast, self.bias.fast if self.has_bias else None
             )  # weight.fast (fast weight) is the temporaily adapted weight
         else:
             out = super(Linear_fw, self).forward(x)

@@ -38,7 +38,7 @@ def get_augment_method(
         trfms = [RandAugment()]
     elif (
         config["augment_method"] == "MTLAugment"
-    ):  # https://github.com/yaoyao-liu/meta-transfer-learning/blob/fe189c96797446b54a0ae1c908f8d92a6d3cb831/pytorch/dataloader/dataset_loader.py#L60
+    ):  # refer to https://github.com/yaoyao-liu/meta-transfer-learning/blob/fe189c96797446b54a0ae1c908f8d92a6d3cb831/pytorch/dataloader/dataset_loader.py#L60
         trfms = [transforms.CenterCrop(80), transforms.RandomHorizontalFlip()]
 
     return trfms
