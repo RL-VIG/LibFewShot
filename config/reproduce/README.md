@@ -281,10 +281,10 @@ This folder contains:
         <td><a href="./SKD">SKD-GEN0</a></td>
         <td>arXiv’20</td>
         <td>Fine-tuning</td>
-        <td> 48.14 ± 0.33  </td>
+        <td> 48.14 ± 0.33 </td>
         <td> 66.36 ± 0.29 </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 51.78 ± 0.36 </td>
+        <td> 70.65 ± 0.32 </td>
     </tr>
     <tr>
         <td><a href="SKD">SKD-GEN1</a></td>
