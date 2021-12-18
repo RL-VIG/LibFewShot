@@ -703,7 +703,7 @@ This folder contains:
         <td>ICLR’19</td>
         <td>Meta</td>
         <td> - </td>
-        <td> - </td>
+        <td> 75.69 ± 0.29 </td>
         <td> 64.73 ± 0.44 </td>
         <td> 83.40 ± 0.31 </td>
     </tr>
