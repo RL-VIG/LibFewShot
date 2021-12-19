@@ -702,7 +702,7 @@ This folder contains:
         <td><a href="./R2D2">R2D2</a></td>
         <td>ICLR’19</td>
         <td>Meta</td>
-        <td> - </td>
+        <td> 58.36 ± 0.38 </td>
         <td> 75.69 ± 0.29 </td>
         <td> 64.73 ± 0.44 </td>
         <td> 83.40 ± 0.31 </td>
