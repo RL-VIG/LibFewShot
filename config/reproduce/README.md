@@ -460,8 +460,8 @@ This folder contains:
         <td><a href="./RFS">RFS-simple</a></td>
         <td>ECCV’20</td>
         <td>Fine-tuning</td>
-        <td> 60.96 ± 0.35 </td>
-        <td> 77.36 ± 0.27 </td>
+        <td> 61.65 ± 0.35 </td>
+        <td> 78.88 ± 0.25 </td>
         <td> 70.55 ± 0.42 </td>
         <td> 84.74 ± 0.29 </td>
     </tr>
