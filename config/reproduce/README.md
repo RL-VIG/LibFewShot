@@ -326,10 +326,10 @@ This folder contains:
         <td><a href="./R2D2">R2D2</a></td>
         <td>ICLR’19</td>
         <td>Meta</td>
-        <td> 51.19 ± 0.36  </td>
+        <td> 51.19 ± 0.36 </td>
         <td> 67.29 ± 0.31 </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 52.18 ± 0.40 </td>
+        <td> 69.19 ± 0.36 </td>
     </tr>
     <tr>
         <td><a href="./LEO">LEO</a></td>
