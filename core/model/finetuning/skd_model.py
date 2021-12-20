@@ -23,8 +23,14 @@ import copy
 
 import numpy as np
 import torch
-from sklearn import metrics
-from sklearn.linear_model import LogisticRegression
+
+try:
+    from sklearnex import patch_sklearn
+    patch_sklearn()
+finally:
+    from sklearn import metrics
+    from sklearn.linear_model import LogisticRegression
+
 from torch import nn
 from torch.nn import functional as F
 
