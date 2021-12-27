@@ -26,7 +26,8 @@ import torch
 
 try:
     from sklearnex import patch_sklearn
-    patch_sklearn()
+
+    patch_sklearn(verbose=False)  # BUG: sklearnex logs INFO level log, still not fixed this bug
 finally:
     from sklearn import metrics
     from sklearn.linear_model import LogisticRegression
