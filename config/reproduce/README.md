@@ -389,10 +389,10 @@ This folder contains:
         <td><a href="./CovaMNet">CovaMNet</a></td>
         <td>AAAI’19</td>
         <td>Metric</td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 51.59 ± 0.36 </td>
+        <td> 67.65 ± 0.32 </td>
+        <td> 51.92 ± 0.40 </td>
+        <td> 69.76 ± 0.34 </td>
     </tr>
     <tr>
         <td><a href="./DN4">DN4</a></td>
