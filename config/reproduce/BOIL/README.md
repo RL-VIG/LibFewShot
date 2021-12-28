@@ -35,6 +35,7 @@ Cite this work with:
 | 1 | Conv64F | 49.61 ± 0.16 | 48.00 ± 0.36 [:arrow_down:](https://drive.google.com/drive/folders/18rH2HgKtVnEETfb8XcUkFtPmWQJeHjFB?usp=sharing) [:clipboard:](./BOIL-miniImageNet--ravi-Conv64F-5-1.yaml) | 66.45 ± 0.37 | - | Once_update |
 | 2 | Conv64F | - | 47.92 ± 0.35 [:arrow_down:](https://drive.google.com/drive/folders/13BhKmNtGgETLOoOCrhhGEFqGGWIE27_U?usp=sharing) [:clipboard:](./BOIL-miniImageNet--ravi-Conv64F-5-1-Table2.yaml) | - | 64.39 ± 0.30 [:arrow_down:](https://drive.google.com/drive/folders/1ynVJ91zzs7Lw31oo7OeX5rO2BIyg6r2T?usp=sharing) [:clipboard:](./BOIL-miniImageNet--ravi-Conv64F-5-5-Table2.yaml) | Table.2 |
 | 3 | ResNet12woLSC | - | 52.75 ± 0.37 [:arrow_down:](https://drive.google.com/drive/folders/1Of1WK7K4x732GRzsWTPAu9DCiEQCOqRK?usp=sharing) [:clipboard:](./BOIL-miniImageNet--ravi-resnet12woLSC-5-1.yaml) | 71.30 ± 0.28 | - | Once_update |
+| 3 | ResNet12 | - | 58.87 ± 0.38 [:arrow_down:](https://drive.google.com/drive/folders/17edwZpd0WC3E6HQrb6tuDFF9vkX9Qict?usp=sharing) [:clipboard:](BOIL-miniImageNet--ravi-resnet12-5-1-Table2) | - | - | Once_update |
 
 |   | Embedding | :book: *tiered*ImageNet (5,1) | :computer: *tiered*ImageNet (5,1) | :book:*tiered*ImageNet (5,5) | :computer: *tiered*ImageNet (5,5) | :memo: Comments  |
 |---|-----------|--------------------|--------------------|--------------------|--------------------|---|

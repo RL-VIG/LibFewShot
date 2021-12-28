@@ -550,7 +550,7 @@ This folder contains:
         <td><a href="./BOIL">BOIL</a></td>
         <td>ICLR’21</td>
         <td>Meta</td>
-        <td> - </td>
+        <td> 58.87 ± 0.38 </td>
         <td> - </td>
         <td> - </td>
         <td> - </td>
