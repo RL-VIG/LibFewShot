@@ -499,7 +499,7 @@ This folder contains:
         <td> 64.81 ± 0.37 </td>
         <td> 79.90 ± 0.27 </td>
         <td> - </td>
-        <td> - </td>
+        <td> 82.70 ± 0.31 </td>
     </tr>
     <tr>
         <td><a href="./Versa">Versa</a></td>
@@ -686,7 +686,7 @@ This folder contains:
         <td>Fine-tuning</td>
         <td> 62.86 ± 0.37 </td>
         <td> - </td>
-        <td> - </td>
+        <td> 71.53 ± 0.43 </td>
         <td> - </td>
     </tr>
         <tr>
