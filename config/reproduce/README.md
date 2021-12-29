@@ -668,8 +668,8 @@ This folder contains:
         <td>Fine-tuning</td>
         <td> 66.18 ± 0.37 </td>
         <td> 82.21 ± 0.24 </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 70.00 ± 0.57 </td>
+        <td> 84.70 ± 0.41 </td>
     </tr>
     <tr>
         <td><a href="SKD">SKD-GEN1</a></td>
