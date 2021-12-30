@@ -54,14 +54,18 @@ class Trainer(object):
             self.val_loader,
             self.test_loader,
         ) = self._init_dataloader(config)
-        self.optimizer, self.scheduler, self.from_epoch = self._init_optim(config)
+        (
+            self.optimizer,
+            self.scheduler,
+            self.from_epoch,
+            self.best_val_acc,
+            self.best_test_acc,
+        ) = self._init_optim(config)
 
     def train_loop(self):
         """
         The normal train loop: train-val-test and save model when val-acc increases.
         """
-        best_val_acc = float("-inf")
-        best_test_acc = float("-inf")
         experiment_begin = time()
         for epoch_idx in range(self.from_epoch + 1, self.config["epoch"]):
             self.logger.info("============ Train on the train set ============")
@@ -69,16 +73,16 @@ class Trainer(object):
             self.logger.info(" * Acc@1 {:.3f} ".format(train_acc))
             self.logger.info("============ Validation on the val set ============")
             val_acc = self._validate(epoch_idx, is_test=False)
-            self.logger.info(" * Acc@1 {:.3f} Best acc {:.3f}".format(val_acc, best_val_acc))
+            self.logger.info(" * Acc@1 {:.3f} Best acc {:.3f}".format(val_acc, self.best_val_acc))
             self.logger.info("============ Testing on the test set ============")
             test_acc = self._validate(epoch_idx, is_test=True)
-            self.logger.info(" * Acc@1 {:.3f} Best acc {:.3f}".format(test_acc, best_test_acc))
+            self.logger.info(" * Acc@1 {:.3f} Best acc {:.3f}".format(test_acc, self.best_test_acc))
             time_scheduler = self._cal_time_scheduler(experiment_begin, epoch_idx)
             self.logger.info(" * Time: {}".format(time_scheduler))
 
-            if val_acc > best_val_acc:
-                best_val_acc = val_acc
-                best_test_acc = test_acc
+            if val_acc > self.best_val_acc:
+                self.best_val_acc = val_acc
+                self.best_test_acc = test_acc
                 self._save_model(epoch_idx, SaveType.BEST)
 
             if epoch_idx != 0 and epoch_idx % self.config["save_interval"] == 0:
@@ -420,10 +424,12 @@ class Trainer(object):
         )
         self.logger.info(optimizer)
         from_epoch = -1
+        best_val_acc = float("-inf")
+        best_test_acc = float("-inf")
         if self.config["resume"]:
             resume_path = os.path.join(self.config["resume_path"], "checkpoints", "model_last.pth")
             self.logger.info(
-                "load the optimizer, lr_scheduler and epoch checkpoints dict from {}.".format(
+                "load the optimizer, lr_scheduler, epoch, best_val_acc and best_test_acc checkpoints dict from {}.".format(
                     resume_path
                 )
             )
@@ -433,9 +439,11 @@ class Trainer(object):
             state_dict = all_state_dict["lr_scheduler"]
             scheduler.load_state_dict(state_dict)
             from_epoch = all_state_dict["epoch"]
+            best_val_acc = all_state_dict["best_val_acc"]
+            best_test_acc = all_state_dict["best_val_acc"]
             self.logger.info("model resume from the epoch {}".format(from_epoch))
 
-        return optimizer, scheduler, from_epoch
+        return optimizer, scheduler, from_epoch, best_val_acc, best_test_acc
 
     def _init_device(self, config):
         """
@@ -469,6 +477,7 @@ class Trainer(object):
             "model",
             epoch,
             save_type,
+            self.best_val_acc,
             len(self.list_ids) > 1,
         )
 
@@ -485,6 +494,7 @@ class Trainer(object):
                             save_part,
                             epoch,
                             save_type,
+                            self.best_val_acc,
                             len(self.list_ids) > 1,
                         )
                     else:
