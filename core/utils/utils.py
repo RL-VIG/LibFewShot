@@ -198,6 +198,7 @@ def save_model(
     epoch,
     save_type=SaveType.LAST,
     best_val_acc=0,
+    best_test_acc=0,
     is_parallel=False,
 ):
     """
@@ -241,6 +242,7 @@ def save_model(
                 "optimizer": optimizer.state_dict(),
                 "lr_scheduler": lr_Scheduler.state_dict(),
                 "best_val_acc": best_val_acc,
+                "best_test_acc": best_test_acc,
             },
             save_name,
         )

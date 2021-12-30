@@ -478,6 +478,7 @@ class Trainer(object):
             epoch,
             save_type,
             self.best_val_acc,
+            self.best_test_acc,
             len(self.list_ids) > 1,
         )
 
@@ -495,6 +496,7 @@ class Trainer(object):
                             epoch,
                             save_type,
                             self.best_val_acc,
+                            self.best_test_acc,
                             len(self.list_ids) > 1,
                         )
                     else:
