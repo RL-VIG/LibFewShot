@@ -579,7 +579,7 @@ This folder contains:
         <td>Metric</td>
         <td> - </td>
         <td> - </td>
-        <td> - </td>
+        <td> 58.49 ± 0.42 </td>
         <td> - </td>
     </tr>
     <tr>
@@ -765,7 +765,7 @@ This folder contains:
         <td><a href="./CovaMNet">CovaMNet</a></td>
         <td>AAAI’19</td>
         <td>Metric</td>
-        <td> - </td>
+        <td> 55.83 ± 0.39 </td>
         <td> - </td>
         <td> - </td>
         <td> - </td>
