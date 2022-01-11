@@ -1,0 +1,70 @@
+augment: true
+augment_times: 1
+augment_times_query: 1
+backbone:
+  kwargs:
+    avg_pool: false
+    is_feature: false
+    is_flatten: false
+    last_block_stride: 1
+  name: resnet18
+batch_size: 128
+classifier:
+  kwargs:
+    n_local: 441
+  name: ConvMNet
+data_root: /data/wzy/tiered_imagenet
+deterministic: true
+device_ids: 3
+episode_size: 1
+epoch: 100
+image_size: 84
+includes:
+- headers/data.yaml
+- headers/device.yaml
+- headers/misc.yaml
+- headers/model.yaml
+- headers/optimizer.yaml
+log_interval: 100
+log_level: info
+log_name: null
+log_paramerter: false
+lr_scheduler:
+  kwargs:
+    gamma: 0.05
+    step_size: 25
+  name: StepLR
+n_gpu: 1
+optimizer:
+  kwargs:
+    betas:
+    - 0.5
+    - 0.9
+    lr: 0.001
+  name: Adam
+  other: null
+parallel_part:
+- emb_func
+port: 37076
+pretrain_path: null
+query_num: 15
+rank: 0
+result_root: ./results
+resume: true
+resume_path: ./results/ConvMNet-tiered_imagenet-resnet18-5-1-Dec-28-2021-16-46-14
+save_interval: 10
+save_part:
+- emb_func
+seed: 2147483647
+shot_num: 1
+tag: null
+tb_scale: 6.666666666666667
+test_episode: 600
+test_epoch: 5
+test_query: 15
+test_shot: 1
+test_way: 5
+train_episode: 4000
+use_memory: false
+way_num: 5
+workers: 16
