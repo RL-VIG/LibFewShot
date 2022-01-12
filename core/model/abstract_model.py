@@ -3,6 +3,7 @@ from abc import abstractmethod
 
 import torch
 from torch import nn
+import numpy as np
 
 from core.utils import ModelType
 from .init import init_weights
@@ -51,6 +52,24 @@ class AbstractModel(nn.Module):
             .view(-1)
         )
         return local_targets
+
+    def mixup(self, batch, alpha=1.0, fewshot=True):
+        images, targets = batch
+        if fewshot:
+            pass
+        else:
+            N, device = images.size(0), images.device
+            if alpha > 0:
+                lam = np.random.beta(alpha, alpha)
+            else:
+                lam = 1
+            index = torch.randperm(N).to(device)
+
+            mix_x = lam * images + (1 - lam) * images[index]
+            y_a, y_b = targets, targets[index]
+
+            return mix_x, y_a, y_b, lam
+        
 
     def split_by_episode(self, features, mode):
         """

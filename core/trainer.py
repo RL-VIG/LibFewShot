@@ -28,6 +28,7 @@ from core.utils import (
     save_model,
     get_instance,
     data_prefetcher,
+    GradualWarmupScheduler,
 )
 
 
@@ -155,6 +156,7 @@ class Trainer(object):
             # compute gradients
             self.optimizer.zero_grad()
             loss.backward()
+            torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1)
             self.optimizer.step()
             meter.update("calc_time", time() - calc_begin)
 
@@ -476,16 +478,20 @@ class Trainer(object):
             {"params": filter(lambda p: id(p) not in params_idx, self.model.parameters())}
         )
         optimizer = get_instance(torch.optim, "optimizer", config, params=params_dict_list)
-        if config["lr_scheduler"]["name"] == "LambdaLR":
-            scheduler = torch.optim.lr_scheduler.LambdaLR(
-                optimizer,
-                lr_lambda=eval(config["lr_scheduler"]["kwargs"]["lr_lambda"]),
-                last_epoch=-1,
-            )
-        else:
-            scheduler = get_instance(
-                torch.optim.lr_scheduler, "lr_scheduler", config, optimizer=optimizer
-            )
+        # if config["lr_scheduler"]["name"] == "LambdaLR":
+        #     scheduler = torch.optim.lr_scheduler.LambdaLR(
+        #         optimizer,
+        #         lr_lambda=eval(config["lr_scheduler"]["kwargs"]["lr_lambda"]),
+        #         last_epoch=-1,
+        #     )
+        # else:
+        #     if config["warmup"] is not None:
+        #         scheduler = get_schedule_with_warmup(optimizer, config)
+        #     else:
+        #         scheduler = get_instance(
+        #             torch.optim.lr_scheduler, "lr_scheduler", config, optimizer=optimizer
+        #         )
+        scheduler = GradualWarmupScheduler(optimizer, self.config)
         print(optimizer)
         from_epoch = -1
         if self.config["resume"]:

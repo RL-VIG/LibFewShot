@@ -30,6 +30,16 @@ class LabelSmoothCELoss(nn.Module):
         return loss.mean()
 
 
+class SoftTargetCrossEntropy(nn.Module):
+
+    def __init__(self):
+        super(SoftTargetCrossEntropy, self).__init__()
+
+    def forward(self, x: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        loss = torch.sum(-target * F.log_softmax(x, dim=-1), dim=-1)
+        return loss.mean()
+
+
 class DistillKLLoss(nn.Module):
     def __init__(self, T):
         super(DistillKLLoss, self).__init__()
