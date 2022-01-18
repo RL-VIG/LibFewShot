@@ -257,10 +257,10 @@ This folder contains:
         <td><a href="./RFS">RFS-distill</a></td>
         <td>ECCV’20</td>
         <td>Fine-tuning</td>
-        <td> 47.71 </td>
-        <td> 65.40 </td>
-        <td> 51.36 </td>
-        <td> 70.80 </td>
+        <td> - </td>
+        <td> - </td>
+        <td> - </td>
+        <td> - </td>
     </tr>
     <tr>
         <td><a href="./SKD">SKD-GEN0</a></td>
@@ -275,10 +275,10 @@ This folder contains:
         <td><a href="SKD">SKD-GEN1</a></td>
         <td>arXiv’20</td>
         <td>Fine-tuning</td>
-        <td> 46.47 </td>
-        <td> 64.56 </td>
-        <td> 50.69 </td>
-        <td> 69.94 </td>
+        <td> - </td>
+        <td> - </td>
+        <td> - </td>
+        <td> - </td>
     </tr>
     <tr>
         <td><a href="./Neg-Cos">Neg-Cos</a></td>
@@ -302,19 +302,19 @@ This folder contains:
         <td><a href="./MAML">MAML</a></td>
         <td>ICML’17</td>
         <td>Meta</td>
-        <td> 49.55 </td>
-        <td> 64.92 </td>
-        <td> 50.98 </td>
-        <td> 67.12 </td>
+        <td> 49.55 ± 0.37 </td>
+        <td> 64.92 ± 0.32 </td>
+        <td> 50.98 ± 0.43 </td>
+        <td> 67.12 ± 0.35 </td>
     </tr>
     <tr>
         <td><a href="./Versa">Versa</a></td>
         <td>NeurIPS’18</td>
         <td>Meta</td>
-        <td> 52.75 </td>
-        <td> 67.40 </td>
-        <td> 52.28 </td>
-        <td> 69.41 </td>
+        <td> 52.75 ± 0.38 </td>
+        <td> 67.40 ± 0.31 </td>
+        <td> 52.28 ± 0.99 </td>
+        <td> 69.41 ± 0.37 </td>
     </tr>
     <tr>
         <td><a href="./R2D2">R2D2</a></td>
@@ -329,10 +329,10 @@ This folder contains:
         <td><a href="./LEO">LEO</a></td>
         <td>ICLR’19</td>
         <td>Meta</td>
-        <td> 53.31 </td>
-        <td> 67.47 </td>
-        <td> 58.15 </td>
-        <td> 74.21 </td>
+        <td> 53.31 ± 0.37 </td>
+        <td> 67.47 ± 0.30 </td>
+        <td> 58.15 ± 0.40 </td>
+        <td> 74.21 ± 0.33 </td>
     </tr>
     <tr>
         <td><a href="./MTL">MTL</a></td>
@@ -347,10 +347,10 @@ This folder contains:
         <td><a href="./ANIL">ANIL</a></td>
         <td>ICLR’20</td>
         <td>Meta</td>
-        <td> 48.01 </td>
-        <td> 63.88 </td>
-        <td> 49.05 </td>
-        <td> 66.32 </td>
+        <td> 48.01 ± 0.35 </td>
+        <td> 63.88 ± 0.32 </td>
+        <td> 49.05 ± 0.39 </td>
+        <td> 66.32 ± 0.34 </td>
     </tr>
     <tr>
         <td><a href="./BOIL">BOIL</a></td>
@@ -392,17 +392,17 @@ This folder contains:
         <td><a href="./DN4">DN4</a></td>
         <td>CVPR’19</td>
         <td>Metric</td>
-        <td> 54.47 </td>
-        <td> 72.15 </td>
-        <td> 56.07 </td>
-        <td> 75.75 </td>
+        <td> 54.47 ± 0.36 </td>
+        <td> 72.15 ± 0.29 </td>
+        <td> 56.07 ± 0.38 </td>
+        <td> 75.75 ± 0.31 </td>
     </tr>
     <tr>
         <td><a href="./CAN">CAN</a></td>
         <td>NeurIPS’19</td>
         <td>Metric</td>
         <td> 55.88 ± 0.38 </td>
-        <td> 70.98 ± 0.3 </td>
+        <td> 70.98 ± 0.30 </td>
         <td> 55.96 ± 0.42 </td>
         <td> 70.52 ± 0.35 </td>
     </tr>
