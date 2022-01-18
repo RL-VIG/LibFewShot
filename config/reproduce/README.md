@@ -23,30 +23,30 @@ This folder contains:
       <td rowspan="2"> <a href="./Baseline">Baseline</a></td>
       <td>Conv64F</td>
       <td> 42.11 </td>
-      <td> 42.34 ± 0.31 </td>
+      <td> - </td>
       <td> 62.53 </td>
-      <td> 62.18 ± 0.30 </td>
+      <td> - </td>
   </tr>
   <tr>
       <td>ResNet18</td>
+      <td> 51.75 </td>
       <td> - </td>
-      <td> - </td>
-      <td> - </td>
+      <td> 74.27 </td>
       <td> - </td>
   </tr>
   <tr>
       <td rowspan="2"><a href="./Baseline++">Baseline++</a></td>
       <td>Conv64F</td>
       <td> 48.24 </td>
-      <td> 46.21 </td>
+      <td> - </td>
       <td> 66.43 </td>
-      <td> 65.18 </td>
+      <td> - </td>
   </tr>
   <tr>
       <td>ResNet18</td>
+      <td> 51.87 </td>
       <td> - </td>
-      <td> - </td>
-      <td> - </td>
+      <td> 75.68 </td>
       <td> - </td>
   </tr>
   <tr>
@@ -60,26 +60,26 @@ This folder contains:
   <tr>
       <td><a href="./RFS/">RFS-distill</a></td>
       <td>ResNet12</td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
+      <td> 64.82 </td>
+      <td> 63.44 </td>
+      <td> 82.14 </td>
+      <td> 80.17 </td>
   </tr>
   <tr>
       <td><a href="./SKD">SKD-GEN0</a></td>
       <td>ResNet12</td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
+      <td> 65.93 </td>
+      <td> 66.40 </td>
+      <td> 83.15 </td>
+      <td> 83.06 </td>
   </tr>
   <tr>
       <td><a href="./SKD">SKD-GEN1</a></td>
       <td>ResNet12</td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
+      <td> 67.04 </td>
+      <td> 67.35 </td>
+      <td> 83.54 </td>
+      <td> 80.30 </td>
   </tr>
   <tr>
       <td><a href="./RENet/">RENet</a></td>
@@ -92,41 +92,41 @@ This folder contains:
   <tr>
       <td><a href="./MAML">MAML</a></td>
       <td>Conv32F</td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
+      <td> 48.70 </td>
+      <td> 47.41 </td>
+      <td> 63.11 </td>
+      <td> 65.24 </td>
   </tr>
   <tr>
       <td><a href="./Versa">Versa</a></td>
       <td>Conv64F†</td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
+      <td> 53.40 </td>
+      <td> 51.92 </td>
+      <td> 67.37 </td>
+      <td> 66.26 </td>
   </tr>
   <tr>
       <td rowspan="2"><a href="./R2D2">R2D2</a></td>
       <td>Conv64F</td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
+      <td> 49.50 </td>
+      <td> 47.57 </td>
+      <td> 65.40 </td>
+      <td> 66.68 </td>
   </tr>
   <tr>
       <td>Conv64F‡</td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
+      <td> 51.80 </td>
+      <td> 55.53 </td>
+      <td> 68.40 </td>
+      <td> 70.79 </td>
   </tr>
   <tr>
       <td><a href="./ANIL">ANIL</a></td>
       <td>Conv32F</td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
+      <td> 46.70 </td>
+      <td> 48.44 </td>
+      <td> 61.50 </td>
+      <td> 64.35 </td>
   </tr>
     <tr>
       <td rowspan="2"><a href="./BOIL/">BOIL</a></td>
@@ -146,72 +146,57 @@ This folder contains:
   <tr>
       <td><a href="./MTL">MTL</a></td>
       <td>ResNet12</td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
+      <td> 60.20 </td>
+      <td> 60.20 </td>
+      <td> 74.30 </td>
+      <td> 75.86 </td>
   </tr>
   <tr>
       <td><a href="./Proto/">ProtoNet†</a></td>
       <td>Conv64F</td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
+      <td> 46.14 </td>
+      <td> 46.30 </td>
+      <td> 65.77 </td>
+      <td> 66.24 </td>
   </tr>
   <tr>
       <td><a href="./RelationNet">RelationNet</a></td>
       <td>Conv64F</td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
+      <td> 50.44 </td>
+      <td> 51.75 </td>
+      <td> 65.32 </td>
+      <td> 66.77 </td>
   </tr>
   <tr>
       <td><a href="./CovaMNet">CovaMNet</a></td>
       <td>Conv64F</td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
+      <td> 51.19 </td>
+      <td> 53.36 </td>
+      <td> 67.65 </td>
+      <td> 68.17 </td>
   </tr>
   <tr>
       <td rowspan="2"><a href="./DN4">DN4</a></td>
       <td>Conv64F</td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
+      <td> 51.24 </td>
+      <td> 51.95 </td>
+      <td> 71.02 </td>
+      <td> 71.42 </td>
   </tr>
   <tr>
       <td>ResNet12†</td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
+      <td> 54.37 </td>
+      <td> 57.76 </td>
+      <td> 74.44 </td>
+      <td> 77.57 </td>
   </tr>
   <tr>
       <td><a href="./CAN">CAN</a></td>
       <td>ResNet12</td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
-  </tr>
-  <tr>
-      <td rowspan="2"><a href="./DSN">DSN</a></td>
-      <td>Conv64F</td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
-  </tr>
-  <tr>
-      <td>ResNet12</td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
+      <td> 63.85 </td>
+      <td> 66.62 </td>
+      <td> 79.44 </td>
+      <td> 78.96 </td>
   </tr>
   <tr>
       <td><a href="./Negative_Margin">Negative_Margin</a></td>
@@ -272,10 +257,10 @@ This folder contains:
         <td><a href="./RFS">RFS-distill</a></td>
         <td>ECCV’20</td>
         <td>Fine-tuning</td>
-        <td> </td>
-        <td>  </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 47.71 </td>
+        <td> 65.40 </td>
+        <td> 51.36 </td>
+        <td> 70.80 </td>
     </tr>
     <tr>
         <td><a href="./SKD">SKD-GEN0</a></td>
@@ -290,10 +275,19 @@ This folder contains:
         <td><a href="SKD">SKD-GEN1</a></td>
         <td>arXiv’20</td>
         <td>Fine-tuning</td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 46.47 </td>
+        <td> 64.56 </td>
+        <td> 50.69 </td>
+        <td> 69.94 </td>
+    </tr>
+    <tr>
+        <td><a href="./Neg-Cos">Neg-Cos</a></td>
+        <td>ECCV’20</td>
+        <td>Fine-tuning</td>
+        <td> 47.34 </td>
+        <td> 65.97 </td>
+        <td> 51.21 </td>
+        <td> 71.57 </td>
     </tr>
     <tr>
         <td><a href="./RENet">RENet</a></td>
@@ -308,19 +302,19 @@ This folder contains:
         <td><a href="./MAML">MAML</a></td>
         <td>ICML’17</td>
         <td>Meta</td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 49.55 </td>
+        <td> 64.92 </td>
+        <td> 50.98 </td>
+        <td> 67.12 </td>
     </tr>
     <tr>
         <td><a href="./Versa">Versa</a></td>
         <td>NeurIPS’18</td>
         <td>Meta</td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 52.75 </td>
+        <td> 67.40 </td>
+        <td> 52.28 </td>
+        <td> 69.41 </td>
     </tr>
     <tr>
         <td><a href="./R2D2">R2D2</a></td>
@@ -335,28 +329,28 @@ This folder contains:
         <td><a href="./LEO">LEO</a></td>
         <td>ICLR’19</td>
         <td>Meta</td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 53.31 </td>
+        <td> 67.47 </td>
+        <td> 58.15 </td>
+        <td> 74.21 </td>
     </tr>
     <tr>
         <td><a href="./MTL">MTL</a></td>
         <td>CVPR’19</td>
         <td>Meta</td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 40.97 </td>
+        <td> 57.12 </td>
+        <td> 42.36 </td>
+        <td> 64.87 </td>
     </tr>
     <tr>
         <td><a href="./ANIL">ANIL</a></td>
         <td>ICLR’20</td>
         <td>Meta</td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 48.01 </td>
+        <td> 63.88 </td>
+        <td> 49.05 </td>
+        <td> 66.32 </td>
     </tr>
     <tr>
         <td><a href="./BOIL">BOIL</a></td>
@@ -398,10 +392,10 @@ This folder contains:
         <td><a href="./DN4">DN4</a></td>
         <td>CVPR’19</td>
         <td>Metric</td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 54.47 </td>
+        <td> 72.15 </td>
+        <td> 56.07 </td>
+        <td> 75.75 </td>
     </tr>
     <tr>
         <td><a href="./CAN">CAN</a></td>
@@ -412,15 +406,6 @@ This folder contains:
         <td> 55.96 ± 0.42 </td>
         <td> 70.52 ± 0.35 </td>
     </tr>
-    <tr>
-      <td><a href="./DSN">DSN</a></td>
-      <td>Conv64F</td>
-      <td>Metric</td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
-      <td> - </td>
-  </tr>
 </table>
 
 ### ResNet12
