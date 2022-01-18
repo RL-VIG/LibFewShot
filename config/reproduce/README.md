@@ -132,16 +132,16 @@ This folder contains:
       <td rowspan="2"><a href="./BOIL/">BOIL</a></td>
       <td>Conv64F</td>
       <td> 49.61 ± 0.16 </td>
-      <td> 48.00 ± 0.36 </td>
+      <td> **48.00 ± 0.36 </td>
       <td> 66.45 ± 0.37 </td>
-      <td> - </td>
+      <td> **64.39 ± 0.30 </td>
   </tr>
   <tr>
-      <td>ResNet12(wo LSC)</td>
+      <td>ResNet12**</td>
       <td> - </td>
-      <td> 52.75 ± 0.37 </td>
+      <td> **58.87 ± 0.38 </td>
       <td> 71.30 ± 0.28 </td>
-      <td> - </td>
+      <td> **72.88 ± 0.29 </td>
   </tr>
   <tr>
       <td><a href="./MTL">MTL</a></td>
@@ -362,10 +362,10 @@ This folder contains:
         <td><a href="./BOIL">BOIL</a></td>
         <td>ICLR’21</td>
         <td>Meta</td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 47.92 ± 0.35 </td>
+        <td> 64.39 ± 0.30 </td>
+        <td> 50.04 ± 0.38 </td>
+        <td> 65.51 ± 0.34 </td>
     </tr>
     <tr>
         <td><a href="./ProtoNet">ProtoNet</a></td>
@@ -498,7 +498,7 @@ This folder contains:
         <td>Fine-tuning</td>
         <td> 64.81 ± 0.37 </td>
         <td> 79.90 ± 0.27 </td>
-        <td> - </td>
+        <td> 70.14 ± 0.43 </td>
         <td> 82.70 ± 0.31 </td>
     </tr>
     <tr>
@@ -551,9 +551,9 @@ This folder contains:
         <td>ICLR’21</td>
         <td>Meta</td>
         <td> 58.87 ± 0.38 </td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 72.88 ± 0.29 </td>
+        <td> 64.66 ± 0.44 </td>
+        <td> 80.38 ± 0.31 </td>
     </tr>
     <tr>
         <td><a href="./ProtoNet">ProtoNet</a></td>
@@ -577,10 +577,10 @@ This folder contains:
         <td><a href="./CovaMNet">CovaMNet</a></td>
         <td>AAAI’19</td>
         <td>Metric</td>
-        <td> - </td>
-        <td> - </td>
+        <td> 56.95 ± 0.37 </td>
+        <td> 71.41 ± 0.66 </td>
         <td> 58.49 ± 0.42 </td>
-        <td> - </td>
+        <td> 76.34 ± 0.37 </td>
     </tr>
     <tr>
         <td><a href="./DN4">DN4</a></td>
@@ -766,9 +766,9 @@ This folder contains:
         <td>AAAI’19</td>
         <td>Metric</td>
         <td> 55.83 ± 0.39 </td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 70.97 ± 0.33 </td>
+        <td> 54.12 ± 0.47 </td>
+        <td> 73.51 ± 0.55 </td>
     </tr>
     <tr>
         <td><a href="./DN4">DN4</a></td>
