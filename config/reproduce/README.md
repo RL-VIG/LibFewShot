@@ -678,10 +678,10 @@ This folder contains:
         <td><a href="./Versa">Versa</a></td>
         <td>NeurIPS’18</td>
         <td>Meta</td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 55.08 ± 0.39 </td>
+        <td> 69.16 ± 0.30 </td>
+        <td> 57.30 ± 0.45 </td>
+        <td> 75.67 ± 0.38 </td>
     </tr>
     <tr>
         <td><a href="./R2D2">R2D2</a></td>
@@ -696,10 +696,10 @@ This folder contains:
         <td><a href="./LEO">LEO</a></td>
         <td>ICLR’19</td>
         <td>Meta</td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 57.51 ± 0.39 </td>
+        <td> 69.33 ± 0.38 </td>
+        <td> 64.02 ± 0.44 </td>
+        <td> 78.89 ± 0.33 </td>
     </tr>
     <tr>
         <td><a href="./MTL">MTL</a></td>
@@ -714,10 +714,10 @@ This folder contains:
         <td><a href="./ANIL">ANIL</a></td>
         <td>ICLR’20</td>
         <td>Meta</td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 52.96 ± 0.40 </td>
+        <td> 65.88 ± 0.33 </td>
+        <td> 55.81 ± 0.46 </td>
+        <td> 73.53 ± 0.37 </td>
     </tr>
     <tr>
         <td><a href="./BOIL">BOIL</a></td>
@@ -732,10 +732,10 @@ This folder contains:
         <td><a href="./ProtoNet">ProtoNet</a></td>
         <td>NeurIPS’17</td>
         <td>Metric</td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 58.48 ± 0.39 </td>
+        <td> 75.16 ± 0.29 </td>
+        <td> 63.50 ± 0.48 </td>
+        <td> 82.51 ± 0.30 </td>
     </tr>
     <tr>
         <td><a href="./RelationNet">RelationNet</a></td>
@@ -759,8 +759,8 @@ This folder contains:
         <td><a href="./DN4">DN4</a></td>
         <td>CVPR’19</td>
         <td>Metric</td>
-        <td> - </td>
-        <td> - </td>
+        <td> 57.92 ± 0.37 </td>
+        <td> 75.50 ± 0.28 </td>
         <td> - </td>
         <td> - </td>
     </tr>
