@@ -714,10 +714,10 @@ This folder contains:
         <td><a href="./BOIL">BOIL</a></td>
         <td>ICLR’21</td>
         <td>Meta</td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
-        <td> - </td>
+        <td> 57.85 ± 0.40 </td>
+        <td> 70.84 ± 0.29 </td>
+        <td> 60.85 ± 0.45 </td>
+        <td> 77.74 ± 0.38 </td>
     </tr>
     <tr>
         <td><a href="./ProtoNet">ProtoNet</a></td>
