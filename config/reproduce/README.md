@@ -30,9 +30,9 @@ This folder contains:
   <tr>
       <td>ResNet18</td>
       <td> 51.75 </td>
-      <td> - </td>
+      <td> 51.18 ± 0.34 </td>
       <td> 74.27 </td>
-      <td> - </td>
+      <td> 74.06 ± 0.28 </td>
   </tr>
   <tr>
       <td rowspan="2"><a href="./Baseline++">Baseline++</a></td>

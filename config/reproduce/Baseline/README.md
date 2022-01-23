@@ -36,6 +36,8 @@ Cite this work with:
 | 2 | Conv64F | - | 44.90 ± 0.32 [:arrow_down:](https://drive.google.com/drive/folders/14KXSJnGnX7TCp3-h0IRPKDKgKDQlqy8N?usp=sharing) [:clipboard:](./Baseline-miniImageNet--ravi-Conv64F-Table2.yaml) | - | 63.96 ± 0.30 [:arrow_down:](https://drive.google.com/drive/folders/14KXSJnGnX7TCp3-h0IRPKDKgKDQlqy8N?usp=sharing) [:clipboard:](./Baseline-miniImageNet--ravi-Conv64F-Table2.yaml) | Table.2 |
 | 3 | ResNet12 | - | 56.39 ± 0.36 [:arrow_down:](https://drive.google.com/drive/folders/1iDO-nbK2Xo5pGODJ88uzEZ5hVV6w2dKf?usp=sharing) [:clipboard:](./Baseline-miniImageNet--ravi-resnet12-Table2.yaml) | - | 76.18 ± 0.27 [:arrow_down:](https://drive.google.com/drive/folders/1iDO-nbK2Xo5pGODJ88uzEZ5hVV6w2dKf?usp=sharing) [:clipboard:](./Baseline-miniImageNet--ravi-resnet12-Table2.yaml) | Table.2 |
 | 4 | ResNet18 | - | 54.11 ± 0.35 [:arrow_down:](https://drive.google.com/drive/folders/1-EYAms9N_iRXHu14JHigbIqAsMTEJXgG?usp=sharing) [:clipboard:](./Baseline-miniImageNet--ravi-resnet18-Table2.yaml) | - | 74.44 ± 0.29 [:arrow_down:](https://drive.google.com/drive/folders/1-EYAms9N_iRXHu14JHigbIqAsMTEJXgG?usp=sharing) [:clipboard:](./Baseline-miniImageNet--ravi-resnet18-Table2.yaml) | Table.2 |
+| 5 | ResNet18 | - | 51.18 ± 0.34 [:arrow_down:](https://drive.google.com/drive/folders/1u3Xbog183WrQGm8durg6W79uvkpVQPst?usp=sharing) [:clipboard:](./Baseline-miniImageNet--ravi-resnet18-5-Reproduce.yaml) | - | 74.06 ± 0.28 [:arrow_down:](https://drive.google.com/drive/folders/1u3Xbog183WrQGm8durg6W79uvkpVQPst?usp=sharing) [:clipboard:](./Baseline-miniImageNet--ravi-resnet18-5-Reproduce.yaml) | Reproduce |
+
 
 
 
