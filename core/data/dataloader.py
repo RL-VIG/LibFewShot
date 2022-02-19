@@ -77,13 +77,25 @@ def get_dataloader(config, mode, model_type, distribute):
         mode=mode,
         use_memory=config["use_memory"],
     )
+    assert dataset.label_num >= (
+        config["way_num"] if mode == "train" else config["test_way"]
+    ), "classes({}) in {} split should be larger than {}({})".format(
+        dataset.label_num,
+        mode,
+        "way_num" if mode == "train" else "test_way",
+        (config["way_num"] if mode == "train" else config["test_way"]),
+    )
 
     collate_function = get_collate_function(config, trfms, mode, model_type)
 
     few_shot = not (model_type == ModelType.FINETUNING and mode == "train")
 
     sampler = get_sampler(
-        dataset=dataset, few_shot=few_shot, distribute=distribute, mode=mode, config=config
+        dataset=dataset,
+        few_shot=few_shot,
+        distribute=distribute,
+        mode=mode,
+        config=config,
     )
 
     data_scale = 1 if config["n_gpu"] == 0 else config["n_gpu"]
@@ -114,7 +126,7 @@ class _RepeatSampler(object):
 
     def __init__(self, sampler):
         self.sampler = sampler
-        self.repeat_sample = True if len(self.sampler)>0 else False
+        self.repeat_sample = True if len(self.sampler) > 0 else False
 
     def __iter__(self):
         while self.repeat_sample:
