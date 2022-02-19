@@ -1,4 +1,4 @@
-data_root: /data/wzy/miniImageNet--ravi
+data_root: /data/fewshot/miniImageNet--ravi
 image_size: 84
 use_memory: False
 augment: True

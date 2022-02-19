@@ -71,6 +71,14 @@ def get_dataloader(config, mode, model_type):
         mode=mode,
         use_memory=config["use_memory"],
     )
+    assert dataset.label_num >= (
+        config["way_num"] if mode == "train" else config["test_way"]
+    ), "classes({}) in {} split should be larger than {}({})".format(
+        dataset.label_num,
+        mode,
+        "way_num" if mode == "train" else "test_way",
+        (config["way_num"] if mode == "train" else config["test_way"]),
+    )
 
     collate_function = get_collate_function(config, trfms, mode, model_type)
 
