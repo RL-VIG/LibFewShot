@@ -1,0 +1,3 @@
+loss:
+  name: CrossEntropyLoss
+  kwargs: ~

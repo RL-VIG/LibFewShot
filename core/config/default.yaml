@@ -4,3 +4,4 @@ includes:
   - headers/misc.yaml
   - headers/model.yaml
   - headers/optimizer.yaml
+  - headers/loss.yaml
