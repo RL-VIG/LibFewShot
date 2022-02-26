@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 import itertools
 from collections import Iterable
+from core.data.collates.contrib.mixup import Mixup, FewShotMixup
 
 import torch
+import numpy as np
 
 
 class GeneralCollateFunction(object):
@@ -68,7 +70,7 @@ class FewShotAugCollateFunction(object):
     For finetuning-val, finetuning-test and meta/metric-train/val/test.
     """
 
-    def __init__(self, trfms, times, times_q, way_num, shot_num, query_num):
+    def __init__(self, trfms, times, times_q, way_num, shot_num, query_num, aug_config):
         """Initialize a `FewShotAugCollateFunction`.
 
 
@@ -97,6 +99,18 @@ class FewShotAugCollateFunction(object):
         self.query_num = query_num
         self.shot_aug = self.shot_num * self.times
         self.query_aug = self.query_num * self.times_q
+        
+        self.aug_config = aug_config
+        
+        self.mixup_fn = None
+        if self.aug_config is not None and "mixup" in self.aug_config and self.aug_config["mixup"]:
+            self.mixup_fn = FewShotMixup(way_num=self.way_num, **self.aug_config["mixup"])
+        
+    def _generate_local_targets(self, episode_size):
+        local_targets = np.arange(self.way_num).reshape(1, -1, 1)
+        local_targets = np.repeat(local_targets, episode_size, axis=0)
+        local_targets = np.repeat(local_targets, self.shot_aug + self.query_aug, axis=2)
+        return local_targets
 
     def method(self, batch):
         """Apply transforms and augmentations on a **few-shot** batch.
@@ -122,11 +136,48 @@ class FewShotAugCollateFunction(object):
                 [spt_qry[: self.shot_num], spt_qry[self.shot_num :]]
                 for spt_qry in images_split_by_label
             ]  # 11111,1;22222,2;  == [shot, query]
+            
+            episode_size = len(images_split_by_label) // self.way_num
 
             # aug support # fixme: should have a elegant method # 1111111111,1;2222222222,2 # (aug_time = 2 for example)
             for cls in images_split_by_label_type:
                 cls[0] = cls[0] * self.times  # aug support
                 cls[1] = cls[1] * self.times_q  # aug query
+            
+            # flatten and apply trfms
+            flat = lambda t: [x for sub in t for x in flat(sub)] if isinstance(t, Iterable) else [t]
+            # images = flat(images_split_by_label_type)  # 1111111111122222222222
+            spt_image, qry_image = zip(*images_split_by_label_type)
+            spt_image, qry_image = flat(spt_image), flat(qry_image)
+            spt_image, qry_image = [self.trfms_support(image) for image in spt_image], [self.trfms_query(image) for image in qry_image]
+            # spt_image, qry_image = self.trfms_support(spt_image), self.trfms_query(qry_image)
+            
+            local_target = self._generate_local_targets(episode_size)
+            global_target = np.repeat(np.asarray(labels).reshape(episode_size, self.way_num, self.shot_num + self.query_num)[..., :1], self.shot_aug + self.query_aug, axis=2)
+            
+            local_spt_target, local_qry_target = local_target[..., :self.shot_aug], local_target[..., self.shot_aug:]
+            global_spt_target, global_qry_target = global_target[..., :self.shot_aug], global_target[..., self.shot_aug:]
+            
+            spt_image, qry_image = torch.stack(spt_image), torch.stack(qry_image)
+            spt_image, qry_image = spt_image.reshape(episode_size, self.way_num, self.shot_aug, *spt_image.shape[-3:]), qry_image.reshape(episode_size, self.way_num, self.query_aug, *qry_image.shape[-3:])
+            local_spt_target, local_qry_target = torch.tensor(local_spt_target, dtype=torch.long).reshape(episode_size, -1), torch.tensor(local_qry_target, dtype=torch.long).reshape(episode_size, -1)
+            global_spt_target, global_qry_target = torch.tensor(global_spt_target, dtype=torch.long).reshape(episode_size, -1), torch.tensor(global_qry_target, dtype=torch.long).reshape(episode_size, -1)
+            
+            if self.mixup_fn is not None:
+                qry_image, global_qry_target, local_qry_target = self.mixup_fn(qry_image.reshape(episode_size, -1, *qry_image.shape[-3:]), global_qry_target, local_qry_target)
+                qry_image = qry_image.reshape(episode_size, self.way_num, self.query_aug, *qry_image.shape[-3:])
+                local_qry_target = local_qry_target.reshape(episode_size, self.way_num * self.query_aug, -1)
+                global_qry_target = global_qry_target.reshape(episode_size, self.way_num * self.query_aug, -1)
+            
+            images = torch.cat([spt_image, qry_image], dim=2).reshape(-1, *spt_image.shape[-3:])
+            
+            # print(local_spt_target.shape)
+            # print(local_qry_target.shape)
+            # print(global_spt_target)
+            # print(global_qry_target)
+            
+            return images, local_spt_target, local_qry_target, global_spt_target, global_qry_target
+            
 
             # flatten and apply trfms
             flat = lambda t: [x for sub in t for x in flat(sub)] if isinstance(t, Iterable) else [t]
@@ -156,8 +207,10 @@ class FewShotAugCollateFunction(object):
                     self.shot_num * self.times + self.query_num * self.times_q,
                 )
             )
+            
+            local_labels = self._generate_local_targets(global_labels.shape[0])
 
-            return images, global_labels
+            return images, global_labels, local_labels
             # images.shape = [e*w*(q+s) x c x h x w],  global_labels.shape = [e x w x (q+s)]
         except TypeError:
             raise TypeError(

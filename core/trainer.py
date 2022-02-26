@@ -156,7 +156,7 @@ class Trainer(object):
             # compute gradients
             self.optimizer.zero_grad()
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1)
+            # torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=20, norm_type=2)
             self.optimizer.step()
             meter.update("calc_time", time() - calc_begin)
 
@@ -391,6 +391,7 @@ class Trainer(object):
             "test_query": config["test_query"],
             "emb_func": emb_func,
             "device": self.device,
+            "loss": config["loss"],
         }
         model = get_instance(arch, "classifier", config, **model_kwargs)
 

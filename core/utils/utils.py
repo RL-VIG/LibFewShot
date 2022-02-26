@@ -267,12 +267,13 @@ def init_seed(seed=0, deterministic=False):
     :param deterministic:
     :return:
     """
-    os.environ["PYTHONHASHSEED"] = str(seed)
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
+    if(seed is not None):
+        os.environ["PYTHONHASHSEED"] = str(seed)
+        random.seed(seed)
+        np.random.seed(seed) 
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
 
     if deterministic:
         torch.backends.cudnn.benchmark = False
@@ -311,14 +312,14 @@ class data_prefetcher:
         torch.cuda.current_stream().wait_stream(self.stream)
         if self.next_data is None:
             return None
-        input = self.next_data[0]
-        target = self.next_data[1]
-        if input is not None:
-            input.record_stream(torch.cuda.current_stream())
-        if target is not None:
-            target.record_stream(torch.cuda.current_stream())
+        res = []
+        for i in range(len(self.next_data)):
+            data = self.next_data[i]
+            if data is not None:
+                data.record_stream(torch.cuda.current_stream())
+            res.append(data)
         self.preload()
-        return [input, target]
+        return res
 
 # https://github.com/ildoonet/pytorch-gradual-warmup-lr/blob/master/warmup_scheduler/scheduler.py
 class GradualWarmupScheduler(_LRScheduler):

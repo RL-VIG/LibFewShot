@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from abc import abstractmethod
+import einops
 
 import torch
 from torch import nn
+from torch.nn import functional as F
 import numpy as np
 
 from core.utils import ModelType
@@ -52,24 +54,6 @@ class AbstractModel(nn.Module):
             .view(-1)
         )
         return local_targets
-
-    def mixup(self, batch, alpha=1.0, fewshot=True):
-        images, targets = batch
-        if fewshot:
-            pass
-        else:
-            N, device = images.size(0), images.device
-            if alpha > 0:
-                lam = np.random.beta(alpha, alpha)
-            else:
-                lam = 1
-            index = torch.randperm(N).to(device)
-
-            mix_x = lam * images + (1 - lam) * images[index]
-            y_a, y_b = targets, targets[index]
-
-            return mix_x, y_a, y_b, lam
-        
 
     def split_by_episode(self, features, mode):
         """
@@ -188,3 +172,56 @@ class AbstractModel(nn.Module):
             self.shot_num,
             self.query_num,
         )
+
+    def cal_loss(self, output, target, reduction="mean", **kwargs):
+        # CE loss
+        try:
+            if self.loss["name"] == "CrossEntropyLoss":
+                if output.dim() >= 3:
+                    # [episode_size, way_num * query_num, way_num]
+                    output = output.reshape(-1, output.size(-1))
+                if target.dim() >= 2:
+                    # [episode_size, way_num * query_num]
+                    target = target.reshape(-1)
+                assert reduction in ["mean", "sum"]
+                return F.cross_entropy(output, target, reduction=reduction)
+            elif self.loss["name"] == "SoftlabelCrossEntropyLoss":
+                if output.dim() >= 3:
+                    # [episode_size, way_num * query_num, way_num]
+                    output = output.reshape(-1, output.size(-1))
+                if target.dim() >= 3:
+                    # [episode_size, way_num * query_num, way_num]
+                    target = target.reshape(-1, target.size(-1))
+                log_prob = -F.log_softmax(output, dim=1)
+                nll_loss = torch.sum(torch.mul(log_prob, target), dim=1)
+                assert reduction in ["mean", "sum"]
+                if reduction == "mean":
+                    nll_loss = nll_loss.mean()
+                else:
+                    nll_loss = nll_loss.sum()
+                return nll_loss
+            elif self.loss["name"] == "LabelSmoothCrossEntropyLoss":
+                if "num_classes" not in kwargs:
+                    num_classes = self.way_num
+                else:
+                    num_classes = kwargs["num_classes"]
+                target = F.one_hot(target, num_classes)
+                log_prob = F.log_softmax(output, dim=-1)
+                nll_loss = -log_prob.gather(dim=-1, index=target.unsqueeze(1))
+                nll_loss = nll_loss.squeeze(1)
+                smooth_loss = -log_prob.mean(dim=-1)
+                loss = (1.0 - self.loss["kwargs"]["smoothing"]) * nll_loss + self.loss["kwargs"]["smoothing"] * smooth_loss
+                return loss.mean()
+            elif self.loss["name"] == "KLDivergenceLoss":
+                if "T" not in self.loss["kwargs"]:
+                    T = 1.0
+                else:
+                    T = self.loss["kwargs"]["T"]
+                log_prob = F.log_softmax(output / T, dim=1)
+                log_targ = F.softmax(target / T, dim=1)
+                return F.kl_div(log_prob, log_targ, size_average=False) * (T ** 2).mean()
+            else:
+                raise NotImplementedError
+        except Exception as e:
+            print(e)
+            print("Please confirm your loss config, output shape and target shape")

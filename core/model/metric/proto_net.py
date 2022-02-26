@@ -65,7 +65,7 @@ class ProtoNet(MetricModel):
     def __init__(self, **kwargs):
         super(ProtoNet, self).__init__(**kwargs)
         self.proto_layer = ProtoLayer()
-        self.loss_func = nn.CrossEntropyLoss()
+        # self.loss_func = nn.CrossEntropyLoss()
 
     def set_forward(self, batch):
         """
@@ -73,11 +73,12 @@ class ProtoNet(MetricModel):
         :param batch:
         :return:
         """
-        image, global_target = batch
+        # image, global_target = batch
+        image, support_target, query_target, _, _ = batch
         image = image.to(self.device)
         episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, _, _ = self.split_by_episode(feat, mode=1)
 
         output = self.proto_layer(
             query_feat, support_feat, self.way_num, self.shot_num, self.query_num
@@ -92,16 +93,16 @@ class ProtoNet(MetricModel):
         :param batch:
         :return:
         """
-        images, global_targets = batch
-        images = images.to(self.device)
-        episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
-        emb = self.emb_func(images)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(emb, mode=1)
+        # images, global_targets = batch
+        image, support_targets, query_targets, _, _ = batch
+        image = image.to(self.device)
+        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        emb = self.emb_func(image)
+        support_feat, query_feat, _, _ = self.split_by_episode(emb, mode=1)
 
         output = self.proto_layer(
             query_feat, support_feat, self.way_num, self.shot_num, self.query_num
         ).reshape(episode_size * self.way_num * self.query_num, self.way_num)
-        loss = self.loss_func(output, query_target.reshape(-1))
-        acc = accuracy(output, query_target.reshape(-1))
+        loss = self.cal_loss(output, query_targets)
 
-        return output, acc, loss
+        return output, 0., loss
