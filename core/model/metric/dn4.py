@@ -78,7 +78,7 @@ class DN4(MetricModel):
         :param batch:
         :return:
         """
-        image, global_target = batch
+        image, support_target, query_target, _, _ = batch
         image = image.to(self.device)
         episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
         feat = self.emb_func(image)
@@ -97,12 +97,12 @@ class DN4(MetricModel):
         :param batch:
         :return:
         """
-        image, global_target = batch
+        image, support_target, query_target, _, _ = batch
         image = image.to(self.device)
         episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
         feat = self.emb_func(image)
 
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
+        support_feat, query_feat, _, _ = self.split_by_episode(feat, mode=2)
 
         output = self.dn4_layer(
             query_feat,
@@ -111,7 +111,7 @@ class DN4(MetricModel):
             self.shot_num,
             self.query_num,
         ).view(episode_size * self.way_num * self.query_num, self.way_num)
-        loss = self.loss_func(output, query_target.reshape(-1))
-        acc = accuracy(output, query_target.reshape(-1))
+        loss = self.cal_loss(output, query_target)
+        # acc = accuracy(output, query_target.reshape(-1))
 
-        return output, acc, loss
+        return output, 0.0, loss

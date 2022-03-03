@@ -108,11 +108,11 @@ class RFSModel(FinetuningModel):
         :param batch:
         :return:
         """
-        image, global_target = batch
+        image, support_target, query_target, _, _ = batch
         image = image.to(self.device)
         with torch.no_grad():
             feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, _, _ = self.split_by_episode(feat, mode=1)
         episode_size = support_feat.size(0)
 
         output_list = []
@@ -152,13 +152,14 @@ class RFSModel(FinetuningModel):
         output = self.classifier(feat)
         distill_output = self.distill_layer(image)
 
-        gamma_loss = self.ce_loss_func(output, global_target)
+        # gamma_loss = self.ce_loss_func(output, global_target)
+        gamma_loss = self.cal_loss(output, global_target)
         alpha_loss = self.kl_loss_func(output, distill_output)
         loss = gamma_loss * self.gamma + alpha_loss * self.alpha
 
-        acc = accuracy(output, global_target)
+        # acc = accuracy(output, global_target)
 
-        return output, acc, loss
+        return output, 0., loss
 
     def set_forward_adaptation(self, support_feat, support_target):
         classifier = LogisticRegression(

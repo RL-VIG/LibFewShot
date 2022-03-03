@@ -127,11 +127,11 @@ class R2D2(MetaModel):
         self._init_network()
 
     def set_forward(self, batch):
-        image, global_target = batch
+        image, support_target, query_target, _, _ = batch
         image = image.to(self.device)
 
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, _, _ = self.split_by_episode(feat, mode=1)
         output, weight = self.classifier(
             self.way_num, self.shot_num, query_feat, support_feat, support_target
         )
@@ -141,19 +141,20 @@ class R2D2(MetaModel):
         return output, acc
 
     def set_forward_loss(self, batch):
-        image, global_target = batch
+        image, support_target, query_target, _, _ = batch
         image = image.to(self.device)
 
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, _, _ = self.split_by_episode(feat, mode=1)
         output, weight = self.classifier(
             self.way_num, self.shot_num, query_feat, support_feat, support_target
         )
 
         output = output.contiguous().reshape(-1, self.way_num)
-        loss = self.loss_func(output, query_target.contiguous().reshape(-1))
-        acc = accuracy(output.squeeze(), query_target.contiguous().reshape(-1))
-        return output, acc, loss
+        # loss = self.loss_func(output, query_target.contiguous().reshape(-1))
+        loss = self.cal_loss(output, query_target)
+        # acc = accuracy(output.squeeze(), query_target.contiguous().reshape(-1))
+        return output, 0.0, loss
 
     def set_forward_adaptation(self, *args, **kwargs):
         raise NotImplementedError

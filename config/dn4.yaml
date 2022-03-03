@@ -7,30 +7,62 @@ includes:
   - classifiers/DN4.yaml
 
 way_num: 5
-shot_num: 1
+shot_num: 5
 query_num: 15
 episode_size: 1
 train_episode: 2000
 test_episode: 600
 
-device_ids: 2
+device_ids: 3
 n_gpu: 1
-epoch: 200
+epoch: 100
 
-backbone:
-  name: Conv64F
+# loss:
+#   name: LabelSmoothCrossEntropyLoss
+#   kwargs:
+#     num_classes: 5
+#     smoothing: 0.1
+
+loss:
+  name: SoftlabelCrossEntropyLoss
+  kwargs: ~
+
+aug_config:
+  train:
+    # mixup:
+    #   mixup_alpha: 0.0
+    #   cutmix_alpha: 0.0
+    #   cutmix_minmax: ~
+    #   mode: episode
+    #   label_smoothing: 0.1
+    label_smoothing:
+      smoothing: 0.1
+      num_classes: 64
+
+lr_scheduler:
   kwargs:
-    is_flatten: False
-    is_feature: False
-    leaky_relu: True
-    negative_slope: 0.2
-    last_pool: False
+    gamma: 0.5
+    step_size: 20
+  name: StepLR
+optimizer:
+  kwargs:
+    lr: 0.001
+  name: Adam
 
 # backbone:
-#   name: resnet12
+#   name: Conv64F
 #   kwargs:
-#     maxpool_last2: False
 #     is_flatten: False
+#     is_feature: False
+#     leaky_relu: True
+#     negative_slope: 0.2
+#     last_pool: False
+
+backbone:
+  name: resnet12
+  kwargs:
+    maxpool_last2: False
+    is_flatten: False
 
 # backbone:
 #   name: resnet18

@@ -10,10 +10,10 @@ way_num: 5
 shot_num: 1
 query_num: 15
 episode_size: 1
-train_episode: 100
-test_episode: 100
+train_episode: 2000
+test_episode: 600
 
-device_ids: 7
+device_ids: 0
 n_gpu: 1
 epoch: 100
 
@@ -29,7 +29,7 @@ loss:
 aug_config:
   train:
     mixup:
-      mixup_alpha: 1.0
+      mixup_alpha: 0.2
       cutmix_alpha: 0.0
       cutmix_minmax: ~
       mode: episode

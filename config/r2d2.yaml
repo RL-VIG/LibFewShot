@@ -7,24 +7,56 @@ includes:
   - classifiers/R2D2.yaml
 
 way_num: 5
-shot_num: 1
+shot_num: 5
 query_num: 15
-test_way: 5 # use ~ -> test_* = *_num
-test_shot: 1
-test_query: 15
+episode_size: 2
+train_episode: 2000
+test_episode: 600
 
-backbone:
-  name: Conv64F
+device_ids: 4,5
+n_gpu: 2
+epoch: 100
+
+loss:
+  name: SoftlabelCrossEntropyLoss
+  kwargs: ~
+
+aug_config:
+  train:
+    mixup:
+      mixup_alpha: 0.0
+      cutmix_alpha: 1.0
+      cutmix_minmax: ~
+      mode: episode
+      label_smoothing: 0.0
+
+lr_scheduler:
   kwargs:
-    is_flatten: True
-    is_feature: False
-    leaky_relu: True
-    negative_slope: 0.2
-    last_pool: True
+    T_max: 100
+    eta_min: 0
+  name: CosineAnnealingLR
+
+optimizer:
+  kwargs:
+    lr: 0.1
+    momentum: 0.9
+    nesterov: true
+    weight_decay: 0.0005
+  name: SGD
+  other: null
 
 # backbone:
-#   name: resnet12
-#   kwargs: ~
+#   name: Conv64F
+#   kwargs:
+#     is_flatten: True
+#     is_feature: False
+#     leaky_relu: True
+#     negative_slope: 0.2
+#     last_pool: True
+
+backbone:
+  name: resnet12
+  kwargs: ~
 
 # backbone:
 #   name: resnet18

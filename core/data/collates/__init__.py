@@ -22,7 +22,11 @@ def get_collate_function(config, trfms, mode, model_type):
     assert model_type != ModelType.ABSTRACT, "model_type should not be ModelType.ABSTRACT"
 
     if mode == "train" and model_type == ModelType.FINETUNING:
-        collate_function = GeneralCollateFunction(trfms, config["augment_times"])
+        collate_function = GeneralCollateFunction(
+            trfms,
+            config["augment_times"],
+            config["aug_config"][mode] if config["aug_config"] and mode in config["aug_config"] else None,
+        )
     else:
         collate_function = FewShotAugCollateFunction(
             trfms,

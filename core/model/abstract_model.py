@@ -173,10 +173,12 @@ class AbstractModel(nn.Module):
             self.query_num,
         )
 
-    def cal_loss(self, output, target, reduction="mean", **kwargs):
-        # CE loss
+    def cal_loss(self, output, target, reduction="mean", loss_type=None, **kwargs):
+        if loss_type is None:
+            loss_type = self.loss["name"]
+            kwargs = self.loss["kwargs"]
         try:
-            if self.loss["name"] == "CrossEntropyLoss":
+            if loss_type == "CrossEntropyLoss":
                 if output.dim() >= 3:
                     # [episode_size, way_num * query_num, way_num]
                     output = output.reshape(-1, output.size(-1))
@@ -185,7 +187,7 @@ class AbstractModel(nn.Module):
                     target = target.reshape(-1)
                 assert reduction in ["mean", "sum"]
                 return F.cross_entropy(output, target, reduction=reduction)
-            elif self.loss["name"] == "SoftlabelCrossEntropyLoss":
+            elif loss_type == "SoftlabelCrossEntropyLoss":
                 if output.dim() >= 3:
                     # [episode_size, way_num * query_num, way_num]
                     output = output.reshape(-1, output.size(-1))
@@ -200,23 +202,23 @@ class AbstractModel(nn.Module):
                 else:
                     nll_loss = nll_loss.sum()
                 return nll_loss
-            elif self.loss["name"] == "LabelSmoothCrossEntropyLoss":
+            elif loss_type == "LabelSmoothCrossEntropyLoss":
                 if "num_classes" not in kwargs:
                     num_classes = self.way_num
                 else:
                     num_classes = kwargs["num_classes"]
                 target = F.one_hot(target, num_classes)
                 log_prob = F.log_softmax(output, dim=-1)
-                nll_loss = -log_prob.gather(dim=-1, index=target.unsqueeze(1))
+                nll_loss = -log_prob.gather(dim=-1, index=target.squeeze())
                 nll_loss = nll_loss.squeeze(1)
                 smooth_loss = -log_prob.mean(dim=-1)
-                loss = (1.0 - self.loss["kwargs"]["smoothing"]) * nll_loss + self.loss["kwargs"]["smoothing"] * smooth_loss
+                loss = (1.0 - kwargs["smoothing"]) * nll_loss + kwargs["smoothing"] * smooth_loss
                 return loss.mean()
-            elif self.loss["name"] == "KLDivergenceLoss":
-                if "T" not in self.loss["kwargs"]:
+            elif loss_type == "KLDivergenceLoss":
+                if "T" not in kwargs:
                     T = 1.0
                 else:
-                    T = self.loss["kwargs"]["T"]
+                    T = kwargs["T"]
                 log_prob = F.log_softmax(output / T, dim=1)
                 log_targ = F.softmax(target / T, dim=1)
                 return F.kl_div(log_prob, log_targ, size_average=False) * (T ** 2).mean()
