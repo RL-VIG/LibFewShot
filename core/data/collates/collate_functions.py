@@ -7,13 +7,22 @@ import torch
 import numpy as np
 
 
+def smooth_label(label, smoothing, num_classes):
+    off_value = smoothing / num_classes
+    on_value = 1. - smoothing + off_value
+    
+    smooth_label = label.long().view(-1, 1)
+    y = torch.full((smooth_label.size()[0], num_classes), off_value, device=label.device).scatter_(1, smooth_label, on_value)
+    
+    return y.reshape(*label.shape, -1)
+
 class GeneralCollateFunction(object):
     """A Generic `Collate_fn`.
 
     For finetuning-train.
     """
 
-    def __init__(self, trfms, times):
+    def __init__(self, trfms, times, aug_config):
         """Initialize a `GeneralCollateFunction`.
 
         Args:
@@ -23,6 +32,18 @@ class GeneralCollateFunction(object):
         super(GeneralCollateFunction, self).__init__()
         self.trfms = trfms
         self.times = times
+        
+        self.aug_config = aug_config
+        self.mixup_fn = None
+        self.smoothing = None
+        self.num_classes = None
+        
+        if self.aug_config is not None and "mixup" in self.aug_config and self.aug_config["mixup"]:
+            self.mixup_fn = Mixup(**self.aug_config["mixup"])
+            
+        if self.aug_config is not None and "label_smoothing" in self.aug_config and self.aug_config["label_smoothing"]:
+            self.smoothing = self.aug_config["label_smoothing"]["smoothing"]
+            self.num_classes = self.aug_config["label_smoothing"]["num_classes"]
 
     def method(self, batch):
         """Apply transforms and augmentations on a batch.
@@ -52,6 +73,9 @@ class GeneralCollateFunction(object):
             images = torch.cat(images)
 
             targets = torch.tensor(targets, dtype=torch.int64)
+            
+            if self.mixup_fn is not None:
+                images, targets = self.mixup_fn(images, targets)
 
             return images, targets
         except TypeError:
@@ -105,6 +129,13 @@ class FewShotAugCollateFunction(object):
         self.mixup_fn = None
         if self.aug_config is not None and "mixup" in self.aug_config and self.aug_config["mixup"]:
             self.mixup_fn = FewShotMixup(way_num=self.way_num, **self.aug_config["mixup"])
+            
+        self.smoothing = None
+        self.num_classes = None
+            
+        if self.aug_config is not None and "label_smoothing" in self.aug_config and self.aug_config["label_smoothing"]:
+            self.smoothing = self.aug_config["label_smoothing"]["smoothing"]
+            self.num_classes = self.aug_config["label_smoothing"]["num_classes"]
         
     def _generate_local_targets(self, episode_size):
         local_targets = np.arange(self.way_num).reshape(1, -1, 1)
@@ -171,8 +202,12 @@ class FewShotAugCollateFunction(object):
             
             images = torch.cat([spt_image, qry_image], dim=2).reshape(-1, *spt_image.shape[-3:])
             
-            # print(local_spt_target.shape)
-            # print(local_qry_target.shape)
+            if self.smoothing:
+                local_qry_target = smooth_label(local_qry_target, self.smoothing, self.way_num)
+                global_qry_target = smooth_label(global_qry_target, self.smoothing, self.num_classes)
+                
+            # print(local_spt_target)
+            # print(local_qry_target)
             # print(global_spt_target)
             # print(global_qry_target)
             

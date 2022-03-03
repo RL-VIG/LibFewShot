@@ -8,7 +8,7 @@ def one_hot(x, num_classes, on_value=1., off_value=0., device='cuda'):
     return torch.full((x.size()[0], num_classes), off_value, device=device).scatter_(1, x, on_value)
 
 
-def mixup_target(target, num_classes, mix_index, lam=1., smoothing=0.0, device='cuda'):
+def mixup_target_fewshot(target, num_classes, mix_index, lam=1., smoothing=0.0, device='cuda'):
     off_value = smoothing / num_classes
     on_value = 1. - smoothing + off_value
     y1 = one_hot(target, num_classes, on_value=on_value, off_value=off_value, device=device).reshape(*target.shape, -1)
@@ -16,6 +16,13 @@ def mixup_target(target, num_classes, mix_index, lam=1., smoothing=0.0, device='
         y2 = one_hot(torch.gather(target, dim=1, index=mix_index), num_classes, on_value=on_value, off_value=off_value, device=device).reshape(*target.shape, -1)
     else:
         y2 = one_hot(target[:, mix_index], num_classes, on_value=on_value, off_value=off_value, device=device).reshape(*target.shape, -1)
+    return y1 * lam + y2 * (1. - lam)
+
+def mixup_target(target, num_classes, lam=1., smoothing=0.0, device='cuda'):
+    off_value = smoothing / num_classes
+    on_value = 1. - smoothing + off_value
+    y1 = one_hot(target, num_classes, on_value=on_value, off_value=off_value, device=device)
+    y2 = one_hot(target.flip(0), num_classes, on_value=on_value, off_value=off_value, device=device)
     return y1 * lam + y2 * (1. - lam)
 
 
@@ -196,10 +203,10 @@ class FewShotMixup:
         elif self.mode == 'episode':
             lam, mix_index = self._mix_episode(x)
         else:
-            raise NotImplementedError("Mixup mode {} not implemented".format(self.mode))
+            raise NotImplementedError('Unknown mixup mode {}'.format(self.mode))
         
-        global_target = mixup_target(global_target, self.num_classes, mix_index, lam, self.label_smoothing, x.device)
-        local_target = mixup_target(local_target, self.way_num, mix_index, lam, self.label_smoothing, x.device)
+        global_target = mixup_target_fewshot(global_target, self.num_classes, mix_index, lam, self.label_smoothing, x.device)
+        local_target = mixup_target_fewshot(local_target, self.way_num, mix_index, lam, self.label_smoothing, x.device)
         return x, global_target, local_target
 
 class Mixup:
@@ -326,7 +333,9 @@ class Mixup:
             lam = self._mix_elem(x)
         elif self.mode == 'pair':
             lam = self._mix_pair(x)
-        else:
+        elif self.mode == 'batch':
             lam = self._mix_batch(x)
+        else:
+            raise ValueError('Unknown mixup mode {}'.format(self.mode))
         target = mixup_target(target, self.num_classes, lam, self.label_smoothing, x.device)
         return x, target
