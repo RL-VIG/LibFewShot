@@ -22,7 +22,7 @@ class GeneralCollateFunction(object):
     For finetuning-train.
     """
 
-    def __init__(self, trfms, times, aug_config):
+    def __init__(self, trfms, times, aug_config, num_classes):
         """Initialize a `GeneralCollateFunction`.
 
         Args:
@@ -36,14 +36,13 @@ class GeneralCollateFunction(object):
         self.aug_config = aug_config
         self.mixup_fn = None
         self.smoothing = None
-        self.num_classes = None
+        self.num_classes = num_classes
         
         if self.aug_config is not None and "mixup" in self.aug_config and self.aug_config["mixup"]:
             self.mixup_fn = Mixup(**self.aug_config["mixup"])
             
         if self.aug_config is not None and "label_smoothing" in self.aug_config and self.aug_config["label_smoothing"]:
             self.smoothing = self.aug_config["label_smoothing"]["smoothing"]
-            self.num_classes = self.aug_config["label_smoothing"]["num_classes"]
 
     def method(self, batch):
         """Apply transforms and augmentations on a batch.
@@ -76,6 +75,9 @@ class GeneralCollateFunction(object):
             
             if self.mixup_fn is not None:
                 images, targets = self.mixup_fn(images, targets)
+                
+            if self.smoothing:
+                targets = smooth_label(targets, self.smoothing, self.num_classes)
 
             return images, targets
         except TypeError:
@@ -94,7 +96,7 @@ class FewShotAugCollateFunction(object):
     For finetuning-val, finetuning-test and meta/metric-train/val/test.
     """
 
-    def __init__(self, trfms, times, times_q, way_num, shot_num, query_num, aug_config):
+    def __init__(self, trfms, times, times_q, way_num, shot_num, query_num, aug_config, num_classes):
         """Initialize a `FewShotAugCollateFunction`.
 
 
@@ -131,11 +133,10 @@ class FewShotAugCollateFunction(object):
             self.mixup_fn = FewShotMixup(way_num=self.way_num, **self.aug_config["mixup"])
             
         self.smoothing = None
-        self.num_classes = None
+        self.num_classes = num_classes
             
         if self.aug_config is not None and "label_smoothing" in self.aug_config and self.aug_config["label_smoothing"]:
             self.smoothing = self.aug_config["label_smoothing"]["smoothing"]
-            self.num_classes = self.aug_config["label_smoothing"]["num_classes"]
         
     def _generate_local_targets(self, episode_size):
         local_targets = np.arange(self.way_num).reshape(1, -1, 1)

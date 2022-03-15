@@ -26,6 +26,7 @@ def get_collate_function(config, trfms, mode, model_type):
             trfms,
             config["augment_times"],
             config["aug_config"][mode] if config["aug_config"] and mode in config["aug_config"] else None,
+            num_classes=config["num_classes"],
         )
     else:
         collate_function = FewShotAugCollateFunction(
@@ -36,6 +37,7 @@ def get_collate_function(config, trfms, mode, model_type):
             config["shot_num"] if mode == "train" else config["test_shot"],
             config["query_num"] if mode == "train" else config["test_query"],
             config["aug_config"][mode] if config["aug_config"] and mode in config["aug_config"] else None,
+            num_classes=config["num_classes"],
         )
 
     return collate_function

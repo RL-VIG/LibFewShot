@@ -87,8 +87,9 @@ def get_dataloader(config, mode, model_type, distribute):
     )
 
     # for mixup or other augmentations
-    if config["aug_config"] and mode in config["aug_config"] and config["aug_config"][mode] and "mixup" in config["aug_config"][mode]:
-        config["aug_config"][mode]["mixup"]["num_classes"] = dataset.label_num
+    # if config["aug_config"] and mode in config["aug_config"] and config["aug_config"][mode] and "mixup" in config["aug_config"][mode]:
+    #     config["aug_config"][mode]["mixup"]["num_classes"] = dataset.label_num
+    config["num_classes"] = dataset.label_num
     collate_function = get_collate_function(config, trfms, mode, model_type)
 
     few_shot = not (model_type == ModelType.FINETUNING and mode == "train")
