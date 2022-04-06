@@ -199,7 +199,7 @@ This folder contains:
       <td> 78.96 </td>
   </tr>
   <tr>
-      <td><a href="./Negative_Margin">Negative_Margin</a></td>
+      <td><a href="./NegCos">NegCos</a></td>
       <td>ResNet12</td>
       <td> 63.85 ± 0.81 </td>
       <td> 63.28 ± 0.36 </td>
@@ -281,7 +281,7 @@ This folder contains:
         <td> - </td>
     </tr>
     <tr>
-        <td><a href="./Neg-Cos">Neg-Cos</a></td>
+        <td><a href="./NegCos">NegCos</a></td>
         <td>ECCV’20</td>
         <td>Fine-tuning</td>
         <td> 47.34 </td>
@@ -469,13 +469,22 @@ This folder contains:
         <td> - </td>
     </tr>
     <tr>
-        <td><a href="SKD">SKD-GEN1</a></td>
+        <td><a href="./SKD">SKD-GEN1</a></td>
         <td>arXiv’20</td>
         <td>Fine-tuning</td>
         <td> 67.35 ± 0.37 </td>
         <td> 83.31 ± 0.24 </td>
         <td> - </td>
         <td> - </td>
+    </tr>
+    <tr>
+        <td><a href="./NegCos">NegCos</a></td>
+        <td>ECCV’20</td>
+        <td>Fine-tuning</td>
+        <td> 60.60 ± </td>
+        <td> 78.80 ± </td>
+        <td> 70.15 ± </td>
+        <td> 84.94 ± </td>
     </tr>
     <tr>
         <td><a href="./RENet">RENet</a></td>
@@ -648,13 +657,22 @@ This folder contains:
         <td> 84.70 ± 0.41 </td>
     </tr>
     <tr>
-        <td><a href="SKD">SKD-GEN1</a></td>
+        <td><a href="./SKD">SKD-GEN1</a></td>
         <td>arXiv’20</td>
         <td>Fine-tuning</td>
         <td> 66.70 ± 0.37 </td>
         <td> 82.60 ±  0.24 </td>
         <td>  </td>
         <td>  </td>
+    </tr>
+    <tr>
+        <td><a href="./NegCos">NegCos</a></td>
+        <td>ECCV’20</td>
+        <td>Fine-tuning</td>
+        <td> 60.99 ± </td>
+        <td> 76.30 ± </td>
+        <td> 68.36 ± </td>
+        <td> 83.77 ± </td>
     </tr>
     <tr>
         <td><a href="./RENet">RENet</a></td>
