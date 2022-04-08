@@ -39,7 +39,7 @@ class GeneralCollateFunction(object):
         self.num_classes = num_classes
         
         if self.aug_config is not None and "mixup" in self.aug_config and self.aug_config["mixup"]:
-            self.mixup_fn = Mixup(**self.aug_config["mixup"])
+            self.mixup_fn = Mixup(num_classes=self.num_classes, **self.aug_config["mixup"])
             
         if self.aug_config is not None and "label_smoothing" in self.aug_config and self.aug_config["label_smoothing"]:
             self.smoothing = self.aug_config["label_smoothing"]["smoothing"]
@@ -127,13 +127,12 @@ class FewShotAugCollateFunction(object):
         self.query_aug = self.query_num * self.times_q
         
         self.aug_config = aug_config
+        self.smoothing = None
+        self.num_classes = num_classes
         
         self.mixup_fn = None
         if self.aug_config is not None and "mixup" in self.aug_config and self.aug_config["mixup"]:
-            self.mixup_fn = FewShotMixup(way_num=self.way_num, **self.aug_config["mixup"])
-            
-        self.smoothing = None
-        self.num_classes = num_classes
+            self.mixup_fn = FewShotMixup(way_num=self.way_num, num_classes=self.num_classes, **self.aug_config["mixup"])
             
         if self.aug_config is not None and "label_smoothing" in self.aug_config and self.aug_config["label_smoothing"]:
             self.smoothing = self.aug_config["label_smoothing"]["smoothing"]
