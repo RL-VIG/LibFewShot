@@ -47,7 +47,7 @@ class DN4Layer(nn.Module):
 
         # t, wq, c, hw -> t, wq, hw, c -> t, wq, 1, hw, c
         query_feat = query_feat.view(t, way_num * query_num, c, h * w).permute(0, 1, 3, 2)
-        query_feat = F.normalize(query_feat, p=2, dim=2).unsqueeze(2)
+        query_feat = F.normalize(query_feat, p=2, dim=-1).unsqueeze(2)
 
         # t, ws, c, h, w -> t, w, s, c, hw -> t, 1, w, c, shw
         support_feat = (
@@ -112,6 +112,6 @@ class DN4(MetricModel):
             self.query_num,
         ).view(episode_size * self.way_num * self.query_num, self.way_num)
         loss = self.cal_loss(output, query_target)
-        # acc = accuracy(output, query_target.reshape(-1))
+        acc = accuracy(output, query_target.reshape(-1))
 
-        return output, 0.0, loss
+        return output, acc, loss
