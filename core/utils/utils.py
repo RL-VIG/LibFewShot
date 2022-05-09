@@ -260,6 +260,25 @@ def save_model(
     return save_name
 
 
+def get_unused_port():
+    """generate a unused port for DistributedDataParallel
+
+    Returns:
+        int: port unused
+    """
+    import socket
+    def is_port_in_use(host, port):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            return s.connect_ex((host, int(port))) == 0
+    port = random.randint(25000, 55000)
+    while is_port_in_use("127.0.0.1", port):
+        old_port = port
+        port = str(int(port) + 1)
+        print("Warning: Port {} is already in use, switch to port {}".format(old_port, port))
+    
+    return port
+    
+
 def init_seed(seed=0, deterministic=False):
     """
 
