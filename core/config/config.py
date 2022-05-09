@@ -220,13 +220,6 @@ class Config(object):
             config_dict["test_shot"] = config_dict["shot_num"]
         if config_dict["test_query"] is None:
             config_dict["test_query"] = config_dict["query_num"]
-        if config_dict["port"] is None:
-            port = random.randint(25000, 55000)
-            while self.is_port_in_use("127.0.0.1", port):
-                old_port = port
-                port = str(int(port) + 1)
-                print("Warning: Port {} is already in use, switch to port {}".format(old_port, port))
-            config_dict["port"] = port
 
         # Modify or add some configs
         config_dict["resume"] = self.is_resume
@@ -235,8 +228,3 @@ class Config(object):
         config_dict["tb_scale"] = float(config_dict["train_episode"]) / config_dict["test_episode"]
 
         return config_dict
-
-    def is_port_in_use(self,host, port):
-        import socket
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            return s.connect_ex((host, int(port))) == 0

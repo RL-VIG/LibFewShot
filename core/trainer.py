@@ -27,6 +27,7 @@ from core.utils import (
     prepare_device,
     save_model,
     get_instance,
+    get_unused_port,
     data_prefetcher,
     GradualWarmupScheduler,
 )
@@ -528,7 +529,7 @@ class Trainer(object):
             config["device_ids"],
             config["n_gpu"],
             backend="nccl" if "dist_backend" not in self.config else self.config["dist_backend"],
-            dist_url="tcp://127.0.0.1:" + str(config["port"])
+            dist_url="tcp://127.0.0.1:" + str(get_unused_port())
             if "dist_url" not in self.config
             else self.config["dist_url"],
         )
