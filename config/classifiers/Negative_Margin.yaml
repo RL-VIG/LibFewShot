@@ -1,0 +1,21 @@
+classifier:
+  name: NegNet
+  kwargs:
+    feat_dim: 640
+    num_class: 351
+    margin: -0.02
+    scale_factor: 30
+
+    inner_param:
+      inner_optim:
+        name: SGD
+        kwargs:
+          lr: 0.01
+          momentum: 0.9
+          dampening: 0.9
+          weight_decay: 0.001
+
+      inner_train_iter: 100
+      inner_batch_size: 4
+      inner_scale_factor: 5.0
+      inner_margin: 0.0
