@@ -27,6 +27,8 @@ from core.utils import (
     data_prefetcher,
 )
 
+from torch.optim.lr_scheduler import CosineAnnealingLR
+from core.model.finetuning.negative_margin import GradualWarmupScheduler
 
 class Trainer(object):
     """
@@ -54,18 +56,14 @@ class Trainer(object):
             self.val_loader,
             self.test_loader,
         ) = self._init_dataloader(config)
-        (
-            self.optimizer,
-            self.scheduler,
-            self.from_epoch,
-            self.best_val_acc,
-            self.best_test_acc,
-        ) = self._init_optim(config)
+        self.optimizer, self.scheduler, self.from_epoch = self._init_optim(config)
 
     def train_loop(self):
         """
         The normal train loop: train-val-test and save model when val-acc increases.
         """
+        best_val_acc = float("-inf")
+        best_test_acc = float("-inf")
         experiment_begin = time()
         for epoch_idx in range(self.from_epoch + 1, self.config["epoch"]):
             self.logger.info("============ Train on the train set ============")
@@ -73,16 +71,16 @@ class Trainer(object):
             self.logger.info(" * Acc@1 {:.3f} ".format(train_acc))
             self.logger.info("============ Validation on the val set ============")
             val_acc = self._validate(epoch_idx, is_test=False)
-            self.logger.info(" * Acc@1 {:.3f} Best acc {:.3f}".format(val_acc, self.best_val_acc))
+            self.logger.info(" * Acc@1 {:.3f} Best acc {:.3f}".format(val_acc, best_val_acc))
             self.logger.info("============ Testing on the test set ============")
             test_acc = self._validate(epoch_idx, is_test=True)
-            self.logger.info(" * Acc@1 {:.3f} Best acc {:.3f}".format(test_acc, self.best_test_acc))
+            self.logger.info(" * Acc@1 {:.3f} Best acc {:.3f}".format(test_acc, best_test_acc))
             time_scheduler = self._cal_time_scheduler(experiment_begin, epoch_idx)
             self.logger.info(" * Time: {}".format(time_scheduler))
 
-            if val_acc > self.best_val_acc:
-                self.best_val_acc = val_acc
-                self.best_test_acc = test_acc
+            if val_acc > best_val_acc:
+                best_val_acc = val_acc
+                best_test_acc = test_acc
                 self._save_model(epoch_idx, SaveType.BEST)
 
             if epoch_idx != 0 and epoch_idx % self.config["save_interval"] == 0:
@@ -90,7 +88,7 @@ class Trainer(object):
 
             self._save_model(epoch_idx, SaveType.LAST)
 
-            self.scheduler.step()
+            #self.scheduler.step()
         self.logger.info(
             "End of experiment, took {}".format(
                 str(datetime.timedelta(seconds=int(time() - experiment_begin)))
@@ -140,6 +138,7 @@ class Trainer(object):
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
+            self.scheduler.step(epoch_idx * len(self.train_loader) + batch_idx)
             meter.update("calc_time", time() - calc_begin)
 
             # measure accuracy and record loss
@@ -419,17 +418,30 @@ class Trainer(object):
             {"params": filter(lambda p: id(p) not in params_idx, self.model.parameters())}
         )
         optimizer = get_instance(torch.optim, "optimizer", config, params=params_dict_list)
-        scheduler = get_instance(
-            torch.optim.lr_scheduler, "lr_scheduler", config, optimizer=optimizer
-        )
+        
+        
+        #scheduler = get_instance(
+        #    torch.optim.lr_scheduler, "lr_scheduler", config, optimizer=optimizer
+        #)
+        scheduler = CosineAnnealingLR(
+            optimizer=optimizer, eta_min=0.000001,
+            T_max=(config["epoch"] - config["warmup_params"]["epoch"]) * len(self.train_loader))
+
+        #scheduler = GradualWarmupScheduler(
+        #    optimizer,
+        #    multiplier=config["warmup_params"]["multiplier"],
+        #    warmup_epoch=config["warmup_params"]["epoch"] * len(self.train_loader),
+        #    after_scheduler=cosine_scheduler)
+
+
+
+        
         self.logger.info(optimizer)
         from_epoch = -1
-        best_val_acc = float("-inf")
-        best_test_acc = float("-inf")
         if self.config["resume"]:
             resume_path = os.path.join(self.config["resume_path"], "checkpoints", "model_last.pth")
             self.logger.info(
-                "load the optimizer, lr_scheduler, epoch, best_val_acc and best_test_acc checkpoints dict from {}.".format(
+                "load the optimizer, lr_scheduler and epoch checkpoints dict from {}.".format(
                     resume_path
                 )
             )
@@ -439,11 +451,9 @@ class Trainer(object):
             state_dict = all_state_dict["lr_scheduler"]
             scheduler.load_state_dict(state_dict)
             from_epoch = all_state_dict["epoch"]
-            best_val_acc = all_state_dict["best_val_acc"]
-            best_test_acc = all_state_dict["best_val_acc"]
             self.logger.info("model resume from the epoch {}".format(from_epoch))
 
-        return optimizer, scheduler, from_epoch, best_val_acc, best_test_acc
+        return optimizer, scheduler, from_epoch
 
     def _init_device(self, config):
         """
@@ -477,8 +487,6 @@ class Trainer(object):
             "model",
             epoch,
             save_type,
-            self.best_val_acc,
-            self.best_test_acc,
             len(self.list_ids) > 1,
         )
 
@@ -495,8 +503,6 @@ class Trainer(object):
                             save_part,
                             epoch,
                             save_type,
-                            self.best_val_acc,
-                            self.best_test_acc,
                             len(self.list_ids) > 1,
                         )
                     else:
