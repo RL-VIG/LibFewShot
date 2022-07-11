@@ -1,0 +1,53 @@
+includes:
+  - headers/data.yaml
+  - headers/device.yaml
+  #- headers/losses.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
+  - classifiers/Negative_Margin.yaml
+  - backbones/resnet12.yaml
+
+backbone:
+#  kwargs:
+#    avg_pool: true
+#    is_feature: false
+#    is_flatten: true
+#  name: resnet18
+
+  name: resnet12
+  kwargs: ~
+
+#  kwargs:
+#    is_feature: false
+#    is_flatten: true
+#    last_pool: true
+#    leaky_relu: false
+#    negative_slope: 0.2
+#  name: Conv64F
+
+
+
+
+
+epoch: 200
+batch_size: 128
+image_size: 84
+
+
+optimizer:
+  name: Adam
+  kwargs:
+    lr: 3e-3
+    weight_decay: 1e-4
+  other:
+
+
+warmup_params:
+  multiplier: 16
+  epoch: 0
+
+data_root: /data/yxs/tiered_imagenet
+test_episode: 600
+shot_num: 1
+device_ids: 1
