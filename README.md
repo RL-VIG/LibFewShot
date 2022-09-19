@@ -66,10 +66,10 @@ LibFewShot is an open source project designed to help few-shot learning research
 ## Citation
 If you use this code for your research, please cite our paper.
 ```
-@article{li2021LibFewShot,
+@article{li2022LibFewShot,
   title={LibFewShot: A Comprehensive Library for Few-shot Learning},
   author={Li, Wenbin and Dong, Chuanqi and Tian, Pinzhuo and Qin, Tiexin and Yang, Xuesong and Wang, Ziyi and Huo Jing and Shi, Yinghuan and Wang, Lei and Gao, Yang and Luo, Jiebo},
   journal={arXiv preprint arXiv:2109.04898},
-  year={2021}
+  year={2022}
 }
 ```
