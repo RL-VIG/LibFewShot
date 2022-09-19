@@ -68,7 +68,7 @@ If you use this code for your research, please cite our paper.
 ```
 @article{li2022LibFewShot,
   title={LibFewShot: A Comprehensive Library for Few-shot Learning},
-  author={Li, Wenbin and Dong, Chuanqi and Tian, Pinzhuo and Qin, Tiexin and Yang, Xuesong and Wang, Ziyi and Huo Jing and Shi, Yinghuan and Wang, Lei and Gao, Yang and Luo, Jiebo},
+  author={Wenbin Li, Ziyi Wang, Xuesong Yang, Chuanqi Dong, Pinzhuo Tian, Tiexin Qin, Jing Huo, Yinghuan Shi, Lei Wang, Yang Gao and Jiebo Luo.},
   journal={arXiv preprint arXiv:2109.04898},
   year={2022}
 }
