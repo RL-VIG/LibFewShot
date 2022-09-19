@@ -2,15 +2,16 @@
 Make few-shot learning easy.
 
 [LibFewShot: A Comprehensive Library for Few-shot Learning](https://arxiv.org/abs/2109.04898).
-Wenbin Li, Chuanqi Dong, Pinzhuo Tian, Tiexin Qin, Xuesong Yang, Ziyi Wang, Jing Huo, Yinghuan Shi, Lei Wang, Yang Gao, Jiebo Luo. In arXiv 2021.<br>
+Wenbin Li, Ziyi Wang, Xuesong Yang, Chuanqi Dong, Pinzhuo Tian, Tiexin Qin, Jing Huo, Yinghuan Shi, Lei Wang, Yang Gao, Jiebo Luo. In arXiv 2021.<br>
 <img src='flowchart.png' width=1000/>
 
 ## Supported Methods
-### Fine-tuning based methods
+### Non-episodic methods (a.k.a Fine-tuning based methods)
 + [Baseline (ICLR 2019)](https://arxiv.org/abs/1904.04232)
 + [Baseline++ (ICLR 2019)](https://arxiv.org/abs/1904.04232)
 + [RFS (ECCV 2020)](https://arxiv.org/abs/2003.11539)
-+ [SKD (arxiv 2020)](https://arxiv.org/abs/2006.09785)
++ [SKD (BMVC 2021)](https://arxiv.org/abs/2006.09785)
++ [Negcos (ECCV 2020)](https://arxiv.org/abs/2003.12060)
 ### Meta-learning based methods
 + [MAML (ICML 2017)](https://arxiv.org/abs/1703.03400)
 + [Versa (NeurIPS 2018)](https://openreview.net/forum?id=HkxStoC5F7)
@@ -18,6 +19,7 @@ Wenbin Li, Chuanqi Dong, Pinzhuo Tian, Tiexin Qin, Xuesong Yang, Ziyi Wang, Jing
 + [LEO (ICLR 2019)](https://arxiv.org/abs/1807.05960)
 + [MTL (CVPR 2019)](https://arxiv.org/abs/1812.02391)
 + [ANIL (ICLR 2020)](https://arxiv.org/abs/1909.09157)
++ [BOIL (ICLR 2021)](https://arxiv.org/abs/2008.08882)
 ### Metric-learning based methods
 + [ProtoNet (NeurIPS 2017)](https://arxiv.org/abs/1703.05175)
 + [RelationNet (CVPR 2018)](https://arxiv.org/abs/1711.06025)
@@ -27,7 +29,7 @@ Wenbin Li, Chuanqi Dong, Pinzhuo Tian, Tiexin Qin, Xuesong Yang, Ziyi Wang, Jing
 + [ATL-Net (IJCAI 2020)](https://www.ijcai.org/proceedings/2020/0100.pdf)
 + [ADM (IJCAI 2020)](https://arxiv.org/abs/2002.00153)
 + [FEAT (CVPR 2020)](http://arxiv.org/abs/1812.03664)
-
++ [RENet (ICCV 2021)](https://arxiv.org/abs/2108.09666)
 
 
 ## Quick Installation
@@ -37,7 +39,7 @@ Please refer to [install.md](https://libfewshot-en.readthedocs.io/en/latest/inst
 Complete tutorials can be found at [document](https://libfewshot-en.readthedocs.io/en/latest/)([中文文档](https://libfewshot-en.readthedocs.io/zh_CN/latest/index.html)).
 
 ## Reproduction
-We provide some validated configs in [reproduce](./config/reproduce/), please refer to `./config/reproduce/<Method_Name>/README.md` for further infomations. The meanings of the symbols are as follows:
+We provide some validated configs in [reproduce](./reproduce/), please refer to `./reproduce/<Method_Name>/README.md` for further infomations. The meanings of the symbols are as follows:
 
 > :book: The accuracies reproted by the papers.
 >
