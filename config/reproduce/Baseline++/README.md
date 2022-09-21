@@ -7,6 +7,8 @@
 | Venue:   | ICLR'19                      |
 | Codes:   | [**CloserLookFewShot**](https://github.com/wyharveychen/CloserLookFewShot)|
 
++ When reproduceingthis method with the same setting in the original paper, you should skip validation during training-stage and choose the last model it saves.
+
 Cite this work with:
 ```bibtex
 @inproceedings{DBLP:conf/iclr/ChenLKWH19,
@@ -31,6 +33,7 @@ Cite this work with:
 |---|-----------|--------------------|--------------------|--------------------|--------------------|---|
 | 1 | Conv64F | - | 48.86 ± 0.35 [:arrow_down:](https://drive.google.com/drive/folders/1PTrmgQYCeInx4zdbre3a9JSgZM9abMGv?usp=sharing) [:clipboard:](./BaselinePlus-miniImageNet--ravi-Conv64F-Table2.yaml) | - | 63.29 ± 0.30 [:arrow_down:](https://drive.google.com/drive/folders/1PTrmgQYCeInx4zdbre3a9JSgZM9abMGv?usp=sharing) [:clipboard:](./BaselinePlus-miniImageNet--ravi-Conv64F-Table2.yaml) | Table2 |
 | 2 | ResNet12 | - | 56.75 ± 0.38 [:arrow_down:](https://drive.google.com/drive/folders/1oU4qepvyfiduzXSAHsD7Bc9paOyCzaGY?usp=sharing) [:clipboard:](./BaselinePlus-miniImageNet--ravi-resnet12-Table2.yaml) | - | 66.36 ± 0.29 [:arrow_down:](https://drive.google.com/drive/folders/1oU4qepvyfiduzXSAHsD7Bc9paOyCzaGY?usp=sharing) [:clipboard:](./BaselinePlus-miniImageNet--ravi-resnet12-Table2.yaml) | Table2 |
+| 3 | Conv64F | 48.24 | 46.21 ± 0.31 [:arrow_down:](https://drive.google.com/drive/folders/1K6vqkh-bm0StFyT3R5YCIn3CpUQ91zwn?usp=sharing) [:clipboard:](./BaselinePlus-miniImageNet--ravi-Conv64F-5-Reproduce.yaml) | 66.43 | 65.18 ± 0.30 [:arrow_down:](https://drive.google.com/drive/folders/1K6vqkh-bm0StFyT3R5YCIn3CpUQ91zwn?usp=sharing) [:clipboard:](./BaselinePlus-miniImageNet--ravi-Conv64F-5-Reproduce.yaml) | Reproduce |
 
 
 |   | Embedding | :book: *tiered*ImageNet (5,1) | :computer: *tiered*ImageNet (5,1) | :book:*tiered*ImageNet (5,5) | :computer: *tiered*ImageNet (5,5) | :memo: Comments  |

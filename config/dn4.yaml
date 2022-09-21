@@ -5,17 +5,12 @@ includes:
   - headers/model.yaml
   - headers/optimizer.yaml
   - classifiers/DN4.yaml
+  - backbones/Conv64F.yaml
 
-way_num: 5
-shot_num: 1
-query_num: 15
-episode_size: 1
-train_episode: 2000
-test_episode: 600
-
-device_ids: 2
-n_gpu: 1
-epoch: 200
+classifier:
+  name: DN4
+  kwargs:
+    n_k: 3
 
 backbone:
   name: Conv64F
@@ -32,12 +27,12 @@ backbone:
 #     maxpool_last2: False
 #     is_flatten: False
 
+# need to modify: core/model/backbone/resnet_18.py:114 stride=1
 # backbone:
 #   name: resnet18
 #   kwargs:
 #     is_flatten: False
 #     avg_pool: False
-#     last_block_stride: 1
 
 # backbone:
 #   name: WRN

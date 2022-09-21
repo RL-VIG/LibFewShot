@@ -131,11 +131,7 @@ class Trainer(object):
         end = time()
         log_scale = 1 if self.model_type == ModelType.FINETUNING else episode_size
 
-        prefetcher = data_prefetcher(self.train_loader)
-        batch = prefetcher.next()
-        batch_idx = -1
-        while batch is not None:
-            batch_idx += 1
+        for batch_idx, batch in enumerate(self.train_loader):
             if self.rank == 0:
                 self.writer.set_step(epoch_idx * len(self.train_loader) + batch_idx * episode_size)
 
@@ -194,8 +190,6 @@ class Trainer(object):
                 print(info_str)
             end = time()
 
-            batch = prefetcher.next()
-
         return meter.avg("acc1")
 
     def _validate(self, epoch_idx, is_test=False):
@@ -223,11 +217,7 @@ class Trainer(object):
         log_scale = self.config["episode_size"]
         with torch.set_grad_enabled(enable_grad):
             loader = self.test_loader if is_test else self.val_loader
-            prefetcher = data_prefetcher(loader)
-            batch = prefetcher.next()
-            batch_idx = -1
-            while batch is not None:
-                batch_idx += 1
+            for batch_idx, batch in enumerate(loader):
                 if self.rank == 0:
                     self.writer.set_step(
                         int(
@@ -274,7 +264,6 @@ class Trainer(object):
                     print(info_str)
                 end = time()
 
-                batch = prefetcher.next()
         if self.distribute:
             self.model.module.reverse_setting_info()
         else:

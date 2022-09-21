@@ -29,4 +29,11 @@ Cite this work with:
 
 |   | Embedding | :book: *mini*ImageNet (5,1) | :computer: *mini*ImageNet (5,1) | :book:*mini*ImageNet (5,5) | :computer: *mini*ImageNet (5,5) | :memo: Comments  |
 |---|-----------|--------------------|--------------------|--------------------|--------------------|---|
-| 1 | Conv64F | 46.14 ± 0.77 | 47.05 ± 0.35[:arrow_down:](https://drive.google.com/drive/folders/1OjobWtwiGbH9kkI7Zzh2tg5Y0Eh8O3zM?usp=sharing) [:clipboard:](./ProtoNet-miniImageNet-Conv64F-5-1-Table2.yaml) | 65.77 ± 0.70 | 68.56 ± 0.16 [:arrow_down:](https://drive.google.com/drive/folders/1kekt2wiecx4TVgKiDCAiXM-cBfrQ3YC3?usp=sharing) [:clipboard:](./ProtoNet-miniImageNet-Conv64F-5-5-Table2.yaml) | Table.2 |
+| 1 | Conv64F | - | 47.05 ± 0.35 [:arrow_down:](https://drive.google.com/drive/folders/1OjobWtwiGbH9kkI7Zzh2tg5Y0Eh8O3zM?usp=sharing) [:clipboard:](./ProtoNet-miniImageNet-Conv64F-5-1-Table2.yaml) | - | 68.56 ± 0.16 [:arrow_down:](https://drive.google.com/drive/folders/1kekt2wiecx4TVgKiDCAiXM-cBfrQ3YC3?usp=sharing) [:clipboard:](./ProtoNet-miniImageNet-Conv64F-5-5-Table2.yaml) | Table.2 |
+| 2 | ResNet12 | - | 54.25 ± 0.37 [:arrow_down:](https://drive.google.com/drive/folders/1N1BjE8yl6f1Hz9LcgzuvND4sawQebQef?usp=sharing) [:clipboard:](./ProtoNet-miniImageNet--ravi-resnet12-5-1-Table2.yaml) | - | 74.65 ± 0.29 [:arrow_down:](https://drive.google.com/drive/folders/1fxPcT_QYI2dYAH0rR-bApeq4XmRnd3WY?usp=sharing) [:clipboard:](./ProtoNet-miniImageNet--ravi-resnet12-5-5-Table2.yaml) | Table.2 |
+
+
+
+|   | Embedding | :book: *tiered*ImageNet (5,1) | :computer: *tiered*ImageNet (5,1) | :book:*tiered*ImageNet (5,5) | :computer: *tiered*ImageNet (5,5) | :memo: Comments  |
+|---|-----------|--------------------|--------------------|--------------------|--------------------|---|
+| 1 | Conv64F | - | 46.11 ± 0.39 [:arrow_down:](https://drive.google.com/drive/folders/1GSs680y1hMixEbz6HWCZjRqs7SxKIQEF?usp=sharing) [:clipboard:](./ProtoNet-tiered_imagenet-Conv64F-5-1-Table2.yaml) | - | 70.07 ± 0.34 [:arrow_down:](https://drive.google.com/drive/folders/1AjeIFPB2K5W93lYrU2iulTX2MKxTogd_?usp=sharing) [:clipboard:](./ProtoNet-tiered_imagenet-Conv64F-5-5-Table2.yaml) | Table.2 |

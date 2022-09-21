@@ -5,25 +5,16 @@ includes:
   - headers/model.yaml
   - headers/optimizer.yaml
 
-device_ids: 0
-n_gpu: 1
-
-epoch: 200
-train_episode: 2000
-test_episode: 600
+deterministic: False
 
 way_num: 5
 shot_num: 5
 query_num: 15
+test_way: 5 # use ~ -> test_* = *_num
+test_shot: 5
+test_query: 15
 
-episode_size: 4
-
-optimizer:
-  name: Adam
-  kwargs:
-    lr: 0.0001
-    weight_decay: 5e-4
-  other: ~
+episode_size: 1
 
 backbone:
   name: Conv64F
@@ -41,6 +32,7 @@ classifier:
     d_theta: 256
     sample_num: 10
     drop_rate: 0.5
+
 
 # backbone:
 #   name: resnet12

@@ -5,18 +5,17 @@ includes:
   - headers/model.yaml
   - headers/optimizer.yaml
   - classifiers/Proto.yaml
+  - backbones/resnet12.yaml
 
+
+device_ids: 0,1
+n_gpu: 2
 way_num: 5
 shot_num: 1
 query_num: 15
-episode_size: 1
-train_episode: 2000
-test_episode: 600
-
-device_ids: 5
-n_gpu: 1
-epoch: 200
-
+episode_size: 2
+train_episode: 100
+test_episode: 100
 
 backbone:
   name: Conv64F
@@ -44,50 +43,3 @@ backbone:
 #     dropRate: 0.0
 #     avg_pool: True
 #     is_flatten: True
-
-# optimizer:
-#   name: AdamW
-#   kwargs:
-#     lr: 1e-3
-#     weight_decay: 5e-2
-#   other: ~
-
-# lr_scheduler:
-#   name: CosineAnnealingLR
-#   kwargs:
-#     T_max: 200
-#     eta_min: 0
-
-# backbone:
-#   name: swin_mini
-#   kwargs:
-#     hidden_dim: 16
-#     window_size: 7
-#     pool: False
-#     layers:
-#       - 2
-#       - 2
-#       - 2
-#       - 2
-#     heads:
-#       - 1
-#       - 2
-#       - 2
-#       - 4
-#     downscaling_factors:
-#       - 3
-#       - 2
-#       - 2
-#       - 1
-
-# backbone:
-#   name: ViT
-#   kwargs:
-#     image_size: 84
-#     patch_size: 28
-#     dim: 1024
-#     depth: 6
-#     heads: 16
-#     mlp_dim: 640
-#     dropout: 0.1
-#     emb_dropout: 0.1

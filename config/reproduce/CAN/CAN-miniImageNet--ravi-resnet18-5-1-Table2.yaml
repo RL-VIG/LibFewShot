@@ -1,0 +1,71 @@
+augment: true
+augment_times: 1
+augment_times_query: 1
+backbone:
+  kwargs:
+    avg_pool: false
+    is_feature: false
+    is_flatten: false
+  name: resnet18
+batch_size: 128
+classifier:
+  kwargs:
+    HW: 11
+    nFeat: 512
+    num_class: 64
+    scale_cls: 7
+  name: CAN
+data_root: /data/wzy/miniImageNet--ravi
+deterministic: true
+device_ids: 0,1
+episode_size: 8
+epoch: 100
+image_size: 84
+includes:
+- headers/data.yaml
+- headers/device.yaml
+- headers/misc.yaml
+- headers/model.yaml
+- headers/optimizer.yaml
+- classifiers/CAN.yaml
+- backbones/Conv64F.yaml
+log_interval: 100
+log_level: info
+log_name: null
+log_paramerter: false
+lr_scheduler:
+  kwargs:
+    T_max: 100
+    eta_min: 0
+  name: CosineAnnealingLR
+n_gpu: 2
+optimizer:
+  kwargs:
+    lr: 0.1
+    momentum: 0.9
+    nesterov: true
+    weight_decay: 0.0005
+  name: SGD
+  other: null
+parallel_part:
+- emb_func
+pretrain_path: null
+query_num: 15
+rank: 0
+result_root: ./results
+resume: false
+save_interval: 10
+save_part:
+- emb_func
+seed: 2147483647
+shot_num: 1
+tag: null
+tb_scale: 3.3333333333333335
+test_episode: 600
+test_epoch: 5
+test_query: 15
+test_shot: 1
+test_way: 5
+train_episode: 2000
+use_memory: false
+way_num: 5

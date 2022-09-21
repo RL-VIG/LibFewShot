@@ -1,7 +1,7 @@
-data_root: /data/wzy/miniImageNet--ravi
+data_root: /data/fewshot/miniImageNet--ravi
 image_size: 84
 use_memory: False
 augment: True
 augment_times: 1
 augment_times_query: 1
-workers: 8
+workers: 8 # number of workers for dataloader in all threads
