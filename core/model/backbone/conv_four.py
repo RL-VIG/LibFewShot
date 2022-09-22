@@ -26,6 +26,7 @@ class Conv64F(nn.Module):
         negative_slope=0.2,
         last_pool=True,
         maxpool_last2=True,
+        use_running_statistics=True,
     ):
         super(Conv64F, self).__init__()
 
@@ -41,26 +42,26 @@ class Conv64F(nn.Module):
 
         self.layer1 = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(64),
+            nn.BatchNorm2d(64, track_running_stats=use_running_statistics),
             activation,
             nn.MaxPool2d(kernel_size=2, stride=2),
         )
         self.layer2 = nn.Sequential(
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(64),
+            nn.BatchNorm2d(64, track_running_stats=use_running_statistics),
             activation,
             nn.MaxPool2d(kernel_size=2, stride=2),
         )
         self.layer3 = nn.Sequential(
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(64),
+            nn.BatchNorm2d(64, track_running_stats=use_running_statistics),
             activation,
         )
         self.layer3_maxpool = nn.MaxPool2d(kernel_size=2, stride=2)
 
         self.layer4 = nn.Sequential(
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(64),
+            nn.BatchNorm2d(64, track_running_stats=use_running_statistics),
             activation,
         )
         self.layer4_pool = nn.MaxPool2d(kernel_size=2, stride=2)
