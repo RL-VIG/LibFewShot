@@ -60,14 +60,18 @@ class Trainer(object):
             self.val_loader,
             self.test_loader,
         ) = self._init_dataloader(config)
-        self.optimizer, self.scheduler, self.from_epoch = self._init_optim(config)
+        (
+            self.optimizer,
+            self.scheduler,
+            self.from_epoch,
+            self.best_val_acc,
+            self.best_test_acc,
+        ) = self._init_optim(config)
 
     def train_loop(self, rank):
         """
         The normal train loop: train-val-test and save model when val-acc increases.
         """
-        best_val_acc = float("-inf")
-        best_test_acc = float("-inf")
         experiment_begin = time()
         for epoch_idx in range(self.from_epoch + 1, self.config["epoch"]):
             if self.distribute and self.model_type == ModelType.FINETUNING:
@@ -78,18 +82,18 @@ class Trainer(object):
             print(" * Acc@1 {:.3f} ".format(train_acc))
             print("============ Validation on the val set ============")
             val_acc = self._validate(epoch_idx, is_test=False)
-            print(" * Acc@1 {:.3f} Best acc {:.3f}".format(val_acc, best_val_acc))
+            print(" * Acc@1 {:.3f} Best acc {:.3f}".format(val_acc, self.best_val_acc))
             print("============ Testing on the test set ============")
             test_acc = self._validate(epoch_idx, is_test=True)
-            print(" * Acc@1 {:.3f} Best acc {:.3f}".format(test_acc, best_test_acc))
+            print(" * Acc@1 {:.3f} Best acc {:.3f}".format(test_acc, self.best_test_acc))
             time_scheduler = self._cal_time_scheduler(experiment_begin, epoch_idx)
             print(" * Time: {}".format(time_scheduler))
             self.scheduler.step()
 
             if self.rank == 0:
-                if val_acc > best_val_acc:
-                    best_val_acc = val_acc
-                    best_test_acc = test_acc
+                if val_acc > self.best_val_acc:
+                    self.best_val_acc = val_acc
+                    self.best_test_acc = test_acc
                     self._save_model(epoch_idx, SaveType.BEST)
 
                 if epoch_idx != 0 and epoch_idx % self.config["save_interval"] == 0:
@@ -280,32 +284,38 @@ class Trainer(object):
         Returns:
             tuple: A tuple of (result_path, log_path, checkpoints_path, viz_path).
         """
-        # you should ensure that data_root name contains its true name
-        base_dir = "{}-{}-{}-{}-{}".format(
-            config["classifier"]["name"],
-            config["data_root"].split("/")[-1],
-            config["backbone"]["name"],
-            config["way_num"],
-            config["shot_num"],
-        )
-        result_dir = (
-            base_dir
-            + "{}-{}".format(
-                ("-" + config["tag"]) if config["tag"] is not None else "", get_local_time()
+        if self.config["resume"]:
+            result_path = self.config["resume_path"]
+            checkpoints_path = os.path.join(result_path, "checkpoints")
+            log_path = os.path.join(result_path, "log_files")
+            viz_path = os.path.join(log_path, "tfboard_files")
+        else:
+            # you should ensure that data_root name contains its true name
+            base_dir = "{}-{}-{}-{}-{}".format(
+                config["classifier"]["name"],
+                config["data_root"].split("/")[-1],
+                config["backbone"]["name"],
+                config["way_num"],
+                config["shot_num"],
             )
-            if config["log_name"] is None
-            else config["log_name"]
-        )
-        result_path = os.path.join(config["result_root"], result_dir)
-        # print("Result DIR: " + result_path)
-        checkpoints_path = os.path.join(result_path, "checkpoints")
-        log_path = os.path.join(result_path, "log_files")
-        viz_path = os.path.join(log_path, "tfboard_files")
-        if self.rank == 0:
-            create_dirs([result_path, log_path, checkpoints_path, viz_path])
+            result_dir = (
+                base_dir
+                + "{}-{}".format(
+                    ("-" + config["tag"]) if config["tag"] is not None else "", get_local_time()
+                )
+                if config["log_name"] is None
+                else config["log_name"]
+            )
+            result_path = os.path.join(config["result_root"], result_dir)
+            # print("Result DIR: " + result_path)
+            checkpoints_path = os.path.join(result_path, "checkpoints")
+            log_path = os.path.join(result_path, "log_files")
+            viz_path = os.path.join(log_path, "tfboard_files")
+            if self.rank == 0:
+                create_dirs([result_path, log_path, checkpoints_path, viz_path])
 
-            with open(os.path.join(result_path, "config.yaml"), "w", encoding="utf-8") as fout:
-                fout.write(yaml.dump(config))
+                with open(os.path.join(result_path, "config.yaml"), "w", encoding="utf-8") as fout:
+                    fout.write(yaml.dump(config))
 
         init_logger_config(
             config["log_level"],
@@ -477,6 +487,8 @@ class Trainer(object):
             )
         print(optimizer)
         from_epoch = -1
+        best_val_acc = float("-inf")
+        best_test_acc = float("-inf")
         if self.config["resume"]:
             resume_path = os.path.join(self.config["resume_path"], "checkpoints", "model_last.pth")
             print(
@@ -490,9 +502,11 @@ class Trainer(object):
             state_dict = all_state_dict["lr_scheduler"]
             scheduler.load_state_dict(state_dict)
             from_epoch = all_state_dict["epoch"]
+            best_val_acc = all_state_dict["best_val_acc"]
+            best_test_acc = all_state_dict["best_val_acc"]
             print("model resume from the epoch {}".format(from_epoch))
 
-        return optimizer, scheduler, from_epoch
+        return optimizer, scheduler, from_epoch, best_val_acc, best_test_acc
 
     def _init_device(self, rank, config):
         """
@@ -535,6 +549,8 @@ class Trainer(object):
             self.checkpoints_path,
             "model",
             epoch,
+            self.best_val_acc,
+            self.best_test_acc,
             save_type,
             len(self.list_ids) > 1,
         )
@@ -552,6 +568,8 @@ class Trainer(object):
                             self.checkpoints_path,
                             save_part,
                             epoch,
+                            self.best_val_acc,
+                            self.best_test_acc,
                             save_type,
                             len(self.list_ids) > 1,
                         )
