@@ -1,0 +1,8 @@
+classifier:
+  name: BOIL
+  kwargs:
+    inner_param:
+      classifier_lr: 1e-2
+      extractor_lr: 1e-2
+    feat_dim: 1600
+    testing_method: NIL  # NIL for NIL-testing (after update once), Directly for directly test and Once_update for update once
