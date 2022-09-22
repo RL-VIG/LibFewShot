@@ -74,7 +74,9 @@ class MTLPretrain(FinetuningModel):  # use image-size=80 in repo
         with torch.no_grad():
             feat = self.emb_func(image)
 
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=1
+        )
         episode_size, _, c = support_feat.size()
         output_list = []
         for i in range(episode_size):
@@ -127,6 +129,8 @@ class MTLPretrain(FinetuningModel):  # use image-size=80 in repo
             logit = self.base_learner(support_feat, fast_parameters)
             loss = F.cross_entropy(logit, support_target)
             grad = torch.autograd.grad(loss, fast_parameters)
-            fast_parameters = list(map(lambda p: p[1] - 0.01 * p[0], zip(grad, fast_parameters)))
+            fast_parameters = list(
+                map(lambda p: p[1] - 0.01 * p[0], zip(grad, fast_parameters))
+            )
 
         return fast_parameters

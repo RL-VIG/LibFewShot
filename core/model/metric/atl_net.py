@@ -49,7 +49,10 @@ class AEAModule(nn.Module):
         t, wq, hw, c = x.size()
 
         # t, wq, hw, c -> t, wq, hw, 1
-        clamp_value = self.f_psi(x.reshape(t * wq * hw, c)) * self.value_interval + self.from_value
+        clamp_value = (
+            self.f_psi(x.reshape(t * wq * hw, c)) * self.value_interval
+            + self.from_value
+        )
         clamp_value = clamp_value.reshape(t, wq, hw, 1)
         clamp_fx = torch.sigmoid(self.scale_value * (f_x - clamp_value))
         attention_mask = F.normalize(clamp_fx, p=1, dim=-1)
@@ -121,7 +124,9 @@ class ATL_Layer(nn.Module):
 
         # t, wq, c, hw -> t, wq, hw, c
         # t, ws, c, hw -> t, c, ws, hw -> t, 1, c, wshw
-        query_feat = query_feat.reshape(t, wq, c, h * w).permute(0, 1, 3, 2).contiguous()
+        query_feat = (
+            query_feat.reshape(t, wq, c, h * w).permute(0, 1, 3, 2).contiguous()
+        )
         support_feat = (
             support_feat.reshape(t, ws, c, h * w)
             .permute(0, 2, 1, 3)
@@ -176,7 +181,9 @@ class ATLNet(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
         feat = self.emb_func(image)
         (
             support_feat,
@@ -185,9 +192,9 @@ class ATLNet(MetricModel):
             query_target,
         ) = self.split_by_episode(feat, mode=2)
 
-        output = self.atlLayer(self.way_num, self.shot_num, query_feat, support_feat).reshape(
-            episode_size * self.way_num * self.query_num, self.way_num
-        )
+        output = self.atlLayer(
+            self.way_num, self.shot_num, query_feat, support_feat
+        ).reshape(episode_size * self.way_num * self.query_num, self.way_num)
         acc = accuracy(output, query_target.reshape(-1))
 
         return output, acc
@@ -200,7 +207,9 @@ class ATLNet(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
         feat = self.emb_func(image)
         (
             support_feat,
@@ -209,9 +218,9 @@ class ATLNet(MetricModel):
             query_target,
         ) = self.split_by_episode(feat, mode=2)
 
-        output = self.atlLayer(self.way_num, self.shot_num, query_feat, support_feat).reshape(
-            episode_size * self.way_num * self.query_num, self.way_num
-        )
+        output = self.atlLayer(
+            self.way_num, self.shot_num, query_feat, support_feat
+        ).reshape(episode_size * self.way_num * self.query_num, self.way_num)
         loss = self.loss_func(output, query_target.reshape(-1))
         acc = accuracy(output, query_target.reshape(-1))
 

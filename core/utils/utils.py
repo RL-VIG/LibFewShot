@@ -42,7 +42,9 @@ class AverageMeter(object):
 
     def __init__(self, name, keys, writer=None):
         self.name = name
-        self._data = pd.DataFrame(index=keys, columns=["last_value", "total", "counts", "average"])
+        self._data = pd.DataFrame(
+            index=keys, columns=["last_value", "total", "counts", "average"]
+        )
         self.writer = writer
         self.reset()
 
@@ -326,7 +328,7 @@ class data_prefetcher:
 
 # https://github.com/ildoonet/pytorch-gradual-warmup-lr/blob/master/warmup_scheduler/scheduler.py
 class GradualWarmupScheduler(_LRScheduler):
-    """ Gradually warm-up(increasing) learning rate in optimizer.
+    """Gradually warm-up(increasing) learning rate in optimizer.
     Proposed in 'Accurate, Large Minibatch SGD: Training ImageNet in 1 Hour'.
     Args:
         optimizer (Optimizer): Wrapped optimizer.
@@ -351,9 +353,11 @@ class GradualWarmupScheduler(_LRScheduler):
 
         if self.warmup != 0:
             if scheduler_name == "CosineAnnealingLR":
-                scheduler_dict["T_max"] -= (self.warmup - 1)
+                scheduler_dict["T_max"] -= self.warmup - 1
             elif scheduler_name == "MultiStepLR":
-                scheduler_dict["milestones"] = [step - self.warmup + 1 for step in scheduler_dict["milestones"]]
+                scheduler_dict["milestones"] = [
+                    step - self.warmup + 1 for step in scheduler_dict["milestones"]
+                ]
 
         if scheduler_name == "LambdaLR":
             return torch.optim.lr_scheduler.LambdaLR(
@@ -362,15 +366,19 @@ class GradualWarmupScheduler(_LRScheduler):
                 last_epoch=-1,
             )
 
-        return getattr(torch.optim.lr_scheduler, scheduler_name)(optimizer=self.optimizer, **scheduler_dict)
-
+        return getattr(torch.optim.lr_scheduler, scheduler_name)(
+            optimizer=self.optimizer, **scheduler_dict
+        )
 
     def get_lr(self):
         if self.last_epoch >= self.warmup - 1:
             self.finish_warmup = True
             return self.after_scheduler.get_last_lr()
 
-        return [base_lr * float(self.last_epoch+1) / self.warmup for base_lr in self.base_lrs]
+        return [
+            base_lr * float(self.last_epoch + 1) / self.warmup
+            for base_lr in self.base_lrs
+        ]
         # if self.last_epoch > self.total_epoch:
         #     if self.after_scheduler:
         #         if not self.finished:
@@ -387,11 +395,17 @@ class GradualWarmupScheduler(_LRScheduler):
     def step_ReduceLROnPlateau(self, metrics, epoch=None):
         if epoch is None:
             epoch = self.last_epoch + 1
-        self.last_epoch = epoch if epoch != 0 else 1  # ReduceLROnPlateau is called at the end of epoch, whereas others are called at beginning
+        self.last_epoch = (
+            epoch if epoch != 0 else 1
+        )  # ReduceLROnPlateau is called at the end of epoch, whereas others are called at beginning
         if self.last_epoch <= self.total_epoch:
-            warmup_lr = [base_lr * ((self.multiplier - 1.) * self.last_epoch / self.total_epoch + 1.) for base_lr in self.base_lrs]
+            warmup_lr = [
+                base_lr
+                * ((self.multiplier - 1.0) * self.last_epoch / self.total_epoch + 1.0)
+                for base_lr in self.base_lrs
+            ]
             for param_group, lr in zip(self.optimizer.param_groups, warmup_lr):
-                param_group['lr'] = lr
+                param_group["lr"] = lr
         else:
             if epoch is None:
                 self.after_scheduler.step(metrics, None)

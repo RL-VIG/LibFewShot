@@ -87,15 +87,18 @@ class BasicBlock(nn.Module):
                 )
                 gamma = (
                     (1 - keep_rate)
-                    / self.block_size ** 2
-                    * feat_size ** 2
+                    / self.block_size**2
+                    * feat_size**2
                     / (feat_size - self.block_size + 1) ** 2
                 )
                 out = self.DropBlock(out, gamma=gamma)
             else:
-                out = F.dropout(out, p=self.drop_rate, training=self.training, inplace=True)
+                out = F.dropout(
+                    out, p=self.drop_rate, training=self.training, inplace=True
+                )
 
         return out
+
 
 class BasicBlockWithoutResidual(nn.Module):
     expansion = 1
@@ -156,15 +159,19 @@ class BasicBlockWithoutResidual(nn.Module):
                 )
                 gamma = (
                     (1 - keep_rate)
-                    / self.block_size ** 2
-                    * feat_size ** 2
+                    / self.block_size**2
+                    * feat_size**2
                     / (feat_size - self.block_size + 1) ** 2
                 )
                 out = self.DropBlock(out, gamma=gamma)
             else:
-                out = F.dropout(out, p=self.drop_rate, training=self.training, inplace=True)
+                out = F.dropout(
+                    out, p=self.drop_rate, training=self.training, inplace=True
+                )
 
         return out
+
+
 class ResNet(nn.Module):
     def __init__(
         self,
@@ -180,8 +187,12 @@ class ResNet(nn.Module):
         self.inplanes = 3
         super(ResNet, self).__init__()
 
-        self.layer1 = self._make_layer(blocks[0], planes[0], stride=2, drop_rate=drop_rate)
-        self.layer2 = self._make_layer(blocks[1], planes[1], stride=2, drop_rate=drop_rate)
+        self.layer1 = self._make_layer(
+            blocks[0], planes[0], stride=2, drop_rate=drop_rate
+        )
+        self.layer2 = self._make_layer(
+            blocks[1], planes[1], stride=2, drop_rate=drop_rate
+        )
 
         self.layer3 = self._make_layer(
             blocks[2],
@@ -210,7 +221,9 @@ class ResNet(nn.Module):
         self.is_flatten = is_flatten
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="leaky_relu")
+                nn.init.kaiming_normal_(
+                    m.weight, mode="fan_out", nonlinearity="leaky_relu"
+                )
             elif isinstance(m, nn.BatchNorm2d):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
@@ -267,7 +280,9 @@ class ResNet(nn.Module):
         return x
 
 
-def resnet12(keep_prob=1.0, avg_pool=True, is_flatten=True, maxpool_last2=True, **kwargs):
+def resnet12(
+    keep_prob=1.0, avg_pool=True, is_flatten=True, maxpool_last2=True, **kwargs
+):
     """Constructs a ResNet-12 model."""
     model = ResNet(
         [BasicBlock, BasicBlock, BasicBlock, BasicBlock],
@@ -278,7 +293,11 @@ def resnet12(keep_prob=1.0, avg_pool=True, is_flatten=True, maxpool_last2=True, 
         **kwargs
     )
     return model
-def resnet12woLSC(keep_prob=1.0, avg_pool=True, is_flatten=True, maxpool_last2=True, **kwargs):
+
+
+def resnet12woLSC(
+    keep_prob=1.0, avg_pool=True, is_flatten=True, maxpool_last2=True, **kwargs
+):
     """Constructs a ResNet-12 model."""
     model = ResNet(
         [BasicBlock, BasicBlock, BasicBlock, BasicBlockWithoutResidual],

@@ -36,7 +36,9 @@ def cal_log_prob(x, mean, var):
     eps = 1e-20
     log_unnormalized = -0.5 * ((x - mean) / (var + eps)) ** 2
     # log_normalization = torch.log(var + eps) + 0.5 * math.log(2 * math.pi)
-    log_normalization = torch.log(var + eps) + 0.5 * torch.log(2 * torch.tensor(math.pi))
+    log_normalization = torch.log(var + eps) + 0.5 * torch.log(
+        2 * torch.tensor(math.pi)
+    )
     return log_unnormalized - log_normalization
 
 
@@ -148,7 +150,9 @@ class LEO(MetaModel):
 
         with torch.no_grad():
             feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=1
+        )
         episode_size = support_feat.size(0)
 
         latents, kl_div, encoder_penalty = self.set_forward_adaptation(
@@ -173,7 +177,9 @@ class LEO(MetaModel):
 
         with torch.no_grad():
             feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=1
+        )
         episode_size = support_feat.size(0)
 
         latent, kl_div, encoder_penalty = self.set_forward_adaptation(
@@ -184,7 +190,9 @@ class LEO(MetaModel):
         classifier_weight = sample(classifier_weight, self.feat_dim)
         classifier_weight = classifier_weight.permute([0, 2, 1])
 
-        classifier_weight = self.finetune(classifier_weight, support_feat, support_target)
+        classifier_weight = self.finetune(
+            classifier_weight, support_feat, support_target
+        )
 
         output = torch.bmm(query_feat, classifier_weight)
         output = output.contiguous().reshape(-1, self.way_num)
@@ -231,7 +239,8 @@ class LEO(MetaModel):
         for j in range(self.inner_para["finetune_iter"]):
             pred_loss.backward(retain_graph=True)
             classifier_weight = (
-                classifier_weight - self.inner_para["finetune_lr"] * classifier_weight.grad
+                classifier_weight
+                - self.inner_para["finetune_lr"] * classifier_weight.grad
             )
             classifier_weight.retain_grad()
 

@@ -57,12 +57,14 @@ class DropBlock(nn.Module):
                 torch.arange(self.block_size).repeat(self.block_size),  # - left_padding
             ]
         ).t()
-        offsets = torch.cat((torch.zeros(self.block_size ** 2, 2).long(), offsets.long()), 1)
+        offsets = torch.cat(
+            (torch.zeros(self.block_size**2, 2).long(), offsets.long()), 1
+        )
         if torch.cuda.is_available():
             offsets = offsets.cuda()
 
         if nr_blocks > 0:
-            non_zero_idxs = non_zero_idxs.repeat(self.block_size ** 2, 1)
+            non_zero_idxs = non_zero_idxs.repeat(self.block_size**2, 1)
             offsets = offsets.repeat(nr_blocks, 1).view(-1, 4)
             offsets = offsets.long()
 

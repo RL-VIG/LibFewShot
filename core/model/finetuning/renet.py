@@ -37,7 +37,9 @@ class CCA(nn.Module):
             ch_out = planes[i]
             k_size = kernel_sizes[i]
             nn_modules.append(
-                SepConv4d(in_planes=ch_in, out_planes=ch_out, ksize=k_size, do_padding=True)
+                SepConv4d(
+                    in_planes=ch_in, out_planes=ch_out, ksize=k_size, do_padding=True
+                )
             )
             if i != num_layers - 1:
                 nn_modules.append(nn.ReLU(inplace=True))
@@ -49,7 +51,9 @@ class CCA(nn.Module):
         # because of the ReLU layers in between linear layers,
         # this operation is different than convolving a single time with the filters+filters^T
         # and therefore it makes sense to do this.
-        x = self.conv(x) + self.conv(x.permute(0, 1, 4, 5, 2, 3)).permute(0, 1, 4, 5, 2, 3)
+        x = self.conv(x) + self.conv(x.permute(0, 1, 4, 5, 2, 3)).permute(
+            0, 1, 4, 5, 2, 3
+        )
         return x
 
 
@@ -57,7 +61,13 @@ class SepConv4d(nn.Module):
     """approximates 3 x 3 x 3 x 3 kernels via two subsequent 3 x 3 x 1 x 1 and 1 x 1 x 3 x 3"""
 
     def __init__(
-        self, in_planes, out_planes, stride=(1, 1, 1), ksize=3, do_padding=True, bias=False
+        self,
+        in_planes,
+        out_planes,
+        stride=(1, 1, 1),
+        ksize=3,
+        do_padding=True,
+        bias=False,
     ):
         super(SepConv4d, self).__init__()
         self.isproj = False
@@ -120,11 +130,18 @@ class SepConv4d(nn.Module):
 
 class SCR(nn.Module):
     def __init__(
-        self, planes=[640, 64, 64, 64, 640], stride=(1, 1, 1), ksize=3, do_padding=False, bias=False
+        self,
+        planes=[640, 64, 64, 64, 640],
+        stride=(1, 1, 1),
+        ksize=3,
+        do_padding=False,
+        bias=False,
     ):
         super(SCR, self).__init__()
         self.ksize = (ksize,) * 4 if isinstance(ksize, int) else ksize
-        padding1 = (0, self.ksize[2] // 2, self.ksize[3] // 2) if do_padding else (0, 0, 0)
+        padding1 = (
+            (0, self.ksize[2] // 2, self.ksize[3] // 2) if do_padding else (0, 0, 0)
+        )
 
         self.conv1x1_in = nn.Sequential(
             nn.Conv2d(planes[0], planes[1], kernel_size=1, bias=False, padding=0),
@@ -193,7 +210,9 @@ class SelfCorrelationComputation(nn.Module):
 
         x = self.unfold(x)  # b, cuv, h, w
         x = x.view(b, c, self.kernel_size[0], self.kernel_size[1], h, w)
-        x = x * identity.unsqueeze(2).unsqueeze(2)  # b, c, u, v, h, w * b, c, 1, 1, h, w
+        x = x * identity.unsqueeze(2).unsqueeze(
+            2
+        )  # b, c, u, v, h, w * b, c, 1, 1, h, w
         x = x.permute(0, 1, 4, 5, 2, 3).contiguous()  # b, c, h, w, u, v
         return x
 
@@ -214,7 +233,9 @@ class SCRLayer(nn.Module):
 
 
 class CCALayer(nn.Module):
-    def __init__(self, feat_dim, way_num, shot_num, query_num, temperature, temperature_attn):
+    def __init__(
+        self, feat_dim, way_num, shot_num, query_num, temperature, temperature_attn
+    ):
         super(CCALayer, self).__init__()
         self.way_num = way_num
         self.shot_num = shot_num
@@ -224,7 +245,9 @@ class CCALayer(nn.Module):
 
         self.cca_module = CCA(kernel_sizes=[3, 3], planes=[16, 1])
         self.cca_1x1 = nn.Sequential(
-            nn.Conv2d(feat_dim, 64, kernel_size=1, bias=False), nn.BatchNorm2d(64), nn.ReLU()
+            nn.Conv2d(feat_dim, 64, kernel_size=1, bias=False),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
         )
 
     def gaussian_normalize(self, x, dim, eps=1e-05):
@@ -320,7 +343,9 @@ class CCALayer(nn.Module):
 
 
 class RENet(FinetuningModel):
-    def __init__(self, feat_dim, lambda_epi, temperature, temperature_attn, num_classes, **kwargs):
+    def __init__(
+        self, feat_dim, lambda_epi, temperature, temperature_attn, num_classes, **kwargs
+    ):
         super(RENet, self).__init__(**kwargs)
         self.lambda_epi = lambda_epi
         self.temperature = temperature
@@ -368,9 +393,9 @@ class RENet(FinetuningModel):
             ep_feat, mode=2
         )
         # ws c h w ; wq c h w
-        _,_,c,h,w = support_feat.shape    
-        support_feat = support_feat.reshape([-1,c,h,w])
-        query_feat = query_feat.reshape([-1,c,h,w])
+        _, _, c, h, w = support_feat.shape
+        support_feat = support_feat.reshape([-1, c, h, w])
+        query_feat = query_feat.reshape([-1, c, h, w])
         logits, qry_pooled = self.cca_layer(support_feat, query_feat)
 
         acc = accuracy(logits, query_target.reshape(-1))
@@ -382,7 +407,12 @@ class RENet(FinetuningModel):
         :param batch:
         :return:
         """
-        ep_images, ep_global_targets ,g_images, g_global_targets= batch# RENet uses both episode and general dataloaders
+        (
+            ep_images,
+            ep_global_targets,
+            g_images,
+            g_global_targets,
+        ) = batch  # RENet uses both episode and general dataloaders
         ep_images = ep_images.to(self.device)  # ew(qs) c h w
         g_images = g_images.to(self.device)  # b c h w
         ep_global_targets = ep_global_targets.to(self.device)
@@ -400,9 +430,9 @@ class RENet(FinetuningModel):
             ep_feat, mode=2
         )
         # ws c h w ; wq c h w
-        _,_,c,h,w = support_feat.shape    
-        support_feat = support_feat.reshape([-1,c,h,w])
-        query_feat = query_feat.reshape([-1,c,h,w])
+        _, _, c, h, w = support_feat.shape
+        support_feat = support_feat.reshape([-1, c, h, w])
+        query_feat = query_feat.reshape([-1, c, h, w])
         logits, qry_pooled = self.cca_layer(support_feat, query_feat)
         abs_logits = self.fc(qry_pooled)
         epi_loss = self.loss_func(logits, query_target.reshape(-1))

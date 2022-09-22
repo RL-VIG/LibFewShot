@@ -65,9 +65,9 @@ class Config(object):
         config_dict = dict()
         loader = yaml.SafeLoader
         loader.add_implicit_resolver(
-            u"tag:yaml.org,2002:float",
+            "tag:yaml.org,2002:float",
             re.compile(
-                u"""^(?:
+                """^(?:
                      [-+]?[0-9][0-9_]*\\.[0-9_]*(?:[eE][-+]?[0-9]+)?
                     |[-+]?[0-9][0-9_]*[eE][-+]?[0-9]+
                     |\\.[0-9_]+(?:[eE][-+][0-9]+)?
@@ -76,7 +76,7 @@ class Config(object):
                     |\\.(?:nan|NaN|NAN))$""",
                 re.X,
             ),
-            list(u"-+0123456789."),
+            list("-+0123456789."),
         )
 
         if config_file is not None:
@@ -175,7 +175,9 @@ class Config(object):
             dic1 = dict()
         for k in dic2.keys():
             if isinstance(dic2[k], dict):
-                dic1[k] = self._recur_update(dic1[k] if k in dic1.keys() else None, dic2[k])
+                dic1[k] = self._recur_update(
+                    dic1[k] if k in dic1.keys() else None, dic2[k]
+                )
             else:
                 dic1[k] = dic2[k]
         return dic1
@@ -225,18 +227,25 @@ class Config(object):
             while self.is_port_in_use("127.0.0.1", port):
                 old_port = port
                 port = str(int(port) + 1)
-                print("Warning: Port {} is already in use, switch to port {}".format(old_port, port))
+                print(
+                    "Warning: Port {} is already in use, switch to port {}".format(
+                        old_port, port
+                    )
+                )
             config_dict["port"] = port
 
         # Modify or add some configs
         config_dict["resume"] = self.is_resume
         if self.is_resume:
             config_dict["resume_path"] = self.config_file[: -1 * len("/config.yaml")]
-        config_dict["tb_scale"] = float(config_dict["train_episode"]) / config_dict["test_episode"]
+        config_dict["tb_scale"] = (
+            float(config_dict["train_episode"]) / config_dict["test_episode"]
+        )
 
         return config_dict
 
-    def is_port_in_use(self,host, port):
+    def is_port_in_use(self, host, port):
         import socket
+
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             return s.connect_ex((host, int(port))) == 0

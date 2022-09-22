@@ -185,9 +185,9 @@ class SubPolicy(object):
         # from https://stackoverflow.com/questions/5252170/specify-image-filling-color-when-rotating-in-python-with-pil-and-setting-expand
         def rotate_with_fill(img, magnitude):
             rot = img.convert("RGBA").rotate(magnitude)
-            return Image.composite(rot, Image.new("RGBA", rot.size, (128,) * 4), rot).convert(
-                img.mode
-            )
+            return Image.composite(
+                rot, Image.new("RGBA", rot.size, (128,) * 4), rot
+            ).convert(img.mode)
 
         func = {
             "shearX": lambda img, magnitude: img.transform(

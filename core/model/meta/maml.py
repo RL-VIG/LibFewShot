@@ -53,9 +53,12 @@ class MAML(MetaModel):
     def set_forward(self, batch):
         image, global_target = batch  # unused global_target
         image = image.to(self.device)
-        support_image, query_image, support_target, query_target = self.split_by_episode(
-            image, mode=2
-        )
+        (
+            support_image,
+            query_image,
+            support_target,
+            query_target,
+        ) = self.split_by_episode(image, mode=2)
         episode_size, _, c, h, w = support_image.size()
 
         output_list = []
@@ -77,9 +80,12 @@ class MAML(MetaModel):
     def set_forward_loss(self, batch):
         image, global_target = batch  # unused global_target
         image = image.to(self.device)
-        support_image, query_image, support_target, query_target = self.split_by_episode(
-            image, mode=2
-        )
+        (
+            support_image,
+            query_image,
+            support_target,
+            query_target,
+        ) = self.split_by_episode(image, mode=2)
         episode_size, _, c, h, w = support_image.size()
 
         output_list = []
@@ -107,7 +113,11 @@ class MAML(MetaModel):
 
         self.emb_func.train()
         self.classifier.train()
-        for i in range(self.inner_param["train_iter"] if self.training else self.inner_param["test_iter"]):
+        for i in range(
+            self.inner_param["train_iter"]
+            if self.training
+            else self.inner_param["test_iter"]
+        ):
             output = self.forward_output(support_set)
             loss = self.loss_func(output, support_target)
             grad = torch.autograd.grad(loss, fast_parameters, create_graph=True)

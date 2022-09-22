@@ -47,11 +47,19 @@ class _ConvNdMtl(Module):
         self.groups = groups
         self.MTL = MTL
         if transposed:
-            self.weight = Parameter(torch.Tensor(in_channels, out_channels // groups, *kernel_size))
-            self.mtl_weight = Parameter(torch.ones(in_channels, out_channels // groups, 1, 1))
+            self.weight = Parameter(
+                torch.Tensor(in_channels, out_channels // groups, *kernel_size)
+            )
+            self.mtl_weight = Parameter(
+                torch.ones(in_channels, out_channels // groups, 1, 1)
+            )
         else:
-            self.weight = Parameter(torch.Tensor(out_channels, in_channels // groups, *kernel_size))
-            self.mtl_weight = Parameter(torch.ones(out_channels, in_channels // groups, 1, 1))
+            self.weight = Parameter(
+                torch.Tensor(out_channels, in_channels // groups, *kernel_size)
+            )
+            self.mtl_weight = Parameter(
+                torch.ones(out_channels, in_channels // groups, 1, 1)
+            )
         if bias:
             self.bias = Parameter(torch.Tensor(out_channels))
             self.mtl_bias = Parameter(torch.zeros(out_channels))
@@ -81,7 +89,10 @@ class _ConvNdMtl(Module):
             self.mtl_bias.data.uniform_(0, 0)
 
     def extra_repr(self):
-        s = "{in_channels}, {out_channels}, kernel_size={kernel_size}" ", stride={stride}"
+        s = (
+            "{in_channels}, {out_channels}, kernel_size={kernel_size}"
+            ", stride={stride}"
+        )
         if self.padding != (0,) * len(self.padding):
             s += ", padding={padding}"
         if self.dilation != (1,) * len(self.dilation):
@@ -204,7 +215,9 @@ class ResNetMTLOfficial(nn.Module):
         self.Conv2d = Conv2dMtl
         block = BasicBlockMTL
         self.inplanes = iChannels = 80
-        self.conv1 = self.Conv2d(3, iChannels, kernel_size=3, stride=1, padding=1, MTL=MTL)
+        self.conv1 = self.Conv2d(
+            3, iChannels, kernel_size=3, stride=1, padding=1, MTL=MTL
+        )
         self.bn1 = nn.BatchNorm2d(iChannels)
         self.relu = nn.ReLU(inplace=True)
         self.layer1 = self._make_layer(block, 160, 4, stride=2, MTL=MTL)

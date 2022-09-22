@@ -37,15 +37,23 @@ class GeneralCollateFunction(object):
         try:
             images, targets = zip(*batch)
 
-            images = list(itertools.chain.from_iterable([[image] * self.times for image in images]))
+            images = list(
+                itertools.chain.from_iterable(
+                    [[image] * self.times for image in images]
+                )
+            )
             images = [self.trfms(image).unsqueeze(0) for image in images]
 
             targets = list(
-                itertools.chain.from_iterable([[target] * self.times for target in targets])
+                itertools.chain.from_iterable(
+                    [[target] * self.times for target in targets]
+                )
             )
             targets = [torch.tensor([target]) for target in targets]
 
-            assert len(images) == len(targets), "Inconsistent number of images and labels!"
+            assert len(images) == len(
+                targets
+            ), "Inconsistent number of images and labels!"
 
             images = torch.cat(images)
 
@@ -129,7 +137,11 @@ class FewShotAugCollateFunction(object):
                 cls[1] = cls[1] * self.times_q  # aug query
 
             # flatten and apply trfms
-            flat = lambda t: [x for sub in t for x in flat(sub)] if isinstance(t, Iterable) else [t]
+            flat = (
+                lambda t: [x for sub in t for x in flat(sub)]
+                if isinstance(t, Iterable)
+                else [t]
+            )
             images = flat(images_split_by_label_type)  # 1111111111122222222222
             # images = [self.trfms(image) for image in images]  # list of tensors([c, h, w])
             images = [

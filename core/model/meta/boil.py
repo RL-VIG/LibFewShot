@@ -53,9 +53,12 @@ class BOIL(MetaModel):
         image, global_target = batch  # unused global_target
         image, global_target = batch
         image = image.to(self.device)
-        support_image, query_image, support_target, query_target = self.split_by_episode(
-            image, mode=2
-        )
+        (
+            support_image,
+            query_image,
+            support_target,
+            query_target,
+        ) = self.split_by_episode(image, mode=2)
         episode_size, _, c, h, w = support_image.size()
 
         output_list = []
@@ -66,7 +69,9 @@ class BOIL(MetaModel):
             if self.testing_method == "Directly":
                 _, output = self.forward_output(episode_query_image)
             elif self.testing_method == "Once_update":
-                self.set_forward_adaptation(episode_support_image, episode_support_target)
+                self.set_forward_adaptation(
+                    episode_support_image, episode_support_target
+                )
                 _, output = self.forward_output(episode_query_image)
             elif self.testing_method == "NIL":
                 support_features, _ = self.forward_output(episode_support_image)
@@ -83,7 +88,6 @@ class BOIL(MetaModel):
                     'Unknown testing method. The testing_method should in ["NIL", "Directly","Once_update"]'
                 )
 
-
             output_list.append(output)
 
         output = torch.cat(output_list, dim=0)
@@ -93,9 +97,12 @@ class BOIL(MetaModel):
     def set_forward_loss(self, batch):
         image, global_target = batch  # unused global_target
         image = image.to(self.device)
-        support_image, query_image, support_target, query_target = self.split_by_episode(
-            image, mode=2
-        )
+        (
+            support_image,
+            query_image,
+            support_target,
+            query_target,
+        ) = self.split_by_episode(image, mode=2)
         episode_size, _, c, h, w = support_image.size()
 
         output_list = []
@@ -125,7 +132,9 @@ class BOIL(MetaModel):
         self.classifier.train()
         features, output = self.forward_output(support_set)
         loss = self.loss_func(output, support_target)
-        grad = torch.autograd.grad(loss, fast_parameters, create_graph=True, allow_unused=True)
+        grad = torch.autograd.grad(
+            loss, fast_parameters, create_graph=True, allow_unused=True
+        )
         fast_parameters = []
 
         for k, weight in enumerate(self.named_parameters()):

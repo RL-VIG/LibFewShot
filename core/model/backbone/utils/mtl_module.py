@@ -43,12 +43,16 @@ class _ConvNdMtl(nn.Module):
             self.weight = nn.Parameter(
                 torch.Tensor(in_channels, out_channels // groups, *kernel_size)
             )
-            self.mtl_weight = nn.Parameter(torch.ones(in_channels, out_channels // groups, 1, 1))
+            self.mtl_weight = nn.Parameter(
+                torch.ones(in_channels, out_channels // groups, 1, 1)
+            )
         else:
             self.weight = nn.Parameter(
                 torch.Tensor(out_channels, in_channels // groups, *kernel_size)
             )
-            self.mtl_weight = nn.Parameter(torch.ones(out_channels, in_channels // groups, 1, 1))
+            self.mtl_weight = nn.Parameter(
+                torch.ones(out_channels, in_channels // groups, 1, 1)
+            )
         if bias:
             self.bias = nn.Parameter(torch.Tensor(out_channels))
             self.mtl_bias = nn.Parameter(torch.zeros(out_channels))
@@ -78,7 +82,10 @@ class _ConvNdMtl(nn.Module):
             self.mtl_bias.data.uniform_(0, 0)
 
     def extra_repr(self):
-        s = "{in_channels}, {out_channels}, kernel_size={kernel_size}" ", stride={stride}"
+        s = (
+            "{in_channels}, {out_channels}, kernel_size={kernel_size}"
+            ", stride={stride}"
+        )
         if self.padding != (0,) * len(self.padding):
             s += ", padding={padding}"
         if self.dilation != (1,) * len(self.dilation):

@@ -105,14 +105,22 @@ class MultiHeadAttention(nn.Module):
         k = self.w_ks(k).reshape(sz_b, len_k, n_head, d_k)
         v = self.w_vs(v).reshape(sz_b, len_v, n_head, d_v)
 
-        q = q.permute(2, 0, 1, 3).contiguous().reshape(-1, len_q, d_k)  # (n*b) x lq x dk
-        k = k.permute(2, 0, 1, 3).contiguous().reshape(-1, len_k, d_k)  # (n*b) x lk x dk
-        v = v.permute(2, 0, 1, 3).contiguous().reshape(-1, len_v, d_v)  # (n*b) x lv x dv
+        q = (
+            q.permute(2, 0, 1, 3).contiguous().reshape(-1, len_q, d_k)
+        )  # (n*b) x lq x dk
+        k = (
+            k.permute(2, 0, 1, 3).contiguous().reshape(-1, len_k, d_k)
+        )  # (n*b) x lk x dk
+        v = (
+            v.permute(2, 0, 1, 3).contiguous().reshape(-1, len_v, d_v)
+        )  # (n*b) x lv x dv
 
         output, attn, log_attn = self.attention(q, k, v)
 
         output = output.reshape(n_head, sz_b, len_q, d_v)
-        output = output.permute(1, 2, 0, 3).contiguous().reshape(sz_b, len_q, -1)  # b x lq x (n*dv)
+        output = (
+            output.permute(1, 2, 0, 3).contiguous().reshape(sz_b, len_q, -1)
+        )  # b x lq x (n*dv)
 
         output = self.dropout(self.fc(output))
         output = self.layer_norm(output + residual)
@@ -140,11 +148,16 @@ class FEAT(MetricModel):
         """
         images, global_targets = batch
         images = images.to(self.device)
-        self.episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
-        self.feat = self.emb_func(images)  # [e*(q+s) x hdim]
-        self.support_feat, self.query_feat, support_target, query_target = self.split_by_episode(
-            self.feat, mode=1
+        self.episode_size = images.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
         )
+        self.feat = self.emb_func(images)  # [e*(q+s) x hdim]
+        (
+            self.support_feat,
+            self.query_feat,
+            support_target,
+            query_target,
+        ) = self.split_by_episode(self.feat, mode=1)
 
         logits = self._calc_logits().reshape(-1, self.way_num)
 
@@ -159,14 +172,22 @@ class FEAT(MetricModel):
         """
         images, global_targets = batch
         images = images.to(self.device)
-        self.episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
-        self.feat = self.emb_func(images)  # [e*(q+s) x hdim]
-        self.support_feat, self.query_feat, support_target, query_target = self.split_by_episode(
-            self.feat, mode=1
+        self.episode_size = images.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
         )
+        self.feat = self.emb_func(images)  # [e*(q+s) x hdim]
+        (
+            self.support_feat,
+            self.query_feat,
+            support_target,
+            query_target,
+        ) = self.split_by_episode(self.feat, mode=1)
 
         target_aux = torch.cat(
-            [support_target.reshape(-1).contiguous(), query_target.reshape(-1).contiguous()]
+            [
+                support_target.reshape(-1).contiguous(),
+                query_target.reshape(-1).contiguous(),
+            ]
         )
 
         logits = self._calc_logits().reshape(-1, self.way_num)
@@ -226,10 +247,14 @@ class FEAT(MetricModel):
             .contiguous()
             .unsqueeze(1)
         )
-        aux_center = aux_center.expand(self.episode_size * num_query, self.way_num, self.hdim)
+        aux_center = aux_center.expand(
+            self.episode_size * num_query, self.way_num, self.hdim
+        )
 
         # proto ewsq w d
         # query ewsq 1 d
-        logits_reg = self.proto_layer(aux_task, aux_center, self.mode, self.temperature2)
+        logits_reg = self.proto_layer(
+            aux_task, aux_center, self.mode, self.temperature2
+        )
 
         return logits_reg

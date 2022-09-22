@@ -46,7 +46,9 @@ class DN4Layer(nn.Module):
         _, ws, _, _, _ = support_feat.size()
 
         # t, wq, c, hw -> t, wq, hw, c -> t, wq, 1, hw, c
-        query_feat = query_feat.view(t, way_num * query_num, c, h * w).permute(0, 1, 3, 2)
+        query_feat = query_feat.view(t, way_num * query_num, c, h * w).permute(
+            0, 1, 3, 2
+        )
         query_feat = F.normalize(query_feat, p=2, dim=-1).unsqueeze(2)
 
         # t, ws, c, h, w -> t, w, s, c, hw -> t, 1, w, c, shw
@@ -80,9 +82,13 @@ class DN4(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=2
+        )
 
         output = self.dn4_layer(
             query_feat, support_feat, self.way_num, self.shot_num, self.query_num
@@ -99,10 +105,14 @@ class DN4(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
         feat = self.emb_func(image)
 
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=2
+        )
 
         output = self.dn4_layer(
             query_feat,

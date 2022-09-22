@@ -30,7 +30,9 @@ def get_dataloader(config, mode, model_type, distribute):
     Returns:
         Dataloader: The corresponding dataloader.
     """
-    assert model_type != ModelType.ABSTRACT, "model_type should not be ModelType.ABSTRACT"
+    assert (
+        model_type != ModelType.ABSTRACT
+    ), "model_type should not be ModelType.ABSTRACT"
 
     trfms_list = []
 
@@ -78,20 +80,27 @@ def get_dataloader(config, mode, model_type, distribute):
         use_memory=config["use_memory"],
     )
 
-    if config['dataloader_num'] == 1 or mode=='test':
+    if config["dataloader_num"] == 1 or mode == "test":
 
         collate_function = get_collate_function(config, trfms, mode, model_type)
 
         few_shot = not (model_type == ModelType.FINETUNING and mode == "train")
 
         sampler = get_sampler(
-            dataset=dataset, few_shot=few_shot, distribute=distribute, mode=mode, config=config
+            dataset=dataset,
+            few_shot=few_shot,
+            distribute=distribute,
+            mode=mode,
+            config=config,
         )
 
         data_scale = 1 if config["n_gpu"] == 0 else config["n_gpu"]
         workers = config["workers"] // data_scale
         if workers == 0:
-            print("with zero workers, the training phase will be very slow", level="warning")
+            print(
+                "with zero workers, the training phase will be very slow",
+                level="warning",
+            )
 
         dataloader = MultiEpochsDataLoader(
             dataset=dataset,
@@ -106,13 +115,17 @@ def get_dataloader(config, mode, model_type, distribute):
             pin_memory=True,
             collate_fn=collate_function,
         )
-        
+
         return (dataloader,)
     else:
         # for RENet: use fs_loader and generic_loader in training stage
         collate_function = get_collate_function(config, trfms, mode, ModelType.METRIC)
         sampler = get_sampler(
-            dataset=dataset, few_shot=True, distribute=distribute, mode=mode, config=config
+            dataset=dataset,
+            few_shot=True,
+            distribute=distribute,
+            mode=mode,
+            config=config,
         )
         dataloader = DataLoader(
             dataset,
@@ -121,9 +134,15 @@ def get_dataloader(config, mode, model_type, distribute):
             pin_memory=True,
             collate_fn=collate_function,
         )
-        collate_function = get_collate_function(config, trfms, mode, ModelType.FINETUNING)
+        collate_function = get_collate_function(
+            config, trfms, mode, ModelType.FINETUNING
+        )
         sampler = get_sampler(
-            dataset=dataset, few_shot=False, distribute=distribute, mode=mode, config=config
+            dataset=dataset,
+            few_shot=False,
+            distribute=distribute,
+            mode=mode,
+            config=config,
         )
         dataloader_aux = DataLoader(
             dataset,
@@ -144,7 +163,7 @@ class _RepeatSampler(object):
 
     def __init__(self, sampler):
         self.sampler = sampler
-        self.repeat_sample = True if len(self.sampler)>0 else False
+        self.repeat_sample = True if len(self.sampler) > 0 else False
 
     def __iter__(self):
         while self.repeat_sample:
@@ -164,7 +183,9 @@ class MultiEpochsDataLoader(DataLoader):
         super().__init__(*args, **kwargs)
         self.few_shot = False
         if self.batch_sampler is not None:
-            object.__setattr__(self, "batch_sampler", _RepeatSampler(self.batch_sampler))
+            object.__setattr__(
+                self, "batch_sampler", _RepeatSampler(self.batch_sampler)
+            )
             self.iterator = super().__iter__()
             self.few_shot = True
 

@@ -44,7 +44,9 @@ class ADMLayer(nn.Module):
         feat = feat - feature_mean
         cov_matrix = torch.matmul(feat.permute(0, 1, 3, 2), feat)  # ebc1 * eb1c = ebcc
         cov_matrix = torch.div(cov_matrix, n_local - 1)
-        cov_matrix = cov_matrix + 0.01 * torch.eye(c).to(self.device)  # broadcast from the last dim
+        cov_matrix = cov_matrix + 0.01 * torch.eye(c).to(
+            self.device
+        )  # broadcast from the last dim
 
         return feature_mean, cov_matrix
 
@@ -82,7 +84,9 @@ class ADMLayer(nn.Module):
         #                for i in range(matrix_prod.size(2))]
         #               for e in range(matrix_prod.size(0))] # list of trace_dist
         # trace_dist = torch.stack([torch.cat(trace_dist_list, 0) for trace_dist_list in trace_dist]) #
-        trace_dist = torch.diagonal(matrix_prod, offset=0, dim1=-2, dim2=-1)  # e * 75 * 5 * 64
+        trace_dist = torch.diagonal(
+            matrix_prod, offset=0, dim1=-2, dim2=-1
+        )  # e * 75 * 5 * 64
         trace_dist = torch.sum(trace_dist, dim=-1)  # e * 75 * 5
         # trace_dist = trace_dist.view(matrix_prod.size(0),matrix_prod.size(1), matrix_prod.size(2))  # e * 75 * 5
 
@@ -90,7 +94,9 @@ class ADMLayer(nn.Module):
         maha_prod = torch.matmul(
             mean_diff.unsqueeze(3), cov2_inverse.unsqueeze(1)
         )  # e * 75 * 5 * 1 * 64
-        maha_prod = torch.matmul(maha_prod, mean_diff.unsqueeze(4))  # e * 75 * 5 * 1 * 1
+        maha_prod = torch.matmul(
+            maha_prod, mean_diff.unsqueeze(4)
+        )  # e * 75 * 5 * 1 * 1
         maha_prod = maha_prod.squeeze(4)
         maha_prod = maha_prod.squeeze(3)  # e * 75 * 5
 
@@ -119,14 +125,18 @@ class ADMLayer(nn.Module):
         query_feat = query_feat.reshape(e, b, c, -1).permute(0, 1, 3, 2).contiguous()
 
         # Calculate the mean and covariance of the support set
-        support_feat = support_feat.reshape(e, s, c, -1).permute(0, 1, 3, 2).contiguous()
+        support_feat = (
+            support_feat.reshape(e, s, c, -1).permute(0, 1, 3, 2).contiguous()
+        )
         support_set = support_feat.reshape(e, self.way_num, self.shot_num * h * w, c)
 
         # s_mean: e * 5 * 1 * 64  s_cov: e * 5 * 64 * 64
         s_mean, s_cov = self._cal_cov_matrix_batch(support_set)
 
         # Calculate the Wasserstein Distance
-        kl_dis = -self._calc_kl_dist_batch(query_mean, query_cov, s_mean, s_cov)  # e * 75 * 5
+        kl_dis = -self._calc_kl_dist_batch(
+            query_mean, query_cov, s_mean, s_cov
+        )  # e * 75 * 5
 
         # Calculate the Image-to-Class Similarity
         query_norm = F.normalize(query_feat, p=2, dim=3)
@@ -165,7 +175,9 @@ class ADM(MetricModel):
     def __init__(self, n_k=3, **kwargs):
         super(ADM, self).__init__(**kwargs)
         self.n_k = n_k
-        self.adm_layer = ADMLayer(self.way_num, self.shot_num, self.query_num, n_k, self.device)
+        self.adm_layer = ADMLayer(
+            self.way_num, self.shot_num, self.query_num, n_k, self.device
+        )
         self.loss_func = nn.CrossEntropyLoss()
 
     def set_forward(self, batch):
@@ -176,9 +188,13 @@ class ADM(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=2
+        )
 
         output = self.adm_layer(query_feat, support_feat).reshape(
             episode_size * self.way_num * self.query_num, -1
@@ -194,9 +210,13 @@ class ADM(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=2
+        )
         # assume here we will get n_dim=5
         output = self.adm_layer(query_feat, support_feat).reshape(
             episode_size * self.way_num * self.query_num, -1

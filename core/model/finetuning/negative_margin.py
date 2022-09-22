@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 @article{liu2020negative,
   title={Negative Margin Matters: Understanding Margin in Few-shot Classification},
@@ -18,7 +19,7 @@ from torch.optim.lr_scheduler import _LRScheduler
 
 
 class NegLayer(nn.Module):
-    def __init__(self, in_features, out_features, margin = 0.40, scale_factor = 30.0):
+    def __init__(self, in_features, out_features, margin=0.40, scale_factor=30.0):
         super(NegLayer, self).__init__()
         self.margin = margin
         self.scale_factor = scale_factor
@@ -32,18 +33,17 @@ class NegLayer(nn.Module):
         if label is None:
             return cosine * self.scale_factor
 
-
         phi = cosine - self.margin
 
-
-        output = torch.where(
-            self.one_hot(label, cosine.shape[1]).byte(), phi, cosine)
+        output = torch.where(self.one_hot(label, cosine.shape[1]).byte(), phi, cosine)
         output *= self.scale_factor
         return output
 
-
     def one_hot(self, y, num_class):
-        return torch.zeros((len(y), num_class)).to(y.device).scatter_(1, y.unsqueeze(1), 1)
+        return (
+            torch.zeros((len(y), num_class)).to(y.device).scatter_(1, y.unsqueeze(1), 1)
+        )
+
 
 class NegNet(FinetuningModel):
     def __init__(self, feat_dim, num_class, margin=-0.3, scale_factor=30.0, **kwargs):
@@ -60,23 +60,30 @@ class NegNet(FinetuningModel):
 
         with torch.no_grad():
             feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=1
+        )
         episode_size = support_feat.size(0)
-        #support_target = support_target.reshape(episode_size, self.way_num*self.shot_num)
-
+        # support_target = support_target.reshape(episode_size, self.way_num*self.shot_num)
 
         output_list = []
         for i in range(episode_size):
-            output = self.set_forward_adaptation(support_feat[i], support_target[i], query_feat[i])
+            output = self.set_forward_adaptation(
+                support_feat[i], support_target[i], query_feat[i]
+            )
             output_list.append(output)
 
         output = torch.cat(output_list, dim=0)
         acc = accuracy(output, query_target.reshape(-1))
         return output, acc
 
-
     def set_forward_adaptation(self, support_feat, support_target, query_feat):
-        classifier = NegLayer(self.feat_dim, self.test_way, self.inner_param["inner_margin"], self.inner_param["inner_scale_factor"])
+        classifier = NegLayer(
+            self.feat_dim,
+            self.test_way,
+            self.inner_param["inner_margin"],
+            self.inner_param["inner_scale_factor"],
+        )
         optimizer = self.sub_optimizer(classifier, self.inner_param["inner_optim"])
 
         classifier = classifier.to(self.device)
@@ -89,11 +96,11 @@ class NegNet(FinetuningModel):
         for epoch in range(self.inner_param["inner_train_iter"]):
             rand_id = torch.randperm(support_size)
             for i in range(0, support_size, batch_size):
-                select_id = rand_id[i: min(i + batch_size, support_size)]
+                select_id = rand_id[i : min(i + batch_size, support_size)]
                 batch = support_feat[select_id]
                 target = support_target[select_id]
-                #print("target:")
-                #print(target)
+                # print("target:")
+                # print(target)
                 output = classifier(batch, target)
 
                 loss = loss_func(output, target)
@@ -105,8 +112,6 @@ class NegNet(FinetuningModel):
         output = classifier(query_feat)
         return output
 
-
-
     def set_forward_loss(self, batch):
         image, target = batch
         image = image.to(self.device)
@@ -117,4 +122,3 @@ class NegNet(FinetuningModel):
         loss = self.loss_func(output, target.reshape(-1))
         acc = accuracy(output, target.reshape(-1))
         return output, acc, loss
-

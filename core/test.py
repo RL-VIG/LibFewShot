@@ -109,7 +109,10 @@ class Test(object):
                 if self.rank == 0:
                     self.writer.set_step(
                         int(
-                            (epoch_idx * len(self.test_loader) + batch_idx * episode_size)
+                            (
+                                epoch_idx * len(self.test_loader)
+                                + batch_idx * episode_size
+                            )
                             * self.config["tb_scale"]
                         )
                     )
@@ -241,7 +244,8 @@ class Test(object):
         """
         # check: episode_size >= n_gpu and episode_size != 0
         assert (
-            self.config["episode_size"] >= self.config["n_gpu"] and self.config["episode_size"] != 0
+            self.config["episode_size"] >= self.config["n_gpu"]
+            and self.config["episode_size"] != 0
         ), "episode_size {} should be >= n_gpu {} and != 0".format(
             self.config["episode_size"], self.config["n_gpu"]
         )
@@ -298,7 +302,10 @@ class Test(object):
         if self.distribute:
             # higher order grad of BN in multi gpu will conflict with syncBN
             # FIXME MAML with multi GPU is conflict with syncBN
-            if not (self.config["classifier"]["name"] in ["MAML"] and self.config["n_gpu"] > 1):
+            if not (
+                self.config["classifier"]["name"] in ["MAML"]
+                and self.config["n_gpu"] > 1
+            ):
                 model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
             else:
                 print(
@@ -336,7 +343,9 @@ class Test(object):
             rank,
             config["device_ids"],
             config["n_gpu"],
-            backend="nccl" if "dist_backend" not in self.config else self.config["dist_backend"],
+            backend="nccl"
+            if "dist_backend" not in self.config
+            else self.config["dist_backend"],
             dist_url="tcp://127.0.0.1:" + str(config["port"])
             if "dist_url" not in self.config
             else self.config["dist_url"],

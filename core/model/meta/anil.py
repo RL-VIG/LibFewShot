@@ -39,7 +39,9 @@ class ANIL(MetaModel):
         super(ANIL, self).__init__(**kwargs)
         self.feat_dim = feat_dim
         self.loss_func = nn.CrossEntropyLoss()
-        self.classifier = ANILLayer(feat_dim=feat_dim, hid_dim=hid_dim, way_num=self.way_num)
+        self.classifier = ANILLayer(
+            feat_dim=feat_dim, hid_dim=hid_dim, way_num=self.way_num
+        )
         self.inner_param = inner_param
 
         convert_maml_module(self.classifier)
@@ -49,7 +51,9 @@ class ANIL(MetaModel):
         image = image.to(self.device)
 
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=1
+        )
         episode_size = support_feat.size(0)
 
         output_list = []
@@ -67,7 +71,9 @@ class ANIL(MetaModel):
         image = image.to(self.device)
 
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=1
+        )
         episode_size = support_feat.size(0)
 
         output_list = []
@@ -90,7 +96,11 @@ class ANIL(MetaModel):
         self.emb_func.train()
         self.classifier.train()
 
-        for i in range(self.inner_param["train_iter"] if self.training else self.inner_param["test_iter"]):
+        for i in range(
+            self.inner_param["train_iter"]
+            if self.training
+            else self.inner_param["test_iter"]
+        ):
             output = self.classifier(support_feat)
             loss = self.loss_func(output, support_target)
             grad = torch.autograd.grad(loss, fast_parameters, create_graph=True)

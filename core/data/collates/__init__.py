@@ -19,7 +19,9 @@ def get_collate_function(config, trfms, mode, model_type):
     Returns:
         [type]: [description]
     """
-    assert model_type != ModelType.ABSTRACT, "model_type should not be ModelType.ABSTRACT"
+    assert (
+        model_type != ModelType.ABSTRACT
+    ), "model_type should not be ModelType.ABSTRACT"
 
     if mode == "train" and model_type == ModelType.FINETUNING:
         collate_function = GeneralCollateFunction(trfms, config["augment_times"])

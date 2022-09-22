@@ -63,7 +63,11 @@ class GeneralDataset(Dataset):
             trfms (list, optional): A transform list (in LFS, its useless). Defaults to None.
         """
         super(GeneralDataset, self).__init__()
-        assert mode in ["train", "val", "test"], "mode must be in ['train', 'val', 'test']"
+        assert mode in [
+            "train",
+            "val",
+            "test",
+        ], "mode must be in ['train', 'val', 'test']"
 
         self.data_root = data_root
         self.mode = mode
@@ -88,7 +92,9 @@ class GeneralDataset(Dataset):
         self.label_num = len(self.class_label_dict)
         self.length = len(self.data_list)
 
-        print("load {} {} image with {} label.".format(self.length, mode, self.label_num))
+        print(
+            "load {} {} image with {} label.".format(self.length, mode, self.label_num)
+        )
 
     def _generate_data_list(self):
         """Parse a CSV file to a data list(image_name), a label list(corresponding to the data list) and a class-label dict.
@@ -145,7 +151,8 @@ class GeneralDataset(Dataset):
         """
         data_list, label_list, class_label_dict = self._generate_data_list()
         data_list = [
-            self.loader(os.path.join(self.data_root, "images", path)) for path in data_list
+            self.loader(os.path.join(self.data_root, "images", path))
+            for path in data_list
         ]
 
         with open(cache_path, "wb") as fout:

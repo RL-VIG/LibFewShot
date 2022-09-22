@@ -13,7 +13,11 @@ def get_sampler(dataset, few_shot, distribute, mode, config):
                 label_num=dataset.label_num,
                 episode_size=config["episode_size"] // config["n_gpu"],
                 episode_num=(
-                    (config["train_episode"] if mode == "train" else config["test_episode"])
+                    (
+                        config["train_episode"]
+                        if mode == "train"
+                        else config["test_episode"]
+                    )
                     // config["n_gpu"]
                 ),
                 way_num=config["way_num"] if mode == "train" else config["test_way"],
@@ -30,7 +34,9 @@ def get_sampler(dataset, few_shot, distribute, mode, config):
                 label_num=dataset.label_num,
                 episode_size=config["episode_size"],
                 episode_num=(
-                    config["train_episode"] if mode == "train" else config["test_episode"]
+                    config["train_episode"]
+                    if mode == "train"
+                    else config["test_episode"]
                 ),
                 way_num=config["way_num"] if mode == "train" else config["test_way"],
                 image_num=config["shot_num"] + config["query_num"]
@@ -175,10 +181,14 @@ class DistributedCategoriesSampler(Sampler):
         """
         batch = []
         for i_batch in range(self.episode_num):
-            classes = torch.randperm(len(self.idx_list), generator=self.cls_g)[: self.way_num]
+            classes = torch.randperm(len(self.idx_list), generator=self.cls_g)[
+                : self.way_num
+            ]
             for c in classes:
                 idxes = self.idx_list[c.item()]
-                pos = torch.randperm(idxes.size(0), generator=self.img_g)[: self.image_num]
+                pos = torch.randperm(idxes.size(0), generator=self.img_g)[
+                    : self.image_num
+                ]
                 batch.append(idxes[pos])
             if len(batch) == self.episode_size * self.way_num:
                 batch = torch.stack(batch).reshape(-1)

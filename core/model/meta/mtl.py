@@ -60,7 +60,9 @@ class MTL(MetaModel):
         self.feat_dim = feat_dim
         self.num_classes = num_classes
 
-        self.base_learner = MTLBaseLearner(self.way_num, z_dim=self.feat_dim).to(self.device)
+        self.base_learner = MTLBaseLearner(self.way_num, z_dim=self.feat_dim).to(
+            self.device
+        )
         self.inner_param = inner_param
 
         self.loss_func = nn.CrossEntropyLoss()
@@ -77,9 +79,13 @@ class MTL(MetaModel):
 
         feat = self.emb_func(image)
 
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=4)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=4
+        )
 
-        classifier, base_learner_weight = self.set_forward_adaptation(support_feat, support_target)
+        classifier, base_learner_weight = self.set_forward_adaptation(
+            support_feat, support_target
+        )
 
         output = classifier(query_feat, base_learner_weight)
 
@@ -97,9 +103,13 @@ class MTL(MetaModel):
 
         feat = self.emb_func(image)
 
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=4)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=4
+        )
 
-        classifier, base_learner_weight = self.set_forward_adaptation(support_feat, support_target)
+        classifier, base_learner_weight = self.set_forward_adaptation(
+            support_feat, support_target
+        )
 
         output = classifier(query_feat, base_learner_weight)
         loss = self.loss_func(output, query_target.contiguous().reshape(-1))
@@ -123,6 +133,8 @@ class MTL(MetaModel):
             logit = self.base_learner(support_feat, fast_parameters)
             loss = F.cross_entropy(logit, support_target)
             grad = torch.autograd.grad(loss, fast_parameters)
-            fast_parameters = list(map(lambda p: p[1] - 0.01 * p[0], zip(grad, fast_parameters)))
+            fast_parameters = list(
+                map(lambda p: p[1] - 0.01 * p[0], zip(grad, fast_parameters))
+            )
 
         return classifier, fast_parameters
