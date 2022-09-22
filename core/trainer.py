@@ -138,10 +138,9 @@ class Trainer(object):
 
         end = time()
         log_scale = 1 if self.model_type == ModelType.FINETUNING else episode_size
-
-        for batch_idx, batch in enumerate(self.train_loader):
+        for batch_idx, batch in enumerate(zip(*self.train_loader)):
             if self.rank == 0:
-                self.writer.set_step(epoch_idx * len(self.train_loader) + batch_idx * episode_size)
+                self.writer.set_step(epoch_idx* max(map(len,self.train_loader))+ batch_idx * episode_size )
 
             # visualize the weight
             if self.rank == 0 and self.config["log_paramerter"]:
@@ -154,11 +153,15 @@ class Trainer(object):
 
             # calculate the output
             calc_begin = time()
-            output, acc, loss = self.model(batch)
+            output, acc, loss = self.model([elem for each_batch in batch for elem in each_batch])
 
             # compute gradients
             self.optimizer.zero_grad()
             loss.backward()
+            nn.utils.clip_grad_norm_(self.model.parameters(), 2.0)
+            for param in self.model.parameters():
+                if (param.grad != param.grad).float().sum() != 0:  # nan detected
+                    param.grad.zero_()
             self.optimizer.step()
             meter.update("calc_time", time() - calc_begin)
 
@@ -172,7 +175,7 @@ class Trainer(object):
             # print the intermediate results
             if ((batch_idx + 1) * log_scale % self.config["log_interval"] == 0) or (
                 batch_idx + 1
-            ) * episode_size >= len(self.train_loader) * log_scale:
+            ) * episode_size >= max(map(len,self.train_loader)) * log_scale:
                 info_str = (
                     "Epoch-({}): [{}/{}]\t"
                     "Time {:.3f} ({:.3f})\t"
@@ -182,7 +185,7 @@ class Trainer(object):
                     "Acc@1 {:.3f} ({:.3f})".format(
                         epoch_idx,
                         (batch_idx + 1) * log_scale,
-                        len(self.train_loader) * log_scale,
+                        max(map(len,self.train_loader)) * log_scale,
                         meter.last("batch_time"),
                         meter.avg("batch_time"),
                         meter.last("calc_time"),
@@ -225,11 +228,11 @@ class Trainer(object):
         log_scale = self.config["episode_size"]
         with torch.set_grad_enabled(enable_grad):
             loader = self.test_loader if is_test else self.val_loader
-            for batch_idx, batch in enumerate(loader):
+            for batch_idx, batch in enumerate(zip(*loader)):
                 if self.rank == 0:
                     self.writer.set_step(
                         int(
-                            (epoch_idx * len(loader) + batch_idx * episode_size)
+                            (epoch_idx *max(map(len,loader)) + batch_idx * episode_size)
                             * self.config["tb_scale"]
                         )
                     )
@@ -238,7 +241,7 @@ class Trainer(object):
 
                 # calculate the output
                 calc_begin = time()
-                output, acc = self.model(batch)
+                output, acc = self.model([elem for each_batch in batch for elem in each_batch])
                 meter.update("calc_time", time() - calc_begin)
 
                 # measure accuracy and record loss
@@ -249,7 +252,7 @@ class Trainer(object):
 
                 if ((batch_idx + 1) * log_scale % self.config["log_interval"] == 0) or (
                     batch_idx + 1
-                ) * episode_size >= len(self.val_loader) * log_scale:
+                ) * episode_size >= max(map(len,loader)) * log_scale:
                     info_str = (
                         "Epoch-({}): [{}/{}]\t"
                         "Time {:.3f} ({:.3f})\t"
@@ -258,7 +261,7 @@ class Trainer(object):
                         "Acc@1 {:.3f} ({:.3f})".format(
                             epoch_idx,
                             (batch_idx + 1) * log_scale,
-                            len(self.val_loader) * log_scale,
+                            max(map(len,loader)) * log_scale,
                             meter.last("batch_time"),
                             meter.avg("batch_time"),
                             meter.last("calc_time"),

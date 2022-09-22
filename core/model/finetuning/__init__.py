@@ -6,3 +6,4 @@ from .skd_model import SKDModel
 from .mtl_pretrain import MTLPretrain
 from .feat_pretrain import FEAT_Pretrain
 from .negative_margin import NegNet
+from .renet import RENet

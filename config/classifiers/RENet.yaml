@@ -1,0 +1,8 @@
+classifier:
+  name: RENet
+  kwargs:
+    feat_dim: 640
+    lambda_epi: 1.0
+    temperature: 1.0
+    temperature_attn: 1.0
+    num_classes: 64
