@@ -28,6 +28,7 @@ from core.utils import (
     save_model,
     get_instance,
     data_prefetcher,
+    GradualWarmupScheduler
 )
 
 
@@ -475,16 +476,7 @@ class Trainer(object):
             {"params": filter(lambda p: id(p) not in params_idx, self.model.parameters())}
         )
         optimizer = get_instance(torch.optim, "optimizer", config, params=params_dict_list)
-        if config["lr_scheduler"]["name"] == "LambdaLR":
-            scheduler = torch.optim.lr_scheduler.LambdaLR(
-                optimizer,
-                lr_lambda=eval(config["lr_scheduler"]["kwargs"]["lr_lambda"]),
-                last_epoch=-1,
-            )
-        else:
-            scheduler = get_instance(
-                torch.optim.lr_scheduler, "lr_scheduler", config, optimizer=optimizer
-            )
+        scheduler = GradualWarmupScheduler(optimizer, self.config) # if config['warmup']==0, scheduler will be a normal lr_scheduler, jump into this class for details
         print(optimizer)
         from_epoch = -1
         best_val_acc = float("-inf")

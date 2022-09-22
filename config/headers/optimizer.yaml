@@ -16,3 +16,5 @@ lr_scheduler:
   kwargs:
     gamma: 1.0
     step_size: 20
+
+warmup: 0 # set 0 to turn off warmup 
