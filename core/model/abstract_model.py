@@ -57,7 +57,9 @@ class AbstractModel(nn.Module):
         split features by episode and
         generate local targets + split labels by episode
         """
-        episode_size = features.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = features.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
         local_labels = (
             self._generate_local_targets(episode_size)
             .to(self.device)
@@ -137,10 +139,14 @@ class AbstractModel(nn.Module):
         ):  # finetuning baseline input 2D, return 2D(w/o episode) E.g.baseline set_forward
             features = features.view(self.way_num, self.shot_num + self.query_num, -1)
             support_features = (
-                features[:, : self.shot_num, :].contiguous().view(self.way_num * self.shot_num, -1)
+                features[:, : self.shot_num, :]
+                .contiguous()
+                .view(self.way_num * self.shot_num, -1)
             )
             query_features = (
-                features[:, self.shot_num :, :].contiguous().view(self.way_num * self.query_num, -1)
+                features[:, self.shot_num :, :]
+                .contiguous()
+                .view(self.way_num * self.query_num, -1)
             )
             support_target = local_labels[:, :, : self.shot_num].reshape(
                 self.way_num * self.shot_num

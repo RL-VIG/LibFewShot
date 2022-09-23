@@ -59,7 +59,8 @@ class VERSALayer(nn.Module):
         episode_size = query_feat.size(0)
         logits_mean_query = torch.matmul(query_feat, weight_mean) + bias_mean
         logits_log_var_query = torch.log(
-            torch.matmul(query_feat ** 2, torch.exp(weight_logvar)) + torch.exp(bias_logvar)
+            torch.matmul(query_feat**2, torch.exp(weight_logvar))
+            + torch.exp(bias_logvar)
         )
         logits_sample_query = (
             self.sample_normal(logits_mean_query, logits_log_var_query, self.sample_num)
@@ -81,7 +82,9 @@ class VERSALayer(nn.Module):
             torch.as_tensor(self.sample_num, dtype=torch.float).to(query_feat.device)
         )
         # loss = -torch.mean(task_score, dim=0)
-        logits_sample_query = logits_sample_query.contiguous().reshape(self.sample_num, -1, way_num)
+        logits_sample_query = logits_sample_query.contiguous().reshape(
+            self.sample_num, -1, way_num
+        )
         averaged_prediction = torch.logsumexp(logits_sample_query, dim=0) - torch.log(
             torch.as_tensor(self.sample_num, dtype=torch.float).to(query_feat.device)
         )
@@ -99,7 +102,10 @@ class VERSA(MetaModel):
         self.feat_dim = feat_dim
         self.sample_num = sample_num
         self.h = nn.Sequential(
-            nn.Linear(feat_dim, d_theta), nn.BatchNorm1d(d_theta), nn.ReLU(), nn.Dropout(drop_rate)
+            nn.Linear(feat_dim, d_theta),
+            nn.BatchNorm1d(d_theta),
+            nn.ReLU(),
+            nn.Dropout(drop_rate),
         )
         self.weight_mean = Predictor(d_theta, d_theta, d_theta)
         self.weight_logvar = Predictor(d_theta, d_theta, d_theta)
@@ -114,12 +120,16 @@ class VERSA(MetaModel):
 
         feat = self.emb_func(image)
         feat = self.h(feat)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=1
+        )
         episode_size = support_feat.size(0)
         query_target = query_target.contiguous().reshape(episode_size, -1)
 
         class_feat = torch.mean(
-            support_feat.contiguous().reshape(episode_size, self.way_num, self.shot_num, -1),
+            support_feat.contiguous().reshape(
+                episode_size, self.way_num, self.shot_num, -1
+            ),
             dim=2,
             keepdim=False,
         )
@@ -147,12 +157,16 @@ class VERSA(MetaModel):
 
         feat = self.emb_func(image)
         feat = self.h(feat)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=1
+        )
         episode_size = support_feat.size(0)
         query_target = query_target.contiguous().reshape(episode_size, -1)
 
         class_feat = torch.mean(
-            support_feat.contiguous().reshape(episode_size, self.way_num, self.shot_num, -1),
+            support_feat.contiguous().reshape(
+                episode_size, self.way_num, self.shot_num, -1
+            ),
             dim=2,
             keepdim=False,
         )
@@ -181,5 +195,5 @@ class VERSA(MetaModel):
 
     def drop_nan(self, tensor):
         tensor = torch.where(torch.isnan(tensor), torch.full_like(tensor, 0), tensor)
-            
+
         return tensor

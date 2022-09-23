@@ -52,7 +52,9 @@ class ConvMLayer(nn.Module):
         t, ws, c, h, w = support_feat.size()
 
         # t, ws, c, h, w -> t, ws, hw, c -> t, w, shw, c
-        support_feat = support_feat.view(t, ws, c, h * w).permute(0, 1, 3, 2).contiguous()
+        support_feat = (
+            support_feat.view(t, ws, c, h * w).permute(0, 1, 3, 2).contiguous()
+        )
         support_feat = support_feat.view(t, self.way_num, self.shot_num * h * w, c)
         support_feat = support_feat - torch.mean(support_feat, dim=2, keepdim=True)
 
@@ -97,7 +99,9 @@ class ConvMLayer(nn.Module):
 class ConvMNet(MetricModel):
     def __init__(self, n_local=3, **kwargs):
         super(ConvMNet, self).__init__(**kwargs)
-        self.convm_layer = ConvMLayer(self.way_num, self.shot_num, self.query_num, n_local)
+        self.convm_layer = ConvMLayer(
+            self.way_num, self.shot_num, self.query_num, n_local
+        )
         self.loss_func = nn.CrossEntropyLoss()
 
     def set_forward(self, batch):
@@ -108,7 +112,9 @@ class ConvMNet(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
         feat = self.emb_func(image)
         (
             support_feat,
@@ -132,7 +138,9 @@ class ConvMNet(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
         feat = self.emb_func(image)
         (
             support_feat,

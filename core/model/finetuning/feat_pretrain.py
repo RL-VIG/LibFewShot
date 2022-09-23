@@ -24,7 +24,9 @@ from ..metric.proto_net import ProtoLayer
 
 
 class FEAT_Pretrain(FinetuningModel):
-    def __init__(self, feat_dim, train_num_class, val_num_class, mode="euclidean", **kwargs):
+    def __init__(
+        self, feat_dim, train_num_class, val_num_class, mode="euclidean", **kwargs
+    ):
         super(FEAT_Pretrain, self).__init__(**kwargs)
         self.train_num_class = train_num_class
         self.val_num_class = val_num_class
@@ -46,10 +48,17 @@ class FEAT_Pretrain(FinetuningModel):
         with torch.no_grad():
             feat = self.emb_func(image)
 
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=1
+        )
 
         output = self.val_classifier(
-            query_feat, support_feat, self.way_num, self.shot_num, self.query_num, mode=self.mode
+            query_feat,
+            support_feat,
+            self.way_num,
+            self.shot_num,
+            self.query_num,
+            mode=self.mode,
         ).reshape(-1, self.way_num)
 
         acc = accuracy(output, query_target.reshape(-1))

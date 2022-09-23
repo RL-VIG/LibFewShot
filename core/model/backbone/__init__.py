@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from .conv_four import Conv32F, Conv64F, R2D2Embedding
-from .resnet_12 import resnet12
+from .resnet_12 import resnet12, resnet12woLSC
 from .resnet_18 import resnet18
 from .wrn import WRN
 from .resnet_12_mtl_offcial import resnet12MTLofficial

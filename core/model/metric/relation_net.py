@@ -60,7 +60,9 @@ class RelationNet(MetricModel):
         self.feat_dim = feat_dim
         self.feat_height = feat_height
         self.feat_width = feat_width
-        self.relation_layer = RelationLayer(self.feat_dim, self.feat_height, self.feat_width)
+        self.relation_layer = RelationLayer(
+            self.feat_dim, self.feat_height, self.feat_width
+        )
         self.loss_func = nn.CrossEntropyLoss()
 
     def set_forward(self, batch):
@@ -73,7 +75,9 @@ class RelationNet(MetricModel):
         image = image.to(self.device)
 
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=2
+        )
 
         relation_pair = self._calc_pairs(query_feat, support_feat)
         output = self.relation_layer(relation_pair).reshape(-1, self.way_num)
@@ -91,7 +95,9 @@ class RelationNet(MetricModel):
         image = image.to(self.device)
 
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=2)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=2
+        )
 
         relation_pair = self._calc_pairs(query_feat, support_feat)
         output = self.relation_layer(relation_pair).reshape(-1, self.way_num)
@@ -121,5 +127,7 @@ class RelationNet(MetricModel):
         )
 
         # t, wq, w, 2c, h, w -> twqw, 2c, h, w
-        relation_pair = torch.cat((query_feat, support_feat), dim=3).reshape(-1, c * 2, h, w)
+        relation_pair = torch.cat((query_feat, support_feat), dim=3).reshape(
+            -1, c * 2, h, w
+        )
         return relation_pair

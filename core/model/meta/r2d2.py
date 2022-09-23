@@ -70,7 +70,9 @@ def one_hot(indices, depth):
     Returns: a (n_batch, m, depth) Tensor or (m, depth) Tensor.
     """
 
-    encoded_indicie = torch.zeros(indices.size() + torch.Size([depth])).to(indices.device)
+    encoded_indicie = torch.zeros(indices.size() + torch.Size([depth])).to(
+        indices.device
+    )
     index = indices.view(indices.size() + torch.Size([1]))
     encoded_indicie = encoded_indicie.scatter_(1, index, 1)
 
@@ -98,11 +100,17 @@ class R2D2Layer(nn.Module):
             n_support == way_num * shot_num
         ), "n_support must be equal to way_num * shot_num."  # n_support must equal to n_way * n_shot
 
-        support_labels_one_hot = one_hot(support_target.view(tasks_per_batch * n_support), way_num)
-        support_labels_one_hot = support_labels_one_hot.view(tasks_per_batch, n_support, way_num)
+        support_labels_one_hot = one_hot(
+            support_target.view(tasks_per_batch * n_support), way_num
+        )
+        support_labels_one_hot = support_labels_one_hot.view(
+            tasks_per_batch, n_support, way_num
+        )
 
         id_matrix = (
-            torch.eye(n_support).expand(tasks_per_batch, n_support, n_support).to(query.device)
+            torch.eye(n_support)
+            .expand(tasks_per_batch, n_support, n_support)
+            .to(query.device)
         )
 
         # Compute the dual form solution of the ridge regression.
@@ -131,7 +139,9 @@ class R2D2(MetaModel):
         image = image.to(self.device)
 
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=1
+        )
         output, weight = self.classifier(
             self.way_num, self.shot_num, query_feat, support_feat, support_target
         )
@@ -145,7 +155,9 @@ class R2D2(MetaModel):
         image = image.to(self.device)
 
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=1
+        )
         output, weight = self.classifier(
             self.way_num, self.shot_num, query_feat, support_feat, support_target
         )

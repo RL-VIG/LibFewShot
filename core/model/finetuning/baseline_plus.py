@@ -88,12 +88,16 @@ class BaselinePlus(FinetuningModel):
         with torch.no_grad():
             feat = self.emb_func(image)
 
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=1
+        )
         episode_size = support_feat.size(0)
 
         output_list = []
         for i in range(episode_size):
-            output = self.set_forward_adaptation(support_feat[i], support_target[i], query_feat[i])
+            output = self.set_forward_adaptation(
+                support_feat[i], support_target[i], query_feat[i]
+            )
             output_list.append(output)
 
         output = torch.cat(output_list, dim=0)
@@ -128,7 +132,9 @@ class BaselinePlus(FinetuningModel):
         for epoch in range(self.inner_param["inner_train_iter"]):
             rand_id = torch.randperm(support_size)
             for i in range(0, support_size, self.inner_param["inner_batch_size"]):
-                select_id = rand_id[i : min(i + self.inner_param["inner_batch_size"], support_size)]
+                select_id = rand_id[
+                    i : min(i + self.inner_param["inner_batch_size"], support_size)
+                ]
                 batch = support_feat[select_id]
                 target = support_target[select_id]
 

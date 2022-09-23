@@ -20,7 +20,9 @@ str_level_dict = {
 }
 
 
-def init_logger_config(log_level, result_root, classifier, backbone, is_train=True, rank=0):
+def init_logger_config(
+    log_level, result_root, classifier, backbone, is_train=True, rank=0
+):
     if log_level not in str_level_dict:
         raise KeyError
 
@@ -34,7 +36,11 @@ def init_logger_config(log_level, result_root, classifier, backbone, is_train=Tr
         logging_config = {
             "version": 1,
             "disable_existing_loggers": True,
-            "formatters": {"simple": {"format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s"}},
+            "formatters": {
+                "simple": {
+                    "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+                }
+            },
             "handlers": {
                 "console": {
                     "level": level,
@@ -66,7 +72,11 @@ def init_logger_config(log_level, result_root, classifier, backbone, is_train=Tr
         logging_config = {
             "version": 1,
             "disable_existing_loggers": True,
-            "formatters": {"simple": {"format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s"}},
+            "formatters": {
+                "simple": {
+                    "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+                }
+            },
             "handlers": {
                 "console": {
                     "level": level,

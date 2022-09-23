@@ -28,6 +28,7 @@ from core.utils import (
     save_model,
     get_instance,
     data_prefetcher,
+    GradualWarmupScheduler,
 )
 
 
@@ -67,6 +68,7 @@ class Trainer(object):
             self.best_val_acc,
             self.best_test_acc,
         ) = self._init_optim(config)
+        self.val_per_epoch = config["val_per_epoch"]
 
     def train_loop(self, rank):
         """
@@ -80,24 +82,32 @@ class Trainer(object):
             print("learning rate: {}".format(self.scheduler.get_last_lr()))
             train_acc = self._train(epoch_idx)
             print(" * Acc@1 {:.3f} ".format(train_acc))
-            print("============ Validation on the val set ============")
-            val_acc = self._validate(epoch_idx, is_test=False)
-            print(" * Acc@1 {:.3f} Best acc {:.3f}".format(val_acc, self.best_val_acc))
-            print("============ Testing on the test set ============")
-            test_acc = self._validate(epoch_idx, is_test=True)
-            print(" * Acc@1 {:.3f} Best acc {:.3f}".format(test_acc, self.best_test_acc))
+            if ((epoch_idx + 1) % self.val_per_epoch) == 0:
+                print("============ Validation on the val set ============")
+                val_acc = self._validate(epoch_idx, is_test=False)
+                print(
+                    " * Acc@1 {:.3f} Best acc {:.3f}".format(val_acc, self.best_val_acc)
+                )
+                print("============ Testing on the test set ============")
+                test_acc = self._validate(epoch_idx, is_test=True)
+                print(
+                    " * Acc@1 {:.3f} Best acc {:.3f}".format(
+                        test_acc, self.best_test_acc
+                    )
+                )
             time_scheduler = self._cal_time_scheduler(experiment_begin, epoch_idx)
             print(" * Time: {}".format(time_scheduler))
             self.scheduler.step()
 
             if self.rank == 0:
-                if val_acc > self.best_val_acc:
-                    self.best_val_acc = val_acc
-                    self.best_test_acc = test_acc
-                    self._save_model(epoch_idx, SaveType.BEST)
+                if ((epoch_idx + 1) % self.val_per_epoch) == 0:
+                    if val_acc > self.best_val_acc:
+                        self.best_val_acc = val_acc
+                        self.best_test_acc = test_acc
+                        self._save_model(epoch_idx, SaveType.BEST)
 
-                if epoch_idx != 0 and epoch_idx % self.config["save_interval"] == 0:
-                    self._save_model(epoch_idx, SaveType.NORMAL)
+                    if epoch_idx != 0 and epoch_idx % self.config["save_interval"] == 0:
+                        self._save_model(epoch_idx, SaveType.NORMAL)
 
                 self._save_model(epoch_idx, SaveType.LAST)
 
@@ -130,14 +140,20 @@ class Trainer(object):
 
         meter = self.train_meter
         meter.reset()
-        episode_size = 1 if self.model_type == ModelType.FINETUNING else self.config["episode_size"]
+        episode_size = (
+            1
+            if self.model_type == ModelType.FINETUNING
+            else self.config["episode_size"]
+        )
 
         end = time()
         log_scale = 1 if self.model_type == ModelType.FINETUNING else episode_size
-
-        for batch_idx, batch in enumerate(self.train_loader):
+        for batch_idx, batch in enumerate(zip(*self.train_loader)):
             if self.rank == 0:
-                self.writer.set_step(epoch_idx * len(self.train_loader) + batch_idx * episode_size)
+                self.writer.set_step(
+                    epoch_idx * max(map(len, self.train_loader))
+                    + batch_idx * episode_size
+                )
 
             # visualize the weight
             if self.rank == 0 and self.config["log_paramerter"]:
@@ -150,11 +166,17 @@ class Trainer(object):
 
             # calculate the output
             calc_begin = time()
-            output, acc, loss = self.model(batch)
+            output, acc, loss = self.model(
+                [elem for each_batch in batch for elem in each_batch]
+            )
 
             # compute gradients
             self.optimizer.zero_grad()
             loss.backward()
+            nn.utils.clip_grad_norm_(self.model.parameters(), 2.0)
+            for param in self.model.parameters():
+                if (param.grad != param.grad).float().sum() != 0:  # nan detected
+                    param.grad.zero_()
             self.optimizer.step()
             meter.update("calc_time", time() - calc_begin)
 
@@ -168,7 +190,7 @@ class Trainer(object):
             # print the intermediate results
             if ((batch_idx + 1) * log_scale % self.config["log_interval"] == 0) or (
                 batch_idx + 1
-            ) * episode_size >= len(self.train_loader) * log_scale:
+            ) * episode_size >= max(map(len, self.train_loader)) * log_scale:
                 info_str = (
                     "Epoch-({}): [{}/{}]\t"
                     "Time {:.3f} ({:.3f})\t"
@@ -178,7 +200,7 @@ class Trainer(object):
                     "Acc@1 {:.3f} ({:.3f})".format(
                         epoch_idx,
                         (batch_idx + 1) * log_scale,
-                        len(self.train_loader) * log_scale,
+                        max(map(len, self.train_loader)) * log_scale,
                         meter.last("batch_time"),
                         meter.avg("batch_time"),
                         meter.last("calc_time"),
@@ -221,11 +243,14 @@ class Trainer(object):
         log_scale = self.config["episode_size"]
         with torch.set_grad_enabled(enable_grad):
             loader = self.test_loader if is_test else self.val_loader
-            for batch_idx, batch in enumerate(loader):
+            for batch_idx, batch in enumerate(zip(*loader)):
                 if self.rank == 0:
                     self.writer.set_step(
                         int(
-                            (epoch_idx * len(loader) + batch_idx * episode_size)
+                            (
+                                epoch_idx * max(map(len, loader))
+                                + batch_idx * episode_size
+                            )
                             * self.config["tb_scale"]
                         )
                     )
@@ -234,7 +259,9 @@ class Trainer(object):
 
                 # calculate the output
                 calc_begin = time()
-                output, acc = self.model(batch)
+                output, acc = self.model(
+                    [elem for each_batch in batch for elem in each_batch]
+                )
                 meter.update("calc_time", time() - calc_begin)
 
                 # measure accuracy and record loss
@@ -245,7 +272,7 @@ class Trainer(object):
 
                 if ((batch_idx + 1) * log_scale % self.config["log_interval"] == 0) or (
                     batch_idx + 1
-                ) * episode_size >= len(self.val_loader) * log_scale:
+                ) * episode_size >= max(map(len, loader)) * log_scale:
                     info_str = (
                         "Epoch-({}): [{}/{}]\t"
                         "Time {:.3f} ({:.3f})\t"
@@ -254,7 +281,7 @@ class Trainer(object):
                         "Acc@1 {:.3f} ({:.3f})".format(
                             epoch_idx,
                             (batch_idx + 1) * log_scale,
-                            len(self.val_loader) * log_scale,
+                            max(map(len, loader)) * log_scale,
                             meter.last("batch_time"),
                             meter.avg("batch_time"),
                             meter.last("calc_time"),
@@ -301,7 +328,8 @@ class Trainer(object):
             result_dir = (
                 base_dir
                 + "{}-{}".format(
-                    ("-" + config["tag"]) if config["tag"] is not None else "", get_local_time()
+                    ("-" + config["tag"]) if config["tag"] is not None else "",
+                    get_local_time(),
                 )
                 if config["log_name"] is None
                 else config["log_name"]
@@ -314,7 +342,9 @@ class Trainer(object):
             if self.rank == 0:
                 create_dirs([result_path, log_path, checkpoints_path, viz_path])
 
-                with open(os.path.join(result_path, "config.yaml"), "w", encoding="utf-8") as fout:
+                with open(
+                    os.path.join(result_path, "config.yaml"), "w", encoding="utf-8"
+                ) as fout:
                     fout.write(yaml.dump(config))
 
         init_logger_config(
@@ -396,7 +426,9 @@ class Trainer(object):
         # FIXME: May be inaccurate
 
         if self.config["pretrain_path"] is not None:
-            print("load pretraining emb_func from {}".format(self.config["pretrain_path"]))
+            print(
+                "load pretraining emb_func from {}".format(self.config["pretrain_path"])
+            )
             state_dict = torch.load(self.config["pretrain_path"], map_location="cpu")
             msg = model.emb_func.load_state_dict(state_dict, strict=False)
 
@@ -406,7 +438,9 @@ class Trainer(object):
                 print("Unexpected keys:{}".format(msg.unexpected_keys), level="warning")
 
         if self.config["resume"]:
-            resume_path = os.path.join(self.config["resume_path"], "checkpoints", "model_last.pth")
+            resume_path = os.path.join(
+                self.config["resume_path"], "checkpoints", "model_last.pth"
+            )
             print("load the resume model checkpoints dict from {}.".format(resume_path))
             state_dict = torch.load(resume_path, map_location="cpu")["model"]
             msg = model.load_state_dict(state_dict, strict=False)
@@ -419,7 +453,10 @@ class Trainer(object):
         if self.distribute:
             # higher order grad of BN in multi gpu will conflict with syncBN
             # FIXME MAML with multi GPU conflict with syncBN
-            if not (self.config["classifier"]["name"] in ["MAML"] and self.config["n_gpu"] > 1):
+            if not (
+                self.config["classifier"]["name"] in ["MAML"]
+                and self.config["n_gpu"] > 1
+            ):
                 model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
             else:
                 print(
@@ -430,7 +467,10 @@ class Trainer(object):
                 )
             model = model.to(self.rank)
             model = nn.parallel.DistributedDataParallel(
-                model, device_ids=[self.rank], output_device=self.rank, find_unused_parameters=True
+                model,
+                device_ids=[self.rank],
+                output_device=self.rank,
+                find_unused_parameters=True,
             )
 
             return model, model.module.model_type
@@ -472,25 +512,26 @@ class Trainer(object):
                     params_dict_list.append(param_dict)
 
         params_dict_list.append(
-            {"params": filter(lambda p: id(p) not in params_idx, self.model.parameters())}
+            {
+                "params": filter(
+                    lambda p: id(p) not in params_idx, self.model.parameters()
+                )
+            }
         )
-        optimizer = get_instance(torch.optim, "optimizer", config, params=params_dict_list)
-        if config["lr_scheduler"]["name"] == "LambdaLR":
-            scheduler = torch.optim.lr_scheduler.LambdaLR(
-                optimizer,
-                lr_lambda=eval(config["lr_scheduler"]["kwargs"]["lr_lambda"]),
-                last_epoch=-1,
-            )
-        else:
-            scheduler = get_instance(
-                torch.optim.lr_scheduler, "lr_scheduler", config, optimizer=optimizer
-            )
+        optimizer = get_instance(
+            torch.optim, "optimizer", config, params=params_dict_list
+        )
+        scheduler = GradualWarmupScheduler(
+            optimizer, self.config
+        )  # if config['warmup']==0, scheduler will be a normal lr_scheduler, jump into this class for details
         print(optimizer)
         from_epoch = -1
         best_val_acc = float("-inf")
         best_test_acc = float("-inf")
         if self.config["resume"]:
-            resume_path = os.path.join(self.config["resume_path"], "checkpoints", "model_last.pth")
+            resume_path = os.path.join(
+                self.config["resume_path"], "checkpoints", "model_last.pth"
+            )
             print(
                 "load the optimizer, lr_scheduler and epoch checkpoints dict from {}.".format(
                     resume_path
@@ -523,7 +564,9 @@ class Trainer(object):
             rank,
             config["device_ids"],
             config["n_gpu"],
-            backend="nccl" if "dist_backend" not in self.config else self.config["dist_backend"],
+            backend="nccl"
+            if "dist_backend" not in self.config
+            else self.config["dist_backend"],
             dist_url="tcp://127.0.0.1:" + str(config["port"])
             if "dist_url" not in self.config
             else self.config["dist_url"],
@@ -625,7 +668,8 @@ class Trainer(object):
         """
         # check: episode_size >= n_gpu and episode_size != 0
         assert (
-            self.config["episode_size"] >= self.config["n_gpu"] and self.config["episode_size"] != 0
+            self.config["episode_size"] >= self.config["n_gpu"]
+            and self.config["episode_size"] != 0
         ), "episode_size {} should be >= n_gpu {} and != 0".format(
             self.config["episode_size"], self.config["n_gpu"]
         )
@@ -660,7 +704,9 @@ class Trainer(object):
         total_epoch = self.config["epoch"] - self.from_epoch - 1
         now_epoch = epoch_idx - self.from_epoch
 
-        time_consum = datetime.datetime.now() - datetime.datetime.fromtimestamp(start_time)
+        time_consum = datetime.datetime.now() - datetime.datetime.fromtimestamp(
+            start_time
+        )
         time_consum -= datetime.timedelta(microseconds=time_consum.microseconds)
         time_remain = (time_consum * (total_epoch - now_epoch)) / (now_epoch)
 

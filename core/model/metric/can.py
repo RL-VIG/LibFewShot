@@ -100,7 +100,9 @@ class CAM(nn.Module):
     def __init__(self, mid_channels):
         super(CAM, self).__init__()
         self.conv1 = ConvBlock(mid_channels * mid_channels, mid_channels, 1)
-        self.conv2 = nn.Conv2d(mid_channels, mid_channels * mid_channels, 1, stride=1, padding=0)
+        self.conv2 = nn.Conv2d(
+            mid_channels, mid_channels * mid_channels, 1, stride=1, padding=0
+        )
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -155,7 +157,9 @@ class CAM(nn.Module):
 
 
 class CAMLayer(nn.Module):
-    def __init__(self, scale_cls, iter_num_prob=35.0 / 75, num_classes=64, nFeat=512, HW=5):
+    def __init__(
+        self, scale_cls, iter_num_prob=35.0 / 75, num_classes=64, nFeat=512, HW=5
+    ):
         super(CAMLayer, self).__init__()
         self.scale_cls = scale_cls
         self.cam = CAM(HW)
@@ -172,7 +176,9 @@ class CAMLayer(nn.Module):
         query_feat = F.normalize(
             query_feat, p=2, dim=query_feat.dim() - 1, eps=1e-12
         )  # [1, 75, 5, 512]
-        scores = self.scale_cls * torch.sum(query_feat * support_feat, dim=-1)  # [1, 75, 5]
+        scores = self.scale_cls * torch.sum(
+            query_feat * support_feat, dim=-1
+        )  # [1, 75, 5]
         return scores
 
     def forward(self, support_feat, query_feat, support_targets, query_targets):
@@ -195,7 +201,9 @@ class CAMLayer(nn.Module):
         labels_train_transposed = support_targets.transpose(1, 2)  # [1, 5, 5]
 
         # calc the prototypes of support set
-        prototypes = torch.bmm(labels_train_transposed, support_feat)  # [1, 5, 5]x[1, 5, 640]
+        prototypes = torch.bmm(
+            labels_train_transposed, support_feat
+        )  # [1, 5, 5]x[1, 5, 640]
         prototypes = prototypes.div(
             labels_train_transposed.sum(dim=2, keepdim=True).expand_as(prototypes)
         )  # [1, 5, 640]
@@ -222,7 +230,9 @@ class CAMLayer(nn.Module):
         query_feat = query_feat.transpose(2, 3)
         query_targets = query_targets.unsqueeze(3)
         query_feat = torch.matmul(query_feat, query_targets)
-        query_feat = query_feat.reshape(batch_size * n_query, -1, *original_feat_shape[-2:])
+        query_feat = query_feat.reshape(
+            batch_size * n_query, -1, *original_feat_shape[-2:]
+        )
         query_targets = self.classifier(query_feat)
 
         return query_targets, cls_scores
@@ -234,7 +244,9 @@ class CAMLayer(nn.Module):
         b, n, c, h, w = support_feat.size()
 
         support_targets_transposed = support_targets.transpose(1, 2)
-        support_feat = torch.bmm(support_targets_transposed, support_feat.reshape(b, n, -1))
+        support_feat = torch.bmm(
+            support_targets_transposed, support_feat.reshape(b, n, -1)
+        )
         support_feat = support_feat.div(
             support_targets_transposed.sum(dim=2, keepdim=True).expand_as(support_feat)
         )
@@ -245,7 +257,9 @@ class CAMLayer(nn.Module):
         query_feat = query_feat.mean(-1).mean(-1)
 
         query_feat = F.normalize(query_feat, p=2, dim=query_feat.dim() - 1, eps=1e-12)
-        support_feat = F.normalize(support_feat, p=2, dim=support_feat.dim() - 1, eps=1e-12)
+        support_feat = F.normalize(
+            support_feat, p=2, dim=support_feat.dim() - 1, eps=1e-12
+        )
         scores = self.scale_cls * torch.sum(query_feat * support_feat, dim=-1)
         return scores
 
@@ -279,7 +293,13 @@ class CAMLayer(nn.Module):
 
 class CAN(MetricModel):
     def __init__(
-        self, scale_cls, iter_num_prob=35.0 / 75, num_classes=64, nFeat=512, HW=5, **kwargs
+        self,
+        scale_cls,
+        iter_num_prob=35.0 / 75,
+        num_classes=64,
+        nFeat=512,
+        HW=5,
+        **kwargs
     ):
         super(CAN, self).__init__(**kwargs)
         self.cam_layer = CAMLayer(scale_cls, iter_num_prob, num_classes, nFeat, HW)
@@ -297,21 +317,28 @@ class CAN(MetricModel):
         images, global_targets = batch
         images = images.to(self.device)
         global_targets = global_targets.to(self.device)
-        episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
-        emb = self.emb_func(images)
-        support_feat, query_feat, support_targets, query_targets = self.split_by_episode(
-            emb, mode=2
+        episode_size = images.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
         )
+        emb = self.emb_func(images)
+        (
+            support_feat,
+            query_feat,
+            support_targets,
+            query_targets,
+        ) = self.split_by_episode(emb, mode=2)
 
         # convert to one-hot
         support_targets_one_hot = one_hot(
-            support_targets.reshape(episode_size * self.way_num * self.shot_num), self.way_num
+            support_targets.reshape(episode_size * self.way_num * self.shot_num),
+            self.way_num,
         )
         support_targets_one_hot = support_targets_one_hot.reshape(
             episode_size, self.way_num * self.shot_num, self.way_num
         )
         query_targets_one_hot = one_hot(
-            query_targets.reshape(episode_size * self.way_num * self.query_num), self.way_num
+            query_targets.reshape(episode_size * self.way_num * self.query_num),
+            self.way_num,
         )
         query_targets_one_hot = query_targets_one_hot.reshape(
             episode_size, self.way_num * self.query_num, self.way_num
@@ -323,7 +350,9 @@ class CAN(MetricModel):
         #        support_feat, query_feat, support_targets_one_hot, query_targets_one_hot
         # )
 
-        cls_scores = cls_scores.reshape(episode_size * self.way_num * self.query_num, -1)
+        cls_scores = cls_scores.reshape(
+            episode_size * self.way_num * self.query_num, -1
+        )
         acc = accuracy(cls_scores, query_targets.reshape(-1), topk=1)
         return cls_scores, acc
 
@@ -335,20 +364,31 @@ class CAN(MetricModel):
         images, global_targets = batch
         images = images.to(self.device)
         global_targets = global_targets.to(self.device)
-        episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = images.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
         emb = self.emb_func(images)  # [80, 640]
-        support_feat, query_feat, support_targets, query_targets = self.split_by_episode(
+        (
+            support_feat,
+            query_feat,
+            support_targets,
+            query_targets,
+        ) = self.split_by_episode(
             emb, mode=2
         )  # [4,5,512,6,6] [4,
         # 75, 512,6,6] [4, 5] [300]
-        support_targets = support_targets.reshape(episode_size, self.way_num).contiguous()
+        support_targets = support_targets.reshape(
+            episode_size, self.way_num
+        ).contiguous()
         support_global_targets, query_global_targets = (
             global_targets[:, :, : self.shot_num],
             global_targets[:, :, self.shot_num :],
         )
 
         support_feat, support_targets, support_global_targets = shuffle(
-            support_feat, support_targets, support_global_targets.reshape(*support_targets.size())
+            support_feat,
+            support_targets,
+            support_global_targets.reshape(*support_targets.size()),
         )
         query_feat, query_targets, query_global_targets = shuffle(
             query_feat,
@@ -358,13 +398,15 @@ class CAN(MetricModel):
 
         # convert to one-hot
         support_targets_one_hot = one_hot(
-            support_targets.reshape(episode_size * self.way_num * self.shot_num), self.way_num
+            support_targets.reshape(episode_size * self.way_num * self.shot_num),
+            self.way_num,
         )
         support_targets_one_hot = support_targets_one_hot.reshape(
             episode_size, self.way_num * self.shot_num, self.way_num
         )
         query_targets_one_hot = one_hot(
-            query_targets.reshape(episode_size * self.way_num * self.query_num), self.way_num
+            query_targets.reshape(episode_size * self.way_num * self.query_num),
+            self.way_num,
         )
         query_targets_one_hot = query_targets_one_hot.reshape(
             episode_size, self.way_num * self.query_num, self.way_num
@@ -377,6 +419,8 @@ class CAN(MetricModel):
         loss1 = self.loss_func(output, query_global_targets.contiguous().reshape(-1))
         loss2 = self.loss_func(cls_scores, query_targets.reshape(-1))
         loss = loss1 + 0.5 * loss2
-        cls_scores = torch.sum(cls_scores.reshape(*cls_scores.size()[:2], -1), dim=-1)  # [300, 5]
+        cls_scores = torch.sum(
+            cls_scores.reshape(*cls_scores.size()[:2], -1), dim=-1
+        )  # [300, 5]
         acc = accuracy(cls_scores, query_targets.reshape(-1), topk=1)
         return output, acc, loss

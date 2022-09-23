@@ -46,7 +46,9 @@ class DistillLayer(nn.Module):
     ):
         super(DistillLayer, self).__init__()
         self.emb_func = self._load_state_dict(emb_func, emb_func_path, is_distill)
-        self.cls_classifier = self._load_state_dict(cls_classifier, cls_classifier_path, is_distill)
+        self.cls_classifier = self._load_state_dict(
+            cls_classifier, cls_classifier_path, is_distill
+        )
 
     def _load_state_dict(self, model, state_dict_path, is_distill):
         new_model = None
@@ -114,7 +116,9 @@ class SKDModel(FinetuningModel):
         with torch.no_grad():
             feat = self.emb_func(image)
 
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=1
+        )
         episode_size = support_feat.size(0)
 
         output_list = []
@@ -152,7 +156,9 @@ class SKDModel(FinetuningModel):
 
         batch_size = image.size(0)
 
-        generated_image, generated_target, rot_target = self.rot_image_generation(image, target)
+        generated_image, generated_target, rot_target = self.rot_image_generation(
+            image, target
+        )
 
         feat = self.emb_func(generated_image)
         output = self.cls_classifier(feat)
@@ -164,7 +170,9 @@ class SKDModel(FinetuningModel):
         else:
             rot_output = self.rot_classifier(output)
             gamma_loss = self.ce_loss_func(output, generated_target)
-            alpha_loss = torch.sum(F.binary_cross_entropy_with_logits(rot_output, rot_target))
+            alpha_loss = torch.sum(
+                F.binary_cross_entropy_with_logits(rot_output, rot_target)
+            )
 
         loss = gamma_loss * self.gamma + alpha_loss * self.alpha
 
@@ -202,13 +210,17 @@ class SKDModel(FinetuningModel):
             rot_target[batch_size:] += 1
             rot_target = rot_target.long().to(self.device)
         else:
-            generated_image = torch.cat([image, images_90, images_180, images_270], dim=0)
+            generated_image = torch.cat(
+                [image, images_90, images_180, images_270], dim=0
+            )
             generated_target = target.repeat(4)
 
             rot_target = torch.zeros(batch_size * 4)
             rot_target[batch_size:] += 1
             rot_target[batch_size * 2 :] += 1
             rot_target[batch_size * 3 :] += 1
-            rot_target = F.one_hot(rot_target.to(torch.int64), 4).float().to(self.device)
+            rot_target = (
+                F.one_hot(rot_target.to(torch.int64), 4).float().to(self.device)
+            )
 
         return generated_image, generated_target, rot_target

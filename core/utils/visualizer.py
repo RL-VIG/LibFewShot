@@ -44,6 +44,7 @@ class TensorboardWriter(object):
         else:
             raise RuntimeError
 
-
-    def close(self, ):
+    def close(
+        self,
+    ):
         self.writer.close()

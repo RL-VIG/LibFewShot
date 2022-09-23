@@ -1,0 +1,59 @@
+includes:
+  - headers/data.yaml
+  - headers/device.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
+  - classifiers/BOIL.yaml
+  - backbones/Conv64F.yaml
+
+way_num: 5
+shot_num: 5
+query_num: 15
+data_root: /data/wzy/miniImageNet--ravi
+image_size: 84
+use_memory: False
+augment: True
+augment_times: 1
+augment_times_query: 1
+episode_size: 4
+train_episode: 100
+test_episode: 25
+
+epoch: 50
+device_ids: 0
+n_gpu: 1
+val_per_epoch: 100
+
+optimizer:
+  name: Adam
+  kwargs:
+    lr: 0.001
+  other:
+    emb_func: 0.001
+
+lr_scheduler:
+  name: StepLR
+  kwargs:
+    gamma: 0.5
+    step_size: 10
+
+
+classifier:
+  name: BOIL
+  kwargs:
+    inner_param:
+      classifier_lr: 0.0
+      extractor_lr: 0.5
+    feat_dim: 1600
+    testing_method: NIL
+
+backbone:
+  name: Conv64F
+  kwargs:
+    is_flatten: True
+    is_feature: False
+    leaky_relu: False
+    negative_slope: 0.0
+    last_pool: True
+    maxpool_last2: True

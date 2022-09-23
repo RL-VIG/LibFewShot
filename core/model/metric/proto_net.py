@@ -75,9 +75,13 @@ class ProtoNet(MetricModel):
         """
         image, global_target = batch
         image = image.to(self.device)
-        episode_size = image.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = image.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
         feat = self.emb_func(image)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(feat, mode=1)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            feat, mode=1
+        )
 
         output = self.proto_layer(
             query_feat, support_feat, self.way_num, self.shot_num, self.query_num
@@ -94,9 +98,13 @@ class ProtoNet(MetricModel):
         """
         images, global_targets = batch
         images = images.to(self.device)
-        episode_size = images.size(0) // (self.way_num * (self.shot_num + self.query_num))
+        episode_size = images.size(0) // (
+            self.way_num * (self.shot_num + self.query_num)
+        )
         emb = self.emb_func(images)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(emb, mode=1)
+        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+            emb, mode=1
+        )
 
         output = self.proto_layer(
             query_feat, support_feat, self.way_num, self.shot_num, self.query_num
