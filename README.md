@@ -2,7 +2,7 @@
 Make few-shot learning easy.
 
 [LibFewShot: A Comprehensive Library for Few-shot Learning](https://arxiv.org/abs/2109.04898).
-Wenbin Li, Ziyi Wang, Xuesong Yang, Chuanqi Dong, Pinzhuo Tian, Tiexin Qin, Jing Huo, Yinghuan Shi, Lei Wang, Yang Gao, Jiebo Luo. In arXiv 2021.<br>
+Wenbin Li, Ziyi Wang, Xuesong Yang, Chuanqi Dong, Pinzhuo Tian, Tiexin Qin, Jing Huo, Yinghuan Shi, Lei Wang, Yang Gao, Jiebo Luo. In arXiv 2022.<br>
 <img src='flowchart.png' width=1000/>
 
 ## Supported Methods
@@ -70,6 +70,6 @@ If you use this code for your research, please cite our paper.
   title={LibFewShot: A Comprehensive Library for Few-shot Learning},
   author={Li, Wenbin and Wang, Ziyi and Yang, Xuesong and Dong, Chuanqi and Tian, Pinzhuo and Qin, Tiexin and Huo Jing and Shi, Yinghuan and Wang, Lei and Gao, Yang and Luo, Jiebo},
   journal={arXiv preprint arXiv:2109.04898},
-  year={2021}
+  year={2022}
 }
 ```
