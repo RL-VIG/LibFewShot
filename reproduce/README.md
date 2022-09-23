@@ -615,10 +615,10 @@ This folder contains:
         <td><a href="./NegCos">NegCos</a></td>
         <td>ECCV’20</td>
         <td> Non-episodic</td>
-        <td> 60.99 /td>
-        <td> 76.30 /td>
-        <td> 68.36 /td>
-        <td> 83.77 /td>
+        <td> 60.99 </td>
+        <td> 76.30 </td>
+        <td> 68.36 </td>
+        <td> 83.77 </td>
     </tr>
         <tr>
         <td><a href="./Versa">Versa</a></td>
