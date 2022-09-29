@@ -22,7 +22,6 @@ from core.utils import (
     TensorboardWriter,
     mean_confidence_interval,
     get_instance,
-    data_prefetcher,
 )
 
 
@@ -101,11 +100,8 @@ class Test(object):
         enable_grad = self.model_type != ModelType.METRIC
         log_scale = self.config["episode_size"]
         with torch.set_grad_enabled(enable_grad):
-            prefetcher = data_prefetcher(self.test_loader)
-            batch = prefetcher.next()
-            batch_idx = -1
-            while batch is not None:
-                batch_idx += 1
+            loader = self.test_loader
+            for batch_idx, batch in enumerate(zip(*loader)):
                 if self.rank == 0:
                     self.writer.set_step(
                         int(
@@ -121,7 +117,7 @@ class Test(object):
 
                 # calculate the output
                 calc_begin = time()
-                output, acc = self.model(batch)
+                output, acc = self.model([elem for each_batch in batch for elem in each_batch])
                 accuracies.append(acc)
                 meter.update("calc_time", time() - calc_begin)
 
@@ -133,7 +129,7 @@ class Test(object):
 
                 if ((batch_idx + 1) * log_scale % self.config["log_interval"] == 0) or (
                     batch_idx + 1
-                ) * episode_size >= len(self.test_loader) * log_scale:
+                ) * episode_size >= max(map(len, loader)) * log_scale:
                     info_str = (
                         "Epoch-({}): [{}/{}]\t"
                         "Time {:.3f} ({:.3f})\t"
@@ -142,7 +138,7 @@ class Test(object):
                         "Acc@1 {:.3f} ({:.3f})".format(
                             epoch_idx,
                             (batch_idx + 1) * log_scale,
-                            len(self.test_loader) * log_scale,
+                            max(map(len, loader)) * log_scale,
                             meter.last("batch_time"),
                             meter.avg("batch_time"),
                             meter.last("calc_time"),
@@ -156,7 +152,6 @@ class Test(object):
                     print(info_str)
                 end = time()
 
-                batch = prefetcher.next()
 
         if self.distribute:
             self.model.module.reverse_setting_info()
