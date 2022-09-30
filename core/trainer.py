@@ -77,7 +77,7 @@ class Trainer(object):
         experiment_begin = time()
         for epoch_idx in range(self.from_epoch + 1, self.config["epoch"]):
             if self.distribute and self.model_type == ModelType.FINETUNING:
-                self.train_loader.sampler.set_epoch(epoch_idx)
+                self.train_loader[0].sampler.set_epoch(epoch_idx)
             print("============ Train on the train set ============")
             print("learning rate: {}".format(self.scheduler.get_last_lr()))
             train_acc = self._train(epoch_idx)
