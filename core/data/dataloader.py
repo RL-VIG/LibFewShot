@@ -80,7 +80,7 @@ def get_dataloader(config, mode, model_type, distribute):
         use_memory=config["use_memory"],
     )
 
-    if config["dataloader_num"] == 1 or mode == "test":
+    if config["dataloader_num"] == 1 or mode in ["val", "test"]:
 
         collate_function = get_collate_function(config, trfms, mode, model_type)
 
