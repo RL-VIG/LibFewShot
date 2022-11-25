@@ -174,9 +174,9 @@ class Trainer(object):
             self.optimizer.zero_grad()
             loss.backward()
             nn.utils.clip_grad_norm_(self.model.parameters(), 2.0)
-            for param in self.model.parameters():
-                if (param.grad != param.grad).float().sum() != 0:  # nan detected
-                    param.grad.zero_()
+            # for param in self.model.parameters():
+            #     if (param.grad != param.grad).float().sum() != 0:  # nan detected
+            #         param.grad.zero_()
             self.optimizer.step()
             meter.update("calc_time", time() - calc_begin)
 
