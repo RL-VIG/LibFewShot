@@ -42,8 +42,13 @@ def get_dataloader(config, mode, model_type, distribute):
             trfms_list.append(transforms.Resize((256, 256)))
             trfms_list.append(transforms.RandomCrop((224, 224)))
         elif config["image_size"] == 84:
-            trfms_list.append(transforms.Resize((96, 96)))
-            trfms_list.append(transforms.RandomCrop((84, 84)))
+            if (
+                "augment_method" in config and config["augment_method"] == "DeepBdcAugment"
+            ):
+                trfms_list.append(transforms.RandomResizedCrop(84))
+            else:
+                trfms_list.append(transforms.Resize((96, 96)))
+                trfms_list.append(transforms.RandomCrop((84, 84)))
         # for MTL -> alternative solution: use avgpool(ks=11)
         elif config["image_size"] == 80:
             # MTL use another MEAN and STD

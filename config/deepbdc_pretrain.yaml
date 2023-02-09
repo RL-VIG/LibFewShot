@@ -1,0 +1,66 @@
+includes:
+  - headers/data.yaml
+  - headers/device.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
+
+n_gpu: 1
+device_ids: 1
+episode_size: 1
+epoch: 170
+image_size: 84
+batch_size: 64
+
+test_episode: 600   # test/val n_episodes, number of episodes in meta val
+test_epoch: 5
+test_query: 15
+test_shot: 1
+test_way: 5
+train_episode: 600
+query_num: 15
+shot_num: 1
+way_num: 5
+
+augment: true
+augment_times: 1
+augment_times_query: 1
+augment_method: DeepBdcAugment
+
+backbone:
+  name: resnet12Bdc
+  kwargs:
+    reduce_dim: 640
+
+classifier:
+  name: DeepBDC_Pretrain
+  kwargs: 
+    reduce_dim: 640
+    dropout_rate: 0.8
+    num_class: 64
+    val_type: meta
+    is_distill: false
+    emb_func_path: ~
+    classifier_path: ~
+
+optimizer:
+  kwargs:
+    lr: 0.05
+    momentum: 0.9
+    nesterov: true
+    weight_decay: 0.0005
+  name: SGD
+  other: 
+    emb_func.bdc_pool.temperature: 0.001
+
+lr_scheduler:
+  kwargs:
+    gamma: 0.1
+    milestones:
+    - 100
+    - 150
+  name: MultiStepLR
+
+save_part:
+  - emb_func
+  - cls_classifier
