@@ -1,0 +1,67 @@
+augment: true
+augment_times: 1
+augment_times_query: 1
+augment_method: DeepBdcAugment
+# augment_method: NormalAug
+backbone:
+  name: resnet12Bdc
+  kwargs:
+    reduce_dim: 640
+classifier:
+  name: DeepBDC
+  kwargs: ~
+data_root: /home/wangyue/miniImageNet--ravi
+deterministic: true
+device_ids: 1
+episode_size: 1
+epoch: 100
+image_size: 84
+includes:
+- headers/data.yaml
+- headers/device.yaml
+- headers/misc.yaml
+- headers/model.yaml
+- headers/optimizer.yaml
+log_interval: 100
+log_level: info
+log_name: null
+log_paramerter: false
+lr_scheduler:
+  kwargs:
+    gamma: 0.1
+    milestones:
+    - 40
+    - 80
+  name: MultiStepLR
+n_gpu: 1
+optimizer:
+  kwargs:
+    lr: 0.0001
+    momentum: 0.9
+    nesterov: true
+    weight_decay: 0.0005
+  name: SGD
+  other: null
+parallel_part:
+- emb_func
+port: 48828
+pretrain_path: ./results/DeepBDC_Pretrain-miniImageNet--ravi-resnet12Bdc-5-1-Feb-08-2023-17-07-27/checkpoints/emb_func_best.pth
+result_root: ./results
+resume: false
+save_interval: 10
+save_part:
+- emb_func
+seed: 1
+tag: null
+tb_scale: 3.3333333333333335
+test_episode: 600   # test/val n_episodes, number of episodes in meta val
+test_epoch: 5
+test_query: 16
+test_shot: 5
+test_way: 5
+train_episode: 1000
+query_num: 16
+shot_num: 5
+use_memory: false
+way_num: 5
+workers: 4

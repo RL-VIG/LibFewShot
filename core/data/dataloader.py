@@ -34,41 +34,8 @@ def get_dataloader(config, mode, model_type, distribute):
         model_type != ModelType.ABSTRACT
     ), "model_type should not be ModelType.ABSTRACT"
 
-    trfms_list = []
-
-    # Add user's trfms here (or in get_augment_method())
-    if mode == "train" and config["augment"]:
-        if config["image_size"] == 224:
-            trfms_list.append(transforms.Resize((256, 256)))
-            trfms_list.append(transforms.RandomCrop((224, 224)))
-        elif config["image_size"] == 84:
-            trfms_list.append(transforms.Resize((96, 96)))
-            trfms_list.append(transforms.RandomCrop((84, 84)))
-        # for MTL -> alternative solution: use avgpool(ks=11)
-        elif config["image_size"] == 80:
-            # MTL use another MEAN and STD
-            trfms_list.append(transforms.Resize((92, 92)))
-            trfms_list.append(transforms.RandomResizedCrop(88))
-            trfms_list.append(transforms.CenterCrop((80, 80)))
-            trfms_list.append(transforms.RandomHorizontalFlip())
-        else:
-            raise RuntimeError
-
-        aug_method = get_augment_method(config)
-        trfms_list += aug_method
-    else:
-        if config["image_size"] == 224:
-            trfms_list.append(transforms.Resize((256, 256)))
-            trfms_list.append(transforms.CenterCrop((224, 224)))
-        elif config["image_size"] == 84:
-            trfms_list.append(transforms.Resize((96, 96)))
-            trfms_list.append(transforms.CenterCrop((84, 84)))
-        # for MTL -> alternative solution: use avgpool(ks=11)
-        elif config["image_size"] == 80:
-            trfms_list.append(transforms.Resize((92, 92)))
-            trfms_list.append(transforms.CenterCrop((80, 80)))
-        else:
-            raise RuntimeError
+    # Add user's trfms in get_augment_method()
+    trfms_list = get_augment_method(config, mode)
 
     trfms_list.append(transforms.ToTensor())
     trfms_list.append(transforms.Normalize(mean=MEAN, std=STD))

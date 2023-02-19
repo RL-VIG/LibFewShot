@@ -173,7 +173,7 @@ class Trainer(object):
             # compute gradients
             self.optimizer.zero_grad()
             loss.backward()
-            nn.utils.clip_grad_norm_(self.model.parameters(), 2.0)
+            # nn.utils.clip_grad_norm_(self.model.parameters(), 2.0)
             # for param in self.model.parameters():
             #     if (param.grad != param.grad).float().sum() != 0:  # nan detected
             #         param.grad.zero_()
@@ -493,16 +493,32 @@ class Trainer(object):
         params_dict_list = []
         if "other" in config["optimizer"] and config["optimizer"]["other"] is not None:
             for key, value in config["optimizer"]["other"].items():
+                # FIXME: Set the learning rate for the model specified parameter, including nn.Module and nn.Parameter
+                # Original:
+                # Pre-modified:
+                # if self.distribute:
+                #     sub_model = getattr(self.model.module, key)
+                # else:
+                #     sub_model = getattr(self.model, key)
+
+                # Modified:
                 if self.distribute:
-                    sub_model = getattr(self.model.module, key)
+                    sub_model = eval("self.model.module." + key)
                 else:
-                    sub_model = getattr(self.model, key)
-                params_idx.extend(list(map(id, sub_model.parameters())))
+                    sub_model = eval("self.model." + key)
+                if isinstance(sub_model, nn.Module):
+                    sub_model_params_list = list(sub_model.parameters())
+                elif isinstance(sub_model, nn.Parameter):
+                    sub_model_params_list = [sub_model]
+                else:
+                    raise Exception("Unrecognized type in optimizer.other")
+
+                params_idx.extend(list(map(id, sub_model_params_list)))
                 if value is None:
-                    for p in sub_model.parameters():
+                    for p in sub_model_params_list:
                         p.requires_grad = False
                 else:
-                    param_dict = {"params": sub_model.parameters()}
+                    param_dict = {"params": sub_model_params_list}
                     if isinstance(value, float):
                         param_dict.update({"lr": value})
                     elif isinstance(value, dict):

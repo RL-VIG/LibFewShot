@@ -10,3 +10,4 @@ from .proto_net import ProtoNet
 from .relation_net import RelationNet
 from .feat import FEAT
 from .dsn import DSN
+from .deepbdc import DeepBDC
