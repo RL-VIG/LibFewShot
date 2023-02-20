@@ -11,7 +11,9 @@ from ..utils import ModelType
 
 MEAN = [120.39586422 / 255.0, 115.59361427 / 255.0, 104.54012653 / 255.0]
 STD = [70.68188272 / 255.0, 68.27635443 / 255.0, 72.54505529 / 255.0]
-
+#for S2M2
+# MEAN= [0.485, 0.456, 0.406]
+# STD=[0.229, 0.224, 0.225]
 import torch
 from queue import Queue
 from threading import Thread
@@ -44,6 +46,9 @@ def get_dataloader(config, mode, model_type, distribute):
         elif config["image_size"] == 84:
             trfms_list.append(transforms.Resize((96, 96)))
             trfms_list.append(transforms.RandomCrop((84, 84)))
+            #for S2M2
+            #trfms_list.append(transforms.RandomResizedCrop(84))
+
         # for MTL -> alternative solution: use avgpool(ks=11)
         elif config["image_size"] == 80:
             # MTL use another MEAN and STD
