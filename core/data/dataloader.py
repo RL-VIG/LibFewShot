@@ -12,6 +12,8 @@ from ..utils import ModelType
 MEAN = [120.39586422 / 255.0, 115.59361427 / 255.0, 104.54012653 / 255.0]
 STD = [70.68188272 / 255.0, 68.27635443 / 255.0, 72.54505529 / 255.0]
 
+
+
 import torch
 from queue import Queue
 from threading import Thread
@@ -35,6 +37,12 @@ def get_dataloader(config, mode, model_type, distribute):
     ), "model_type should not be ModelType.ABSTRACT"
 
     # Add user's trfms in get_augment_method()
+
+    #for S2M2
+    if(config["augment_method"] == "S2M2Augment"):
+        MEAN= [0.485, 0.456, 0.406]
+        STD=[0.229, 0.224, 0.225]
+
     trfms_list = get_augment_method(config, mode)
 
     trfms_list.append(transforms.ToTensor())
