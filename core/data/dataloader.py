@@ -12,8 +12,6 @@ from ..utils import ModelType
 MEAN = [120.39586422 / 255.0, 115.59361427 / 255.0, 104.54012653 / 255.0]
 STD = [70.68188272 / 255.0, 68.27635443 / 255.0, 72.54505529 / 255.0]
 
-
-
 import torch
 from queue import Queue
 from threading import Thread
