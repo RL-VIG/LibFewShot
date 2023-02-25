@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import torch.nn as nn
-
+import random
 
 def conv3x3(in_planes, out_planes, stride=1):
     """3x3 convolution with padding"""
@@ -148,26 +148,45 @@ class ResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def forward(self, x):
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu(x)
+    def forward(self, x ,index_mixup=None, lam=-1):
+        if lam != -1:
+            mixup_layer = random.randint(0, 4)
+        else:
+            mixup_layer = -1
+        out=x
+        if mixup_layer == 0:
+            out = lam * out + (1 - lam) * out[index_mixup]
+        out = self.conv1(out)
+        out = self.bn1(out)
+        out = self.relu(out)
+        out=self.layer1(out)
+        if mixup_layer == 1:
+            out = lam * out + (1 - lam) * out[index_mixup]
+        out = self.layer2(out)
+        if mixup_layer  == 2:
+            out = lam * out + (1 - lam) * out[index_mixup]
 
-        out1 = self.layer1(x)
-        out2 = self.layer2(out1)
-        out3 = self.layer3(out2)
-        out4 = self.layer4(out3)
+        out = self.layer3(out)
+
+        if  mixup_layer == 3:
+            out = lam * out + (1 - lam) * out[index_mixup]
+
+        out = self.layer4(out)
+
+        if  mixup_layer == 4:
+            out = lam * out + (1 - lam) * out[index_mixup]
+
 
         if self.avg_pool:
-            out4 = self.avgpool(out4)
+            out = self.avgpool(out)
 
         if self.is_flatten:
-            out4 = out4.view(out4.size(0), -1)
+            out = out.view(out.size(0), -1)
 
-        if self.is_feature:
-            return out1, out2, out3, out4
+        # if self.is_feature:
+        #     return out1, out2, out3, out4
 
-        return out4
+        return out
 
 
 def resnet18(**kwargs):

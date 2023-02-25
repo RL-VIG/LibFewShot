@@ -7,7 +7,6 @@ from .resnet_12_mtl_offcial import resnet12MTLofficial
 from .vit import ViT
 from .swin_transformer import swin_s, swin_l, swin_b, swin_t, swin_mini
 from .resnet_bdc import resnet12Bdc, resnet18Bdc
-from .resnet_18_mm import resnet18mm
 from core.model.backbone.utils.maml_module import convert_maml_module
 
 

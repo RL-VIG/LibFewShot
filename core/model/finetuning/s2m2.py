@@ -10,9 +10,6 @@ from .finetuning_model import FinetuningModel
 from torch.nn.utils.weight_norm import WeightNorm
 import numpy as np
 from torch.autograd import Variable
-def crit(output, features, target):
-    criterion = torch.nn.CrossEntropyLoss()
-    return criterion(output, target)
 class distLinear(nn.Module):
     def __init__(self, indim, outdim):
         super(distLinear, self).__init__()
@@ -74,7 +71,7 @@ class S2M2(FinetuningModel):
         #acc=((output.to(self.device)==query_target).sum().item()/output.size(0))
         return output, acc
 
-    def set_forward_loss(self, batch, mix=False):
+    def set_forward_loss(self, batch):
         """
         :param batch:
         :return:
@@ -82,58 +79,31 @@ class S2M2(FinetuningModel):
         image, target = batch
         image = image.to(self.device)
         target = target.to(self.device)
-        rotations=True
-        odd=True
 
         #use manifold-mixup
-        mix=True
-        if mix:
-            new_chunks = []
-            sizes = torch.chunk(target, 1)
+        new_chunks = []
+        sizes = torch.chunk(target, 1)
 
-            for i in range(1):
-                new_chunks.append(torch.randperm(sizes[i].shape[0]))
-            index_mixup = torch.cat(new_chunks, dim = 0)
-            lam = np.random.beta(2, 2)
+        for i in range(1):
+            new_chunks.append(torch.randperm(sizes[i].shape[0]))
+        index_mixup = torch.cat(new_chunks, dim = 0)
+        lam = np.random.beta(2, 2)
 
-            feat = self.emb_func(image, index_mixup = index_mixup, lam = lam)
-            output=self.disclass(feat)
-            loss_mm = lam * crit(output, feat, target) + (1 - lam) * crit(output, feat, target[index_mixup])
-            acc = accuracy(output, target)
-            #return output, acc, loss_mm
+        feat = self.emb_func(image, index_mixup = index_mixup, lam = lam)
+        output=self.disclass(feat)
+        loss_mm=lam*self.loss_func(output, target)+(1-lam)*self.loss_func(output, target[index_mixup])
+        acc = accuracy(output, target)
 
         #use rotation
-        #rotations=True
-        bs=image.shape[0]
-        indices = np.arange(bs)
-        np.random.shuffle(indices)
-        split_size=bs//4
-        image_=[]
-        target_ =[]
-        target_rot_=[]
+        image_rot,target_class,target_rot_class=self.rot_image_generation(image,target)
+        feat = self.emb_func(image_rot)
 
-        for j in indices[0:split_size]:
-            x90 = image[j].transpose(2,1).flip(1)
-            x180 = x90.transpose(2,1).flip(1)
-            x270 =  x180.transpose(2,1).flip(1)
-            image_ += [image[j], x90, x180, x270]
-            target_ += [target[j] for _ in range(4)]
-            target_rot_ += [torch.tensor(0),torch.tensor(1),torch.tensor(2),torch.tensor(3)]
-        image_ =Variable(torch.stack(image_,0)).to(self.device)
-        target_ =Variable(torch.stack(target_,0)).to(self.device)
-        target_rot_=Variable(torch.stack(target_rot_,0)).to(self.device)
-        image_=torch.tensor(image_).to(self.device)
-
-        target_=torch.tensor(target_).to(self.device)
-        target_rot_=torch.tensor(target_rot_).to(self.device)
-        feat = self.emb_func(image_)
-
-        output=self.disclass(feat)
-        output_rot=self.classifier_rot(feat)
-        loss = 0.5 * crit(output, feat, target_) + 0.5 * crit(output_rot, feat, target_rot_)
+        output_class=self.disclass(feat)
+        output_rot_class=self.classifier_rot(feat)
+        loss=0.5*self.loss_func(output_class, target_class) +0.5*self.loss_func(output_rot_class, target_rot_class)
 
         loss_re=loss+loss_mm
-        acc = accuracy(output, target_)
+        acc = accuracy(output_class, target_class)
         return output, acc, loss_re
 
     def set_forward_adaptation(self, support_feat, support_target, query_feat):
@@ -163,3 +133,27 @@ class S2M2(FinetuningModel):
 
         output = classifier(query_feat)
         return output
+    
+    def  rot_image_generation(self, image, target): 
+        bs=image.shape[0]
+        indices = np.arange(bs)
+        np.random.shuffle(indices)
+        split_size=bs//4
+        image_rot=[]
+        target_class =[]
+        target_rot_class=[]
+
+        for j in indices[0:split_size]:
+            x90 = image[j].transpose(2,1).flip(1)
+            x180 = x90.transpose(2,1).flip(1)
+            x270 =  x180.transpose(2,1).flip(1)
+            image_rot += [image[j], x90, x180, x270]
+            target_class += [target[j] for _ in range(4)]
+            target_rot_class += [torch.tensor(0),torch.tensor(1),torch.tensor(2),torch.tensor(3)]
+        image_rot =torch.stack(image_rot,0).to(self.device)
+        target_class =torch.stack(target_class,0).to(self.device)
+        target_rot_class=torch.stack(target_rot_class,0).to(self.device)
+        image_rot=torch.tensor(image_rot).to(self.device)
+        target_class=torch.tensor(target_class).to(self.device)
+        target_rot_class=torch.tensor(target_rot_class).to(self.device)
+        return image_rot,target_class,target_rot_class

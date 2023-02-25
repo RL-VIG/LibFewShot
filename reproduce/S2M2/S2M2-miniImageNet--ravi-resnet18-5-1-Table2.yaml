@@ -3,7 +3,7 @@ augment_times: 1
 augment_times_query: 1
 backbone:
   kwargs: null
-  name: resnet18mm
+  name: resnet18
 batch_size: 64
 augment_method: S2M2Augment
 classifier:
