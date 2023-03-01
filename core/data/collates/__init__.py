@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from .collate_functions import GeneralCollateFunction, FewShotAugCollateFunction
-from .contrib import get_augment_method
+from .contrib import get_augment_method,get_mean_std
 from ...utils import ModelType
 
 

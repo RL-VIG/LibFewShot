@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import torch.nn as nn
-
+import random
 
 def conv3x3(in_planes, out_planes, stride=1):
     """3x3 convolution with padding"""
@@ -148,15 +148,33 @@ class ResNet(nn.Module):
 
         return nn.Sequential(*layers)
 
-    def forward(self, x):
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu(x)
-
-        out1 = self.layer1(x)
+    def forward(self, x,index_mixup=None, lam=-1):
+        if lam != -1:
+            mixup_layer = random.randint(0, 4)
+        else:
+            mixup_layer = -1
+        out=x
+        if mixup_layer == 0:
+            out = lam * out + (1 - lam) * out[index_mixup]
+        out = self.conv1(out)
+        out = self.bn1(out)
+        out = self.relu(out)
+        out1=self.layer1(out)
+        if mixup_layer == 1:
+            out1 = lam * out1 + (1 - lam) * out1[index_mixup]
         out2 = self.layer2(out1)
+        if mixup_layer  == 2:
+            out2 = lam * out2 + (1 - lam) * out2[index_mixup]
+
         out3 = self.layer3(out2)
+
+        if  mixup_layer == 3:
+            out3 = lam * out3 + (1 - lam) * out3[index_mixup]
+
         out4 = self.layer4(out3)
+
+        if  mixup_layer == 4:
+            out4 = lam * out4 + (1 - lam) * out4[index_mixup]
 
         if self.avg_pool:
             out4 = self.avgpool(out4)

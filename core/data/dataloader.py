@@ -5,7 +5,7 @@ from torch.utils.data.distributed import DistributedSampler
 from torchvision import transforms
 
 from core.data.dataset import GeneralDataset
-from .collates import get_collate_function, get_augment_method
+from .collates import get_collate_function, get_augment_method,get_mean_std
 from .samplers import DistributedCategoriesSampler, get_sampler
 from ..utils import ModelType
 
@@ -35,6 +35,10 @@ def get_dataloader(config, mode, model_type, distribute):
     ), "model_type should not be ModelType.ABSTRACT"
 
     # Add user's trfms in get_augment_method()
+
+    #get mean std
+    MEAN,STD=get_mean_std(config, mode)
+    
     trfms_list = get_augment_method(config, mode)
 
     trfms_list.append(transforms.ToTensor())
