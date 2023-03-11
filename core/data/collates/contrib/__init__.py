@@ -56,7 +56,11 @@ def get_augment_method(
                 transforms.ColorJitter(**CJ_DICT),
             ]
         elif config["augment_method"] == "S2M2Augment":
-            trfms_list = [transforms.RandomResizedCrop(config["image_size"])]
+            trfms_list = [
+                transforms.RandomResizedCrop(config["image_size"]),
+                transforms.RandomHorizontalFlip(),
+                transforms.ColorJitter(**CJ_DICT),
+            ]
         else:
             trfms_list = get_default_image_size_trfms(config["image_size"])
             trfms_list += [
