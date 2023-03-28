@@ -378,7 +378,7 @@ class CAN(MetricModel):
         )  # [4,5,512,6,6] [4,
         # 75, 512,6,6] [4, 5] [300]
         support_targets = support_targets.reshape(
-            episode_size, self.way_num
+            episode_size, self.way_num * self.shot_num
         ).contiguous()
         support_global_targets, query_global_targets = (
             global_targets[:, :, : self.shot_num],
