@@ -37,15 +37,9 @@
 更细节的部分可参考 [编写`.yaml`配置文件](./tutorials/t0-write_a_config_yaml.md)。
 
 ## 运行
-1. 修改`run_trainer.py`为
+1. 修改`run_trainer.py`中`config`配置语句为
     ```python
-    from core.config import Config
-    from core.trainer import Trainer
-
-    if __name__ == "__main__":
-        config = Config("./config/getting_started.yaml").get_config_dict()
-        trainer = Trainer(config)
-        trainer.train_loop()
+    config = Config("./config/getting_started.yaml").get_config_dict()
     ```
 2. 执行
    ```shell

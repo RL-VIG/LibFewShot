@@ -32,13 +32,7 @@ includes:
 修改根目录下的`run_trainer.py`文件。
 
 ```python
-from core.config import Config
-from core.trainer import Trainer
-
-if __name__ == "__main__":
-    config = Config("./config/dn4.yaml").get_config_dict()
-    trainer = Trainer(config)
-    trainer.train_loop()
+config = Config("./config/dn4.yaml").get_config_dict()
 ```
 
 接着，在shell中输入
@@ -67,10 +61,19 @@ VAR_DICT = {
     "episode_size": 1,
 }
 
+def main(rank, config):
+    test = Test(rank, config, PATH)
+    test.test_loop()
+
+
 if __name__ == "__main__":
     config = Config(os.path.join(PATH, "config.yaml"), VAR_DICT).get_config_dict()
-    test = Test(config, PATH)
-    test.test_loop()
+
+    if config["n_gpu"] > 1:
+        os.environ["CUDA_VISIBLE_DEVICES"] = config["device_ids"]
+        torch.multiprocessing.spawn(main, nprocs=config["n_gpu"], args=(config,))
+    else:
+        main(0, config)
 
 ```
 

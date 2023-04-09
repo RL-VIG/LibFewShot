@@ -42,15 +42,9 @@ git clone https://github.com/RL-VIG/LibFewShot.git
     ```
 
 ## 测试安装是否正确
-1. 修改`run_trainer.py`为
+1. 修改`run_trainer.py`中`config`设置的一行为
     ```python
-    from core.config import Config
-    from core.trainer import Trainer
-
-    if __name__ == "__main__":
-        config = Config("./config/test_install.yaml").get_config_dict()
-        trainer = Trainer(config)
-        trainer.train_loop()
+    config = Config("./config/test_install.yaml").get_config_dict()
     ```
 2. 修改`config/headers/data.yaml`中的`data_root`为你的数据集路径
 3. 执行
