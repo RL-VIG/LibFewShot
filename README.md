@@ -31,7 +31,7 @@ Wenbin Li, Ziyi Wang, Xuesong Yang, Chuanqi Dong, Pinzhuo Tian, Tiexin Qin, Jing
 + [ADM (IJCAI 2020)](https://arxiv.org/abs/2002.00153)
 + [FEAT (CVPR 2020)](http://arxiv.org/abs/1812.03664)
 + [RENet (ICCV 2021)](https://arxiv.org/abs/2108.09666)
-+ [DeepBDC (CVPR 2022 oral)](https://arxiv.org/abs/2204.04567)
++ [DeepBDC (CVPR 2022)](https://arxiv.org/abs/2204.04567)
 
 
 ## Quick Installation
