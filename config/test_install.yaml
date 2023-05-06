@@ -4,23 +4,42 @@ includes:
   - headers/misc.yaml
   - headers/model.yaml
   - headers/optimizer.yaml
-  - classifiers/Proto.yaml
+  - classifiers/ConvMNet.yaml
   - backbones/Conv64F.yaml
 
-
-device_ids: 0
+# device_ids: 0
 way_num: 5
-shot_num: 1
+shot_num: 5
 query_num: 15
 episode_size: 1
 train_episode: 100
 test_episode: 100
+workers: 2
+epoch: 50
 
 backbone:
   name: Conv64F
   kwargs:
-    is_flatten: True
+    is_flatten: False
     is_feature: False
-    leaky_relu: False
+    leaky_relu: True
     negative_slope: 0.2
-    last_pool: True
+    last_pool: False
+    maxpool_last2: False
+
+# backbone:
+#   name: resnet18
+#   kwargs:
+#     is_flatten: False
+#     avg_pool: False
+#     last_block_stride: 1
+
+
+# backbone:
+#   name: Conv64F
+#   kwargs:
+#     is_flatten: True
+#     is_feature: False
+#     leaky_relu: False
+#     negative_slope: 0.2
+#     last_pool: True

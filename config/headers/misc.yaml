@@ -4,7 +4,7 @@ log_level: info
 log_interval: 100
 log_paramerter: False # save the parameter as histogram or not
 
-result_root: ./results
+result_root: ./resultsDF20
 save_interval: 10
 save_part:
   - emb_func
