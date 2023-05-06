@@ -1,0 +1,56 @@
+includes:
+  - headers/data.yaml
+  - headers/device.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
+  - classifiers/DN4.yaml
+  - backbones/Conv64F.yaml
+
+# device_ids: 0
+way_num: 5
+shot_num: 1
+query_num: 15
+episode_size: 1
+train_episode: 100
+test_episode: 100
+workers: 2
+epoch: 100
+
+# classifier:
+#   name: RelationNet
+#   kwargs:
+#     feat_dim: 64
+#     feat_height: 3
+#     feat_width: 3
+
+
+classifier:
+  name: DN4
+  kwargs:
+    n_k: 3
+
+backbone:
+  name: Conv64F
+  kwargs:
+    is_flatten: False
+    is_feature: False
+    leaky_relu: True
+    negative_slope: 0.2
+    last_pool: False
+
+# backbone:
+#   name: resnet18
+#   kwargs:
+#     is_flatten: False
+#     avg_pool: False
+
+
+# backbone:
+#   name: Conv64F
+#   kwargs:
+#     is_flatten: True
+#     is_feature: False
+#     leaky_relu: False
+#     negative_slope: 0.2
+#     last_pool: True
