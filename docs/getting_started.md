@@ -42,20 +42,9 @@ More details can be referred to [write a config yaml](./tutorials/t0-write_a_con
 
 ## Run
 
-1. modify `run_trainer.py` as follows:
+1. set the `config` as follows in `run_trainer.py`:
     ```python
-    # -*- coding: utf-8 -*-
-    import sys
-
-    sys.dont_write_bytecode = True
-
-    from core.config import Config
-    from core import Trainer
-
-    if __name__ == "__main__":
-        config = Config("./config/getting_started.yaml").get_config_dict()
-        trainer = Trainer(config)
-        trainer.train_loop()
+    config = Config("./config/getting_started.yaml").get_config_dict()
     ```
 2. train with the console command:
    ```shell
