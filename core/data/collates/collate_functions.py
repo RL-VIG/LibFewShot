@@ -195,15 +195,9 @@ class FewShotAugCollateFunction(object):
             )
 
             if self.jigsaw:
-                print(f'global_labels is {global_labels}')
-                print(f'order is {order}')
-                return images, global_labels, torch.stack(patches,dim=0), torch.stack(order,dim=0) 
+                return images, global_labels, torch.stack(patches,dim=0), torch.tensor(order)
             elif self.rotation:
-                # print(f'rotation_imgs is {type(rotation_imgs)}')
-                # rotation_imgs = torch.stack(rotation_imgs,dim=0)
-                # rotation_labels = torch.stack(rotation_labels,dim=0)
                 return images, global_labels, torch.stack(rotation_imgs,dim=0), torch.stack(rotation_labels,dim=0)
-                return images, global_labels, rotation_imgs, rotation_labels
             else:
                 return images, global_labels
                 # images.shape = [e*w*(q+s) x c x h x w],  global_labels.shape = [e x w x (q+s)]
