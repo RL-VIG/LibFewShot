@@ -312,7 +312,7 @@ def resnet12woLSC(
 
 
 if __name__ == "__main__":
-    model = resnet12(avg_pool=True).cuda()
+    model = resnet12(avg_pool=False,is_flatten=False,maxpool_last2=True).cuda()
     data = torch.rand(10, 3, 84, 84).cuda()
     output = model(data)
     print(output.size())

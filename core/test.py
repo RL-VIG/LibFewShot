@@ -117,7 +117,12 @@ class Test(object):
 
                 # calculate the output
                 calc_begin = time()
-                output, acc = self.model([elem for each_batch in batch for elem in each_batch])
+                global_target, target, output, acc = self.model([elem for each_batch in batch for elem in each_batch])
+                _, pred = torch.topk(output,1,1)
+                np.savetxt("global_target.csv", global_target.cpu().data.numpy(), delimiter=",") 
+                np.savetxt("pred.csv", pred.cpu().data.numpy(), delimiter=",") 
+                np.savetxt("logit.csv", output.cpu().data.numpy(), delimiter=",") 
+                np.savetxt("target.csv", target.cpu().data.numpy(), delimiter=",") 
                 accuracies.append(acc)
                 meter.update("calc_time", time() - calc_begin)
 

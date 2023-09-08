@@ -41,14 +41,29 @@ def get_dataloader(config, mode, model_type, distribute):
     
     trfms_list = get_augment_method(config, mode)
 
+    trfms_jigsaw = transforms.Compose(trfms_list.copy())
+
     trfms_list.append(transforms.ToTensor())
     trfms_list.append(transforms.Normalize(mean=MEAN, std=STD))
     trfms = transforms.Compose(trfms_list)
+
+    # trfms_jigsaw = transforms.Compose([
+    #         transforms.RandomResizedCrop(225,scale=(0.5, 1.0))])
+    trfms_patch_jigsaw = transforms.Compose([
+                # transforms.RandomCrop(64),
+                # transforms.Lambda(self.rgb_jittering),
+                transforms.ToTensor(),
+            ])
 
     dataset = GeneralDataset(
         data_root=config["data_root"],
         mode=mode,
         use_memory=config["use_memory"],
+        trfms=trfms,
+        jigsaw=config["ssl_task"] == "jigsaw",
+        rotation=config["ssl_task"] == "rotation",
+        trfms_jigsaw=trfms_jigsaw,
+        trfms_patch_jigsaw=trfms_patch_jigsaw
     )
 
     if config["dataloader_num"] == 1 or mode in ["val", "test"]:

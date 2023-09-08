@@ -9,12 +9,12 @@ from core.config import Config
 from core import Test
 
 
-PATH = "./results/ProtoNet-DF20-resnet18-5-1-Apr-30-2023-22-31-26"
+PATH = "./resultsDF20/ProtoNet-DF20-Conv64F-5-5-May-03-2023-20-32-25"
 VAR_DICT = {
-    "test_epoch": 5,
+    "test_epoch": 1,
     "device_ids": "0",
     "n_gpu": 1,
-    "test_episode": 300,
+    "test_episode": 1,
     "episode_size": 1,
 }
 

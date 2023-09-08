@@ -8,6 +8,7 @@ includes:
   - backbones/Conv64F.yaml
 
 episode_size: 4
+way_num: 1
 
 classifier:
   name: CAN

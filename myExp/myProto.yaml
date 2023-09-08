@@ -9,7 +9,7 @@ includes:
 
 # device_ids: 0
 way_num: 5
-shot_num: 5
+shot_num: 1
 query_num: 15
 episode_size: 1
 train_episode: 500

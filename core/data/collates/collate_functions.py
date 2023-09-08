@@ -76,7 +76,7 @@ class FewShotAugCollateFunction(object):
     For finetuning-val, finetuning-test and meta/metric-train/val/test.
     """
 
-    def __init__(self, trfms, times, times_q, way_num, shot_num, query_num):
+    def __init__(self, trfms, times, times_q, way_num, shot_num, query_num, is_jigsaw, is_rotation):
         """Initialize a `FewShotAugCollateFunction`.
 
 
@@ -105,6 +105,8 @@ class FewShotAugCollateFunction(object):
         self.query_num = query_num
         self.shot_aug = self.shot_num * self.times
         self.query_aug = self.query_num * self.times_q
+        self.jigsaw = is_jigsaw
+        self.rotation = is_rotation
 
     def method(self, batch):
         """Apply transforms and augmentations on a **few-shot** batch.
@@ -118,10 +120,33 @@ class FewShotAugCollateFunction(object):
         Returns:
             tuple: a tuple of (images, gt_labels).
         """
+        
         try:
-            images, labels = zip(
-                *batch
-            )  # images = [img_label_tuple[0] for img_label_tuple in batch]  # 111111222222 (5s1q for example)
+            # print(len(batch))
+            if self.jigsaw:
+                images, labels, patches, order = zip(
+                    *batch
+                )  # images = [img_label_tuple[0] for img_label_tuple in batch]  # 111111222222 (5s1q for example)
+                
+                # patches_transformed = [transform(patch) for patch in patches]
+                # patches_tensor = torch.stack(patches_transformed)
+            elif self.rotation:
+                # print(batch[3][3])
+                images, labels, rotation_imgs, rotation_labels = zip(
+                    *batch
+                )  # images = [img_label_tuple[0] for img_label_tuple in batch]  # 111111222222 (5s1q for example)            
+                # print(images)
+                # print(labels)
+                # print(rotation_imgs)
+                # print(rotation_labels)
+                # quit()
+                # rotation_imgs = [self.trfms_support(image) for image in rotation_imgs] 
+                # print(len(rotation_imgs))
+            else:    
+                images, labels = zip(
+                    *batch
+                )  # images = [img_label_tuple[0] for img_label_tuple in batch]  # 111111222222 (5s1q for example)
+
             images_split_by_label = [
                 images[index : index + self.shot_num + self.query_num]
                 for index in range(0, len(images), self.shot_num + self.query_num)
@@ -169,8 +194,20 @@ class FewShotAugCollateFunction(object):
                 )
             )
 
-            return images, global_labels
-            # images.shape = [e*w*(q+s) x c x h x w],  global_labels.shape = [e x w x (q+s)]
+            if self.jigsaw:
+                print(f'global_labels is {global_labels}')
+                print(f'order is {order}')
+                return images, global_labels, torch.stack(patches,dim=0), torch.stack(order,dim=0) 
+            elif self.rotation:
+                # print(f'rotation_imgs is {type(rotation_imgs)}')
+                # rotation_imgs = torch.stack(rotation_imgs,dim=0)
+                # rotation_labels = torch.stack(rotation_labels,dim=0)
+                return images, global_labels, torch.stack(rotation_imgs,dim=0), torch.stack(rotation_labels,dim=0)
+                return images, global_labels, rotation_imgs, rotation_labels
+            else:
+                return images, global_labels
+                # images.shape = [e*w*(q+s) x c x h x w],  global_labels.shape = [e x w x (q+s)]
+
         except TypeError:
             raise TypeError(
                 "Error, probably because the transforms are passed to the dataset, the transforms should be "

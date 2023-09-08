@@ -233,9 +233,9 @@ class CAMLayer(nn.Module):
         query_feat = query_feat.reshape(
             batch_size * n_query, -1, *original_feat_shape[-2:]
         )
-        query_targets = self.classifier(query_feat)
+        ytest = self.classifier(query_feat)
 
-        return query_targets, cls_scores
+        return ytest, cls_scores
 
     def helper(self, support_feat, query_feat, support_targets):
         """

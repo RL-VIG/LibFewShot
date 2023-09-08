@@ -98,6 +98,7 @@ class ResNet(nn.Module):
         is_feature=False,
         avg_pool=True,
         is_flatten=True,
+        second_last_block_stride=2,
         last_block_stride=2,
     ):
         super(ResNet, self).__init__()
@@ -105,14 +106,16 @@ class ResNet(nn.Module):
         self.is_feature = is_feature
         self.avg_pool = avg_pool
         self.is_flatten = is_flatten
+        self.second_last_block_stride=second_last_block_stride
+        self.last_block_stride=last_block_stride
         self.inplanes = 64
         self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
         self.layer1 = self._make_layer(block, 64, layers[0])
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
-        self.layer3 = self._make_layer(block, 256, layers[2], stride=1)
-        self.layer4 = self._make_layer(block, 512, layers[3], stride=last_block_stride)
+        self.layer3 = self._make_layer(block, 256, layers[2], stride=self.second_last_block_stride)
+        self.layer4 = self._make_layer(block, 512, layers[3], stride=self.last_block_stride)
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
 
         for m in self.modules():
@@ -197,7 +200,7 @@ def resnet18(**kwargs):
 if __name__ == "__main__":
     import torch
 
-    model = resnet18(is_flatten=False, avg_pool=False, last_block_stride=1).cuda()
-    data = torch.rand(10, 3, 84, 84).cuda()
+    model = resnet18(is_flatten=False, avg_pool=False,second_last_block_stride=1).cuda()
+    data = torch.rand(1, 3, 84, 84).cuda()
     output = model(data)
     print(output.size())

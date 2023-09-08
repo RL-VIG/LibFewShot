@@ -381,7 +381,7 @@ class RENet(MetricModel):
         :param batch:
         :return:
         """
-        ep_images, _ = batch
+        ep_images, global_target = batch
 
         ep_images = ep_images.to(self.device)  # ew(qs) c h w
 
@@ -399,7 +399,7 @@ class RENet(MetricModel):
         logits, qry_pooled = self.cca_layer(support_feat, query_feat)
 
         acc = accuracy(logits, query_target.reshape(-1))
-        return logits, acc
+        return global_target.reshape(-1), query_target.reshape(-1), logits, acc
 
     def set_forward_loss(self, batch):
         """

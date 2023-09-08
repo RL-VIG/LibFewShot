@@ -33,6 +33,8 @@ def get_collate_function(config, trfms, mode, model_type):
             config["way_num"] if mode == "train" else config["test_way"],
             config["shot_num"] if mode == "train" else config["test_shot"],
             config["query_num"] if mode == "train" else config["test_query"],
+            config["ssl_task"] == "jigsaw",
+            config["ssl_task"] == "rotation"
         )
 
     return collate_function

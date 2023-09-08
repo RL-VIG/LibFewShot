@@ -4,17 +4,18 @@ includes:
   - headers/misc.yaml
   - headers/model.yaml
   - headers/optimizer.yaml
-  - classifiers/REnet.yaml
+  - classifiers/RENet.yaml
   - backbones/Conv64F.yaml
 
 # device_ids: 0
 way_num: 5
-shot_num: 5
+shot_num: 1
 query_num: 15
 episode_size: 1
 train_episode: 500
 test_episode: 300
 workers: 2
+#REnet Need dataloader_num be 2
 dataloader_num: 2
 epoch: 100
 

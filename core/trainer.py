@@ -70,6 +70,10 @@ class Trainer(object):
         ) = self._init_optim(config)
         self.val_per_epoch = config["val_per_epoch"]
 
+        self.jigsaw=config["ssl_task"] == "jigsaw",
+        self.rotation=config["ssl_task"] == "rotation",
+        self.lbda = config["ssl_lbda"]
+
     def train_loop(self, rank):
         """
         The normal train loop: train-val-test and save model when val-acc increases.
@@ -166,9 +170,20 @@ class Trainer(object):
 
             # calculate the output
             calc_begin = time()
-            output, acc, loss = self.model(
-                [elem for each_batch in batch for elem in each_batch]
-            )
+
+
+            if self.rotation or self.jigsaw:
+                image,label,patches,order=[elem for each_batch in batch for elem in each_batch] # type is tensor, tensor, list<tensor>,list<tensor>
+                
+                output, acc, loss_cls = self.model([image,label])
+
+                loss_ssl, acc_ssl = self.model.set_forward_loss_SS( patches=patches, patches_label=order)# torch.Size([5, 21, 9, 3, 75, 75]), torch.Size([5, 21])
+
+                loss = (1.0-self.lbda) * loss_cls + self.lbda * loss_ssl
+            else:
+                output, acc, loss_cls = self.model([elem for each_batch in batch for elem in each_batch])
+
+                loss = loss_cls
 
             # compute gradients
             self.optimizer.zero_grad()
@@ -259,9 +274,20 @@ class Trainer(object):
 
                 # calculate the output
                 calc_begin = time()
-                output, acc = self.model(
-                    [elem for each_batch in batch for elem in each_batch]
-                )
+
+                if self.rotation or self.jigsaw:
+                    image,label,patches,order=[elem for each_batch in batch for elem in each_batch] # type is tensor, tensor, list<tensor>,list<tensor>
+                    
+                    output, acc = self.model([image,label])
+
+                    # loss_ssl, acc_ssl = self.model.set_forward_loss_SS( patches=patches, patches_label=order)# torch.Size([5, 21, 9, 3, 75, 75]), torch.Size([5, 21])
+
+                    # loss = (1.0-self.lbda) * loss_cls + self.lbda * loss_ssl
+                else:
+                    output, acc = self.model(
+                        [elem for each_batch in batch for elem in each_batch]
+                    )
+
                 meter.update("calc_time", time() - calc_begin)
 
                 # measure accuracy and record loss
@@ -416,6 +442,8 @@ class Trainer(object):
             "test_way": config["test_way"],
             "test_shot": config["test_shot"] * config["augment_times"],
             "test_query": config["test_query"],
+            "jigsaw": config["ssl_task"] == "jigsaw",
+            "rotation": config["ssl_task"] == "rotation",
             "emb_func": emb_func,
             "device": self.device,
         }

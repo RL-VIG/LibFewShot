@@ -14,7 +14,7 @@ batch_size: 128
 classifier:
   kwargs: null
   name: ProtoNet
-data_root: data/DF20
+data_root: E:/DeepLearning/data/DF20
 dataloader_num: 1
 deterministic: true
 device_ids: 0
