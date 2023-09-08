@@ -135,3 +135,6 @@ dmypy.json
 .idea/
 .vscode/
 results/
+
+.results/
+.resultsDF20/
