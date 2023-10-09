@@ -5,6 +5,8 @@ from .randaugment import RandAugment
 from torchvision import transforms
 
 CJ_DICT = {"brightness": 0.4, "contrast": 0.4, "saturation": 0.4}
+CJ_1 = {"brightness": 0.4}
+CJ_2 = {"brightness": 0.4, "contrast": 0.4}
 
 
 def get_augment_method(
@@ -61,6 +63,20 @@ def get_augment_method(
                 transforms.RandomHorizontalFlip(),
                 transforms.ColorJitter(**CJ_DICT),
             ]
+        elif config["augment_method"] == "WithoutAugment":
+            trfms_list = get_default_image_size_trfms(config["image_size"])
+        elif config["augment_method"] == "HorizontalFlip":
+            trfms_list = get_default_image_size_trfms(config["image_size"])
+            trfms_list += [transforms.RandomHorizontalFlip()]
+        elif config["augment_method"] == "ColorJittering":
+            trfms_list = get_default_image_size_trfms(config["image_size"])
+            trfms_list += [transforms.ColorJitter(**CJ_DICT)]
+        elif config["augment_method"] == "Brightness":
+            trfms_list = get_default_image_size_trfms(config["image_size"])
+            trfms_list += [transforms.ColorJitter(**CJ_1)]
+        elif config["augment_method"] == "BrightnessContrast":
+            trfms_list = get_default_image_size_trfms(config["image_size"])
+            trfms_list += [transforms.ColorJitter(**CJ_2)]
         else:
             trfms_list = get_default_image_size_trfms(config["image_size"])
             trfms_list += [

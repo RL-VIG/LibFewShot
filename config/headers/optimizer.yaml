@@ -2,7 +2,7 @@
 optimizer:
   name: Adam
   kwargs:
-    lr: 0.01
+    lr: 0.001
   other: ~
     # emb_func: 0.001 # define lr OR
     # another_part:    # define multi params
@@ -14,7 +14,7 @@ optimizer:
 lr_scheduler:
   name: StepLR
   kwargs:
-    gamma: 1.0
+    gamma: 0.5
     step_size: 20
 
 warmup: 0 # set 0 to turn off warmup

@@ -117,12 +117,19 @@ class Test(object):
 
                 # calculate the output
                 calc_begin = time()
-                global_target, target, output, acc = self.model([elem for each_batch in batch for elem in each_batch])
-                _, pred = torch.topk(output,1,1)
-                np.savetxt("global_target.csv", global_target.cpu().data.numpy(), delimiter=",") 
-                np.savetxt("pred.csv", pred.cpu().data.numpy(), delimiter=",") 
-                np.savetxt("logit.csv", output.cpu().data.numpy(), delimiter=",") 
-                np.savetxt("target.csv", target.cpu().data.numpy(), delimiter=",") 
+
+                is_jigsaw = (self.config["ssl_task"] == "jigsaw")
+                is_rotation = (self.config["ssl_task"] == "rotation")
+
+                if is_rotation or is_jigsaw:
+                    image,label,patches,order=[elem for each_batch in batch for elem in each_batch] # type is tensor, tensor, list<tensor>,list<tensor>
+                    
+                    output, acc = self.model([image,label])
+
+                else:
+                    output, acc = self.model([elem for each_batch in batch for elem in each_batch])
+
+                # _, pred = torch.topk(output,1,1)
                 accuracies.append(acc)
                 meter.update("calc_time", time() - calc_begin)
 
@@ -288,6 +295,8 @@ class Test(object):
             "test_way": config["test_way"],
             "test_shot": config["test_shot"] * config["augment_times"],
             "test_query": config["test_query"],
+            "jigsaw": config["ssl_task"] == "jigsaw",
+            "rotation": config["ssl_task"] == "rotation",
             "emb_func": emb_func,
             "device": self.device,
         }

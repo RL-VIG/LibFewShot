@@ -70,9 +70,6 @@ class Trainer(object):
         ) = self._init_optim(config)
         self.val_per_epoch = config["val_per_epoch"]
 
-        self.jigsaw=config["ssl_task"] == "jigsaw",
-        self.rotation=config["ssl_task"] == "rotation",
-        self.lbda = config["ssl_lbda"]
 
     def train_loop(self, rank):
         """
@@ -172,14 +169,18 @@ class Trainer(object):
             calc_begin = time()
 
 
-            if self.rotation or self.jigsaw:
+            is_jigsaw = (self.config["ssl_task"] == "jigsaw")
+            is_rotation = (self.config["ssl_task"] == "rotation")
+            lbda = (self.config["ssl_lbda"])
+
+            if is_rotation or is_jigsaw:
                 image,label,patches,order=[elem for each_batch in batch for elem in each_batch] # type is tensor, tensor, list<tensor>,list<tensor>
                 
                 output, acc, loss_cls = self.model([image,label])
 
                 loss_ssl, acc_ssl = self.model.set_forward_loss_SS( patches=patches, patches_label=order)# torch.Size([5, 21, 9, 3, 75, 75]), torch.Size([5, 21])
 
-                loss = (1.0-self.lbda) * loss_cls + self.lbda * loss_ssl
+                loss = (1.0-lbda) * loss_cls + lbda * loss_ssl
             else:
                 output, acc, loss_cls = self.model([elem for each_batch in batch for elem in each_batch])
 
@@ -275,7 +276,10 @@ class Trainer(object):
                 # calculate the output
                 calc_begin = time()
 
-                if self.rotation or self.jigsaw:
+                is_jigsaw = (self.config["ssl_task"] == "jigsaw")
+                is_rotation = (self.config["ssl_task"] == "rotation")
+  
+                if is_jigsaw or is_rotation:
                     image,label,patches,order=[elem for each_batch in batch for elem in each_batch] # type is tensor, tensor, list<tensor>,list<tensor>
                     
                     output, acc = self.model([image,label])

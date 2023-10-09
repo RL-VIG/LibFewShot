@@ -156,6 +156,12 @@ class ProtoNet(MetricModel):
             # else:
             #     patch_feat = self.feature(patches)#torch.Size([675, 512])
             patch_feat = self.emb_func(patches)#torch.Size([675, 512])
+
+            if not self.emb_func.avg_pool:
+                patch_feat = nn.AdaptiveAvgPool2d((1, 1))(patch_feat)
+
+            if not self.emb_func.is_flatten:
+                patch_feat = patch_feat.view(patch_feat.size(0), -1)
             
             x_ = patch_feat.view(B,T,-1)
             x_ = x_.transpose(0,1)#torch.Size([9, 75, 512])
@@ -176,6 +182,11 @@ class ProtoNet(MetricModel):
         elif self.rotation:
             patches = patches.view(B*T,C,H,W).cuda()
             x_ = self.emb_func(patches)#torch.Size([64, 512, 1, 1])
+            if not self.emb_func.avg_pool:
+                x_ = nn.AdaptiveAvgPool2d((1, 1))(x_)
+
+            if not self.emb_func.is_flatten:
+                x_ = x_.view(x_.size(0), -1)
             x_ = x_.squeeze()
             x_ = self.fc6(x_)
             x_ = self.fc7(x_)#64,128
