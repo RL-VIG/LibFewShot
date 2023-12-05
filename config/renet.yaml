@@ -20,9 +20,8 @@ classifier:
     temperature: 0.2
     temperature_attn: 5.0
   name: RENet
-data_root: /data/fewshot/miniImageNet--ravi
 deterministic: true
-device_ids: 3
+device_ids: 0
 episode_size: 1
 epoch: 100
 image_size: 84
