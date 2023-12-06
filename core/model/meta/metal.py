@@ -9,36 +9,45 @@ from core.utils import accuracy
 
 
 class METAL(MetaModel):
+
+    def get_inner_loop_parameter_dict(self, params):
+        """
+        Returns a dictionary with the parameters to use for inner loop updates.
+        :param params: A dictionary of the network's parameters.
+        :return: A dictionary of the parameters to use for the inner loop optimization process.
+        """
+        param_dict = dict()
+        for name, param in params:
+            if param.requires_grad:
+                if "norm_layer" not in name:
+                    param_dict[name] = param
+
+        return param_dict
+
     def __init__(self, inner_param, feat_dim, **kwargs):
+        """
+        inner_param:
+            lr: 1e-2
+            train_iter: 5
+            test_iter: 10
+        feat_dim: 640
+        """
         super(METAL, self).__init__(**kwargs)
         # TODO feat_dim 的值有问题
-        """
-        names_weights_copy = self.get_inner_loop_parameter_dict(self.classifier.named_parameters())
-
+        # num_classes_per_set -> way_num
+        self.classifier = MAMLLayer(feat_dim, way_num=self.way_num)
+        names_weights_copy = dict(self.classifier.named_parameters())
         base_learner_num_layers = len(names_weights_copy)
-
-        support_meta_loss_num_dim = base_learner_num_layers + 2 * self.args.num_classes_per_set + 1
+        support_meta_loss_num_dim = base_learner_num_layers + 2 * self.way_num + 1
         support_adapter_num_dim = base_learner_num_layers + 1
-        query_num_dim = base_learner_num_layers + 1 + self.args.num_classes_per_set
-
-        self.meta_loss = MetaLossNetwork(support_meta_loss_num_dim, args=args, device=device).to(device=self.device)
-        self.meta_query_loss = MetaLossNetwork(query_num_dim, args=args, device=device).to(device=self.device)
-
-        self.meta_loss_adapter = LossAdapter(support_adapter_num_dim, num_loss_net_layers=2, args=args,
-                                             device=device).to(device=self.device)
-        self.meta_query_loss_adapter = LossAdapter(query_num_dim, num_loss_net_layers=2, args=args, device=device).to(
-            device=self.device)
-        """
+        query_num_dim = base_learner_num_layers + 1 + self.way_num
+        self.loss_func = MetaLossNetwork(support_meta_loss_num_dim, inner_param)
+        self.query_loss_func = MetaLossNetwork(query_num_dim, inner_param)
+        self.loss_adapter = LossAdapter(support_adapter_num_dim, args=inner_param, num_loss_net_layers=2)
+        self.query_loss_adapter = LossAdapter(query_num_dim, args=inner_param, num_loss_net_layers=2)
 
         self.feat_dim = feat_dim
-        self.loss_func = MetaLossNetwork(feat_dim, inner_param)
-        self.query_loss_func = MetaLossNetwork(feat_dim, inner_param)
-        self.classifier = MAMLLayer(feat_dim, way_num=self.way_num)
-        length = len({name: value for name, value in self.classifier.named_parameters()}) + 1
-        self.loss_adapter = LossAdapter(length, 2, inner_param)
-        self.query_loss_adapter = LossAdapter(length, 2, inner_param)
         self.inner_param = inner_param
-
         convert_maml_module(self)
 
     def forward_output(self, x):
@@ -95,6 +104,7 @@ class METAL(MetaModel):
             query_target,
         ) = self.split_by_episode(image, mode=2)
         episode_size, _, c, h, w = support_image.size()
+        # TODO
 
         output_list = []
         for i in range(episode_size):
@@ -185,11 +195,11 @@ class METAL(MetaModel):
             ), -1)
 
             query_task_state = (query_task_state - query_task_state.mean()) / (query_task_state.std() + 1e-12)
-            updated_meta_query_loss_weights = self.query_loss_func(query_task_state.mean(0), i,
-                                                                   meta_query_loss_weights)
+            updated_meta_query_loss_weights = self.query_loss_adapter(query_task_state.mean(0), i,
+                                                                      meta_query_loss_weights)
 
-            meta_query_loss = self.query_loss_adapter(query_task_state, i,
-                                                      params=updated_meta_query_loss_weights).mean().squeeze()
+            meta_query_loss = self.query_loss_func(query_task_state, i,
+                                                   params=updated_meta_query_loss_weights).mean().squeeze()
 
             loss = support_loss + meta_query_loss + meta_support_loss
 
@@ -284,6 +294,7 @@ class MetaLinearLayer(nn.Module):
                 weight = self.weights
                 bias = None
         # print(x.shape)
+        # output=input_tensor×weight_tensor^T
         out = F.linear(input=x, weight=weight, bias=bias)
         return out
 
@@ -411,21 +422,10 @@ class MetaLossNetwork(nn.Module):
             out = self.layer_dict['step{}'.format(i)](x)
 
     def forward(self, x, num_step, params=None):
-        """
-        Forward propages through the network. If any params are passed then they are used instead of stored params.
-        :param x: Input image batch.
-        :param num_step: The current inner loop step number
-        :param params: If params are None then internal parameters are used. If params are a dictionary with keys the
-         same as the layer names then they will be used instead.
-        :param training: Whether this is training (True) or eval time.
-        :param backup_running_statistics: Whether to backup the running statistics in their backup store. Which is
-        then used to reset the stats back to a previous state (usually after an eval loop, when we want to throw away stored statistics)
-        :return: Logits of shape b, num_output_classes.
-        """
         param_dict = dict()
 
         if params is not None:
-            params = {key: value[0] for key, value in params.items()}
+            params = {key: value for key, value in params.items()}
             param_dict = extract_top_level_dict(current_dict=params)
 
         for name, param in self.layer_dict.named_parameters():
