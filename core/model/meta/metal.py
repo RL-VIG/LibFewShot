@@ -36,14 +36,18 @@ class METAL(MetaModel):
         # TODO feat_dim 的值有问题
         # num_classes_per_set -> way_num
         self.classifier = MAMLLayer(feat_dim, way_num=self.way_num)
-        names_weights_copy = dict(self.classifier.named_parameters())
-        base_learner_num_layers = len(names_weights_copy)
+        names_weights_copy = self.get_inner_loop_parameter_dict(self.classifier.named_parameters())
+        base_learner_num_layers = len(list(self.classifier.named_parameters()))
         support_meta_loss_num_dim = base_learner_num_layers + 2 * self.way_num + 1
         support_adapter_num_dim = base_learner_num_layers + 1
         query_num_dim = base_learner_num_layers + 1 + self.way_num
+
         self.loss_func = MetaLossNetwork(support_meta_loss_num_dim, inner_param)
+
         self.query_loss_func = MetaLossNetwork(query_num_dim, inner_param)
+
         self.loss_adapter = LossAdapter(support_adapter_num_dim, args=inner_param, num_loss_net_layers=2)
+
         self.query_loss_adapter = LossAdapter(query_num_dim, args=inner_param, num_loss_net_layers=2)
 
         self.feat_dim = feat_dim
@@ -128,8 +132,8 @@ class METAL(MetaModel):
 
     def set_forward_adaptation(self, support_set, query_set, support_target, query_target):
         lr = self.inner_param["lr"]
-        fast_parameters = list(self.parameters())
-        for parameter in self.parameters():
+        fast_parameters = list(self.classifier.parameters())
+        for parameter in self.classifier.parameters():
             parameter.fast = None
 
         self.emb_func.train()
@@ -206,15 +210,17 @@ class METAL(MetaModel):
             preds = support_preds
             # end
             output = self.forward_output(support_set)
-            grad = torch.autograd.grad(loss, fast_parameters, create_graph=True)
+            # 下面应该是 使用 loss,
+            grad = torch.autograd.grad(loss, fast_parameters, create_graph=True, allow_unused=True)
             fast_parameters = []
 
-            for k, weight in enumerate(self.parameters()):
-                if weight.fast is None:
-                    weight.fast = weight - lr * grad[k]
-                else:
-                    weight.fast = weight.fast - lr * grad[k]
-                fast_parameters.append(weight.fast)
+            for k, weight in enumerate(list(self.classifier.parameters())):
+                if grad[k] is not None:
+                    if weight.fast is None:
+                        weight.fast = weight - lr * grad[k]
+                    else:
+                        weight.fast = weight.fast - lr * grad[k]
+                    fast_parameters.append(weight.fast)
 
 
 def extract_top_level_dict(current_dict):
