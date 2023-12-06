@@ -10,20 +10,6 @@ from core.utils import accuracy
 
 class METAL(MetaModel):
 
-    def get_inner_loop_parameter_dict(self, params):
-        """
-        Returns a dictionary with the parameters to use for inner loop updates.
-        :param params: A dictionary of the network's parameters.
-        :return: A dictionary of the parameters to use for the inner loop optimization process.
-        """
-        param_dict = dict()
-        for name, param in params:
-            if param.requires_grad:
-                if "norm_layer" not in name:
-                    param_dict[name] = param
-
-        return param_dict
-
     def __init__(self, inner_param, feat_dim, **kwargs):
         """
         inner_param:
@@ -36,7 +22,6 @@ class METAL(MetaModel):
         # TODO feat_dim 的值有问题
         # num_classes_per_set -> way_num
         self.classifier = MAMLLayer(feat_dim, way_num=self.way_num)
-        names_weights_copy = self.get_inner_loop_parameter_dict(self.classifier.named_parameters())
         base_learner_num_layers = len(list(self.classifier.named_parameters()))
         support_meta_loss_num_dim = base_learner_num_layers + 2 * self.way_num + 1
         support_adapter_num_dim = base_learner_num_layers + 1
@@ -207,9 +192,6 @@ class METAL(MetaModel):
 
             loss = support_loss + meta_query_loss + meta_support_loss
 
-            preds = support_preds
-            # end
-            output = self.forward_output(support_set)
             # 下面应该是 使用 loss,
             grad = torch.autograd.grad(loss, fast_parameters, create_graph=True, allow_unused=True)
             fast_parameters = []
@@ -224,13 +206,6 @@ class METAL(MetaModel):
 
 
 def extract_top_level_dict(current_dict):
-    """
-    Builds a graph dictionary from the passed depth_keys, value pair. Useful for dynamically passing external params
-    :param depth_keys: A list of strings making up the name of a variable. Used to make a graph for that params tree.
-    :param value: Param value
-    :param key_exists: If none then assume new dict, else load existing dict and add new key->value pairs to it.
-    :return: A dictionary graph of the params already added to the graph.
-    """
     output_dict = dict()
     for key in current_dict.keys():
         name = key.replace("layer_dict.", "")
@@ -275,14 +250,7 @@ class MetaLinearLayer(nn.Module):
             self.bias = nn.Parameter(torch.zeros(num_filters))
 
     def forward(self, x, params=None):
-        """
-        Forward propagates by applying a linear function (Wx + b). If params are none then internal params are used.
-        Otherwise passed params will be used to execute the function.
-        :param x: Input data batch, in the form (b, f)
-        :param params: A dictionary containing 'weights' and 'bias'. If params are none then internal params are used.
-        Otherwise the external are used.
-        :return: The result of the linear function.
-        """
+
         if params is not None:
             params = extract_top_level_dict(current_dict=params)
             if self.use_bias:
@@ -338,17 +306,6 @@ class MetaStepLossNetwork(nn.Module):
         out = self.linear2(out)
 
     def forward(self, x, params=None):
-        """
-        Forward propages through the network. If any params are passed then they are used instead of stored params.
-        :param x: Input image batch.
-        :param num_step: The current inner loop step number
-        :param params: If params are None then internal parameters are used. If params are a dictionary with keys the
-         same as the layer names then they will be used instead.
-        :param training: Whether this is training (True) or eval time.
-        :param backup_running_statistics: Whether to backup the running statistics in their backup store. Which is
-        then used to reset the stats back to a previous state (usually after an eval loop, when we want to throw away stored statistics)
-        :return: Logits of shape b, num_output_classes.
-        """
 
         linear1_params = None
         linear2_params = None
@@ -366,23 +323,6 @@ class MetaStepLossNetwork(nn.Module):
         out = self.linear2(out, linear2_params)
 
         return out
-
-    def zero_grad(self, params=None):
-        if params is None:
-            for param in self.parameters():
-                if param.requires_grad == True:
-                    if param.grad is not None:
-                        if torch.sum(param.grad) > 0:
-                            print(param.grad)
-                            param.grad.zero_()
-        else:
-            for name, param in params.items():
-                if param.requires_grad == True:
-                    if param.grad is not None:
-                        if torch.sum(param.grad) > 0:
-                            print(param.grad)
-                            param.grad.zero_()
-                            params[name].grad = None
 
     def restore_backup_stats(self):
         """
@@ -446,23 +386,6 @@ class MetaLossNetwork(nn.Module):
 
         return out
 
-    def zero_grad(self, params=None):
-        if params is None:
-            for param in self.parameters():
-                if param.requires_grad == True:
-                    if param.grad is not None:
-                        if torch.sum(param.grad) > 0:
-                            print(param.grad)
-                            param.grad.zero_()
-        else:
-            for name, param in params.items():
-                if param.requires_grad == True:
-                    if param.grad is not None:
-                        if torch.sum(param.grad) > 0:
-                            print(param.grad)
-                            param.grad.zero_()
-                            params[name].grad = None
-
     def restore_backup_stats(self):
         """
         Reset stored batch statistics from the stored backup.
@@ -511,7 +434,6 @@ class LossAdapter(nn.Module):
         self.args = args
 
         self.num_steps = args['train_iter']  # number of inner-loop steps
-
         self.loss_adapter = nn.ModuleList()
         for i in range(self.num_steps):
             self.loss_adapter.append(StepLossAdapter(input_dim, num_loss_net_layers, args))
