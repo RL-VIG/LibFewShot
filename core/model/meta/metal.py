@@ -11,33 +11,7 @@ from core.utils import accuracy
 class METAL(MetaModel):
 
     def __init__(self, inner_param, feat_dim, **kwargs):
-        """
-        inner_param:
-            lr: 1e-2
-            train_iter: 5
-            test_iter: 10
-        feat_dim: 640
-        """
-
         super(METAL, self).__init__(**kwargs)
-        buddha = '''
-              _oo0oo_
-             o8888888o
-             88" . "88
-             (| -_- |)
-             0\  =  /0
-           ___/`---'\___
-         .' \\|     |// '.
-        / \\|||  :  |||// \\
-        / _||||| -:- |||||- \\
-        |   | \\\  -  /// |   |
-        | \_|  ''\---/''  |_/ |
-        \  .-\__  '-'  ___/-. /
-        佛祖保佑         永无BUG
-        '''
-        print(buddha)
-        # TODO feat_dim 的值有问题
-        # num_classes_per_set -> way_num
         self.classifier = MAMLLayer(feat_dim, way_num=self.way_num)
         base_learner_num_layers = len(list(self.classifier.named_parameters()))
         support_meta_loss_num_dim = base_learner_num_layers + 2 * self.way_num + 1
@@ -110,14 +84,10 @@ class METAL(MetaModel):
             query_target,
         ) = self.split_by_episode(image, mode=2)
         episode_size, _, c, h, w = support_image.size()
-        # TODO
-
         output_list = []
         for i in range(episode_size):
-            # 都是x
             episode_support_image = support_image[i].contiguous().reshape(-1, c, h, w)
             episode_query_image = query_image[i].contiguous().reshape(-1, c, h, w)
-            # 都是y
             episode_support_targets = support_target[i].reshape(-1)
             episode_query_targets = query_target[i].reshape(-1)
             self.set_forward_adaptation(episode_support_image, episode_query_image, episode_support_targets,
@@ -147,14 +117,6 @@ class METAL(MetaModel):
         ):  # num_step = i
             # adapt loss weights
             # support_set--x, query_set--x_t, support_target--y, query_target--y_t
-            """
-             # 都是x
-            episode_support_image = support_image[i].contiguous().reshape(-1, c, h, w)
-            episode_query_image = query_image[i].contiguous().reshape(-1, c, h, w)
-            # 都是y
-            episode_support_targets = support_target[i].reshape(-1)
-            episode_query_targets = query_target[i].reshape(-1)
-            """
             tmp_preds = self.forward_output(x=torch.cat((support_set, query_set), 0))
             support_preds = tmp_preds[:-query_set.size(0)]
             query_preds = tmp_preds[-query_set.size(0):]
@@ -277,15 +239,11 @@ class MetaLinearLayer(nn.Module):
                 bias = None
         else:
             pass
-            # print('no inner loop params', self)
-
             if self.use_bias:
                 weight, bias = self.weights, self.bias
             else:
                 weight = self.weights
                 bias = None
-        # print(x.shape)
-        # output=input_tensor×weight_tensor^T
         out = F.linear(input=x, weight=weight, bias=bias)
         return out
 

@@ -22,37 +22,37 @@ optimizer:
     lr: 1e-3
   other: ~
 
-#backbone:
-#  name: Conv64F
-#  kwargs:
-#    is_flatten: True
-#    is_feature: False
-#    leaky_relu: False
-#    negative_slope: 0.2
-#    last_pool: True
-#
-#classifier:
-#  name: METAL
-#  kwargs:
-#    inner_param:
-#      lr: 1e-2
-#      train_iter: 5
-#      test_iter: 10
-#    feat_dim: 1600
-
-
 backbone:
-   name: resnet12
-   kwargs: ~
+  name: Conv64F
+  kwargs:
+    is_flatten: True
+    is_feature: False
+    leaky_relu: False
+    negative_slope: 0.2
+    last_pool: True
 
 classifier:
-   name: METAL
-   kwargs:
-      inner_param:
-        lr: 1e-2
-        train_iter: 5
-        test_iter: 10
-      feat_dim: 640
+  name: METAL
+  kwargs:
+    inner_param:
+      lr: 1e-2
+      train_iter: 5
+      test_iter: 10
+    feat_dim: 1600
+
+
+#backbone:
+#   name: resnet12
+#   kwargs: ~
+#
+#classifier:
+#   name: METAL
+#   kwargs:
+#      inner_param:
+#        lr: 1e-2
+#        train_iter: 5
+#        test_iter: 10 #must same as train_iter
+#      feat_dim: 640
 
 
 # backbone:
@@ -65,7 +65,7 @@ classifier:
 #     inner_param:
 #       lr: 1e-2
 #       train_iter: 5
-#       test_iter: 10
+#       test_iter: 10 #must same as train_iter
 #     feat_dim: 512
 
 
