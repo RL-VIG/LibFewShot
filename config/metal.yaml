@@ -8,6 +8,7 @@ includes:
 way_num: 5
 shot_num: 1
 query_num: 15
+
 episode_size: 2
 train_episode: 2000
 test_episode: 600
@@ -19,7 +20,7 @@ epoch: 100
 optimizer:
   name: Adam
   kwargs:
-    lr: 1e-3
+    lr: 0.001
   other: ~
 
 backbone:
