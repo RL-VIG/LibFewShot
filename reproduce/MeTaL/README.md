@@ -20,8 +20,8 @@ Cite this work with:
 
 **Classification**
 
-|   | Embedding | :book: *mini*ImageNet (5,1) | :computer: *mini*ImageNet (5,1) | :book:*mini*ImageNet (5,5) | :computer: *mini*ImageNet (5,5) | :memo: Comments  |
-|---|----------|--------------------|--------------------|--------------------|--------------------|---|
-| 1 | Conv64F | 50.00 ± 0.05 | 50.00 ± 0.05 [:arrow_down:](Link-to-model-url) [:clipboard:](Link-to-config-url) | 50.00 ± 0.05 | 50.00 ± 0.05 | Comments |
-| 2 | ResNet12 | 50.00 ± 0.05 | 50.00 ± 0.05 | 50.00 ± 0.05 | 50.00 ± 0.05 | Comments |
+|   | Embedding | :book: *mini*ImageNet (5,1) | :computer: *mini*ImageNet (5,1)                                                                                                                                                 | :book:*mini*ImageNet (5,5) | :computer: *mini*ImageNet (5,5)                                                                                      | :memo: Comments |
+|---|----------|-----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------|----------------------------------------------------------------------------------------------------------------------|-----------------|
+| 1 | Conv64F | -                           | 52.364 [:arrow_down:](https://drive.google.com/file/d/1ljtq5PH7VywDh2ZInqWzCOn5Lowu0zyC/view?usp=drive_link) [:clipboard:](./METAL-miniImageNet--ravi-Conv64F-5-1-Table2.yaml)  | -                          | 70.421  [:arrow_down:](https://drive.google.com/file/d/1lzgeg4ckxSP1Zu-E_f4gfMenkK49_2tV/view?usp=drive_link) [:clipboard:](./METAL-miniImageNet--ravi-Conv64F-5-5-Table2.yaml) | Table.2         |
+| 2 | ResNet12 | -                           | 60.542 [:arrow_down:](https://drive.google.com/file/d/1qLrWig2eq85wxXkZrP6XGzKqnL6RO3IS/view?usp=drive_link) [:clipboard:](./METAL-miniImageNet--ravi-resnet12-5-1-Table2.yaml) | -                          | 76.880 [:arrow_down:](https://drive.google.com/file/d/1fNUAd9gpKHUeoOSkkVzQj9BPmITnFQEx/view?usp=drive_link) [:clipboard:](./METAL-miniImageNet--ravi-resnet12-5-5-Table2.yaml)         | Table.2        |
 
