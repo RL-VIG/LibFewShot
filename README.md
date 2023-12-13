@@ -22,7 +22,7 @@ Wenbin Li, Ziyi Wang, Xuesong Yang, Chuanqi Dong, Pinzhuo Tian, Tiexin Qin, Jing
 + [ANIL (ICLR 2020)](https://arxiv.org/abs/1909.09157)
 + [BOIL (ICLR 2021)](https://arxiv.org/abs/2008.08882)
 + [MeTal (arXiv 2021)](https://arxiv.org/abs/2110.03909)
-+ 
+
 ### Metric-learning based methods
 + [ProtoNet (NeurIPS 2017)](https://arxiv.org/abs/1703.05175)
 + [RelationNet (CVPR 2018)](https://arxiv.org/abs/1711.06025)
