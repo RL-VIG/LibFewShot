@@ -136,3 +136,9 @@ dmypy.json
 .vscode/
 results/
 resultsDF20/
+resultsDF20Res18/
+resultsRES18NoAug/
+FinalResults/
+
+core/model/clip/bpe_simple_vocab_16e6.txt.gz
+debuging.ipynb
