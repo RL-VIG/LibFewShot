@@ -1,0 +1,52 @@
+includes:
+  - headers/data.yaml
+  - headers/device.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
+  - classifiers/SKD.yaml
+  - backbones/resnet18.yaml
+
+# device_ids: 0
+way_num: 1
+shot_num: 5
+query_num: 15
+episode_size: 1
+train_episode: 600
+test_episode: 300
+workers: 4
+epoch: 100
+
+save_part:
+  - emb_func
+  - cls_classifier
+  - rot_classifier
+
+classifier:
+  name: SKDModel
+  kwargs:
+    alpha: 2.0
+    # cls_classifier_path: ./results/SKDModel-miniImageNet-resnet12-5-1-1615448697/checkpoints/cls_classifier_best.pth
+    # emb_func_path: ./results/SKDModel-miniImageNet-resnet12-5-1-1615448697/checkpoints/emb_func_best.pth
+    feat_dim: 512
+    gamma: 1.0
+    is_distill: false
+    num_class: 1270
+
+backbone:
+  name: resnet18
+  kwargs:
+    avg_pool: true
+    is_feature: false
+    is_flatten: true
+    last_block_stride: 2
+
+
+# backbone:
+#   name: Conv64F
+#   kwargs:
+#     is_flatten: True
+#     is_feature: False
+#     leaky_relu: False
+#     negative_slope: 0.2
+#     last_pool: True

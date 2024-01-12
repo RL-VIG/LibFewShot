@@ -1,4 +1,4 @@
-data_root: E:/DeepLearning/data/DF20
+data_root: /scratch/jhao3/DeepLearning/data/DF20
 image_size: 84
 use_memory: False
 augment: True

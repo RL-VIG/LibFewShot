@@ -1,0 +1,23 @@
+
+# optimizer info
+optimizer:
+  name: SGD
+  kwargs:
+    lr: 0.1
+    momentum: 0.9
+    nesterov: true
+    weight_decay: 0.0005
+  other: ~
+    # emb_func: 0.001 # define lr OR
+    # another_part:    # define multi params
+    #   lr: 0.1
+    #   weight_decay: 0.5
+
+# lr_scheduler info
+lr_scheduler:
+  name: CosineAnnealingLR
+  kwargs:
+    T_max: 100
+    eta_min: 0
+
+warmup: 0 # set 0 to turn off warmup

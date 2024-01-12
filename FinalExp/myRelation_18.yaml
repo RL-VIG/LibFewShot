@@ -1,0 +1,47 @@
+
+includes:
+  - headers/data.yaml
+  - headers/device.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
+  - classifiers/RelationNet.yaml
+  - backbones/resnet18.yaml
+  - headers/ssl.yaml
+
+way_num: 5
+shot_num: 5
+query_num: 15
+episode_size: 1
+train_episode: 600
+test_episode: 300
+workers: 4
+epoch: 100
+augment_method: Brightness
+result_root: ./FinalResults/Brightness
+ssl_task: ~
+ssl_lbda: 0.5
+
+classifier:
+  name: RelationNet
+  kwargs:
+    feat_dim: 512
+    feat_height: 3
+    feat_width: 3
+
+backbone:
+  name: resnet18
+  kwargs:
+    is_flatten: False
+    is_feature: False
+    avg_pool: False
+    last_block_stride: 1
+
+# backbone:
+#   name: Conv64F
+#   kwargs:
+#     is_flatten: True
+#     is_feature: False
+#     leaky_relu: False
+#     negative_slope: 0.2
+#     last_pool: True

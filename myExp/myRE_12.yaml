@@ -1,0 +1,49 @@
+includes:
+  - headers/data.yaml
+  - headers/device.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
+  - classifiers/RENet.yaml
+  - backbones/resnet12.yaml
+
+# device_ids: 0
+way_num: 5
+shot_num: 5
+query_num: 15
+episode_size: 1
+train_episode: 600
+test_episode: 300
+workers: 24
+dataloader_num: 8
+epoch: 100
+result_root: ./resultsDF20Res12
+
+
+classifier:
+  name: RENet
+  kwargs:
+    feat_dim: 640
+    lambda_epi: 0.25
+    num_classes: 1270
+    temperature: 0.2
+    temperature_attn: 5.0
+
+backbone:
+  name: resnet12
+  kwargs:
+    avg_pool: false
+    drop_rate: 0.0
+    is_flatten: false
+    keep_prob: 0.0
+    maxpool_last2: true
+
+
+# backbone:
+#   name: Conv64F
+#   kwargs:
+#     is_flatten: True
+#     is_feature: False
+#     leaky_relu: False
+#     negative_slope: 0.2
+#     last_pool: True

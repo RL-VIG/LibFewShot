@@ -3,28 +3,39 @@ includes:
   - headers/device.yaml
   - headers/misc.yaml
   - headers/model.yaml
-  - headers/optimizer.yaml
+  - headers/optimizer_SDG.yaml
   - classifiers/CAN.yaml
-  - backbones/Conv64F.yaml
+  - backbones/resnet18.yaml
+  - headers/ssl.yaml
 
+
+way_num: 5
+shot_num: 5
+query_num: 15
 episode_size: 4
+train_episode: 600
+test_episode: 300
+workers: 4
+epoch: 100
+augment_method: Brightness
+result_root: ./FinalResults/Brightness
+ssl_task: ~
+# ssl_lbda: 0.2
 
 classifier:
   name: CAN
   kwargs:
     scale_cls: 7 # default
-    num_class: 64
-    nFeat: 64
-    HW: 10
+    num_classes: 1270
+    nFeat: 512
+    HW: 11
 
 backbone:
-  name: Conv64F
+  name: resnet18
   kwargs:
     is_flatten: False
+    avg_pool: False
     is_feature: False
-    leaky_relu: True
-    negative_slope: 0.2
-    last_pool: False
 
 # backbone:
 #   name: resnet12
