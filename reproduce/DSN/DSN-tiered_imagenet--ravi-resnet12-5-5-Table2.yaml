@@ -1,5 +1,6 @@
 augment: true
 augment_times: 1
+augment_method: DSNAugment
 augment_times_query: 1
 backbone:
   kwargs:
@@ -11,12 +12,12 @@ backbone:
 batch_size: 128
 classifier:
   kwargs: null
-  name: R2D2
-data_root: /data/fewshot/miniImageNet--ravi
+  name: DSN
+data_root: /data/fewshot/tiered_imagenet
 deterministic: true
-device_ids: 0
-episode_size: 4
-epoch: 100
+device_ids: 0,1,2,3
+episode_size: 8
+epoch: 200
 image_size: 84
 includes:
 - headers/data.yaml
@@ -24,17 +25,16 @@ includes:
 - headers/misc.yaml
 - headers/model.yaml
 - headers/optimizer.yaml
-- classifiers/R2D2.yaml
 log_interval: 100
 log_level: info
 log_name: null
 log_paramerter: false
 lr_scheduler:
   kwargs:
-    T_max: 100
+    T_max: 200
     eta_min: 0
   name: CosineAnnealingLR
-n_gpu: 1
+n_gpu: 4
 optimizer:
   kwargs:
     lr: 0.1
@@ -55,7 +55,7 @@ save_interval: 10
 save_part:
 - emb_func
 seed: 2147483647
-shot_num: 5
+shot_num: 15
 tag: null
 tb_scale: 3.3333333333333335
 test_episode: 600
