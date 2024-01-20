@@ -36,6 +36,7 @@ class FEAT_Pretrain(FinetuningModel):
         self.val_classifier = ProtoLayer()
         self.mode = mode
         self.loss_func = nn.CrossEntropyLoss()
+
     def set_forward(self, batch):
         # FIXME:  do not do validation in first 500 epoches # # test on 16-way 1-shot
         """
@@ -46,6 +47,7 @@ class FEAT_Pretrain(FinetuningModel):
         image = image.to(self.device)
         with torch.no_grad():
             feat = self.emb_func(image)
+
         support_feat, query_feat, support_target, query_target = self.split_by_episode(
             feat, mode=1
         )
