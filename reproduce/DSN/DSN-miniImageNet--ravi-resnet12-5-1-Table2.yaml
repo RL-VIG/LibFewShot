@@ -47,7 +47,7 @@ parallel_part:
 - emb_func
 port: 54717
 pretrain_path: null
-query_num: 15
+query_num: 10
 rank: 0
 result_root: ./results
 resume: false
@@ -61,7 +61,7 @@ tb_scale: 3.3333333333333335
 test_episode: 600
 test_epoch: 5
 test_query: 15
-test_shot: 5
+test_shot: 1
 test_way: 5
 train_episode: 2000
 use_memory: false

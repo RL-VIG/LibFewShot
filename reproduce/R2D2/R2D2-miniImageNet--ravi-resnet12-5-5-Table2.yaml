@@ -12,7 +12,7 @@ batch_size: 128
 classifier:
   kwargs: null
   name: R2D2
-data_root: /data/wzy/miniImageNet--ravi
+data_root: /data/fewshot/miniImageNet--ravi
 deterministic: true
 device_ids: 0
 episode_size: 4

@@ -13,9 +13,9 @@ batch_size: 128
 classifier:
   kwargs: null
   name: DSN
-data_root: /data/fewshot/miniImageNet--ravi
+data_root: /data/fewshot/tiered_imagenet
 deterministic: true
-device_ids: 0,1,2,3
+device_ids: 2,3,4,5
 episode_size: 8
 epoch: 200
 image_size: 84
@@ -61,7 +61,7 @@ tb_scale: 3.3333333333333335
 test_episode: 600
 test_epoch: 5
 test_query: 15
-test_shot: 5
+test_shot: 1
 test_way: 5
 train_episode: 2000
 use_memory: false
