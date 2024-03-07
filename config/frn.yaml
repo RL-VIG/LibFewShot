@@ -1,0 +1,82 @@
+includes:
+  - headers/data.yaml
+  - headers/device.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
+  - classifiers/FRN.yaml
+  - backbones/resnet12.yaml
+
+
+device_ids: 7
+n_gpu: 1
+way_num: 15
+shot_num: 5
+query_num: 15
+episode_size: 1
+train_episode: 500
+test_episode: 500
+epoch: 80
+test_way: 5
+# seed: 42
+augment_method: DeepBdcAugment
+
+# pre_training: True
+# data_root: /data/fewshot/miniImageNet--ravi/
+data_root: /data/fewshot/tiered_imagenet/
+backbone:
+  name: resnet12
+  kwargs:
+    keep_prob: 1.0
+    avg_pool: False
+    is_flatten: False
+    maxpool_last2: True
+
+val_per_epoch: 1
+
+optimizer:
+  name: SGD
+  kwargs:
+    lr: 1e-3
+    momentum: 0.9
+    weight_decay: 5e-4
+    nesterov: true
+  other: ~
+    # emb_func: 0.001 # define lr OR
+    # another_part:    # define multi params
+    #   lr: 0.1
+    # weight_decay: 5e-4
+
+
+# lr_scheduler info
+# lr_scheduler:
+#   name: MultiStepLR
+#   kwargs:
+#     gamma: 0.1
+#     milestones: [70, 120]
+
+lr_scheduler:
+  name: MultiStepLR
+  kwargs:
+    gamma: 0.1
+    milestones: [25, 50]
+warmup: 0 # set 0 to turn off warmup
+# pretrain_path: ./results/FRN_Pretrain-miniImageNet--ravi-resnet12-5-1-Oct-03-2023-16-26-39/checkpoints/emb_func_best.pth
+pretrain_path: ./results/FRN_Pretrain--resnet12-5-1-Oct-04-2023-15-16-10/checkpoints/emb_func_best.pth
+# backbone:
+#   name: resnet12
+#   kwargs:
+#     keep_prob: 0.0
+
+# backbone:
+#   name: resnet18
+#   kwargs:
+
+# backbone:
+#   name: WRN
+#   kwargs:
+#     depth: 10
+#     widen_factor: 10
+#     dropRate: 0.0
+#     avg_pool: True
+#     is_flatten: True
