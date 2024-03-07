@@ -1,0 +1,69 @@
+includes:
+  - headers/data.yaml
+  - headers/device.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
+  - classifiers/FRN_pretrain.yaml
+  - backbones/resnet12.yaml
+
+
+device_ids: 3
+n_gpu: 1
+batch_size: 128
+augment_method: DeepBdcAugment
+way_num: 5
+shot_num: 1
+query_num: 15
+# episode_size: 1
+# train_episode: 100
+test_episode: 600
+
+
+backbone:
+  name: resnet12
+  kwargs:
+    keep_prob: 1.0
+    avg_pool: False
+    is_flatten: False
+    maxpool_last2: True
+
+optimizer:
+  name: SGD
+  kwargs:
+    lr: 0.1
+    momentum: 0.9
+    weight_decay: 5e-4
+  other: ~
+    # emb_func: 0.001 # define lr OR
+    # another_part:    # define multi params
+    #   lr: 0.1
+    #   weight_decay: 0.5
+
+
+# lr_scheduler info
+lr_scheduler:
+  name: StepLR
+  kwargs:
+    gamma: 0.1
+    step_size: 30
+
+warmup: 0 # set 0 to turn off warmup
+seed: 42
+# backbone:
+#   name: resnet12
+#   kwargs:
+#     keep_prob: 0.0
+
+# backbone:
+#   name: resnet18
+#   kwargs:
+
+# backbone:
+#   name: WRN
+#   kwargs:
+#     depth: 10
+#     widen_factor: 10
+#     dropRate: 0.0
+#     avg_pool: True
+#     is_flatten: True
