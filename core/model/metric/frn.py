@@ -1,3 +1,16 @@
+"""
+@InProceedings{Wertheimer_2021_CVPR,
+    author    = {Wertheimer, Davis and Tang, Luming and Hariharan, Bharath},
+    title     = {Few-Shot Classification With Feature Map Reconstruction Networks},
+    booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+    month     = {June},
+    year      = {2021},
+    pages     = {8012-8021}
+}
+
+Adapted from https://github.com/Tsingularity/FRN
+"""
+
 import torch
 from torch import nn
 import torch.nn.functional as F
