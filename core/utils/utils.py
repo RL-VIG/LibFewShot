@@ -197,7 +197,6 @@ def prepare_device(rank, device_ids, n_gpu_use, backend, dist_url):
             "but the number of the GPU in config is {}.".format(n_gpu, n_gpu_use)
         )
         n_gpu_use = n_gpu
-
     device = torch.device("cuda:{}".format(rank) if n_gpu_use > 0 else "cpu")
     list_ids = list(range(n_gpu_use))
 

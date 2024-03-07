@@ -37,7 +37,7 @@ def get_dataloader(config, mode, model_type, distribute):
     # Add user's trfms in get_augment_method()
 
     #get mean std
-    MEAN,STD=get_mean_std(config, mode)
+    MEAN,STD = get_mean_std(config, mode)
     
     trfms_list = get_augment_method(config, mode)
 

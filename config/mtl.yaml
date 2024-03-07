@@ -7,7 +7,7 @@ include:
   - backbones/Conv64F.yaml
   - classifiers/MTL_meta.yaml
 
-pretrain_path: ./results/checkpoint.pth
+# pretrain_path: ./results/checkpoint.pth
 
 way_num: 5
 shot_num: 1
@@ -16,6 +16,7 @@ episode_size: 1
 train_episode: 10
 test_episode: 10
 
+data_root: /home/laiwei/Crop_WebCaricature/tmp
 
 backbone:
   name: Conv64F
@@ -30,14 +31,14 @@ classifier:
   name: MTL
   kwargs:
     feat_dim: 1600
-    num_classes: 64
+    num_classes: 200
     inner_param:
       iter: 10
     use_MTL: True
 
 
 # backbone:
-#   name: resnet12
+#   name: resnet12  
 #   kwargs:
 #     keep_prob: 0.0
 

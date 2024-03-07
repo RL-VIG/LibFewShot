@@ -5,21 +5,44 @@ includes:
   - headers/model.yaml
   - headers/optimizer.yaml
   - classifiers/DN4.yaml
+  # - backbones/resnet18.yaml
   - backbones/Conv64F.yaml
-
+shot_num: 1 #训练中的shot的数量
+epoch: 1500
+batch_size: 32
 classifier:
   name: DN4
   kwargs:
     n_k: 3
 
 backbone:
-  name: Conv64F
-  kwargs:
-    is_flatten: False
-    is_feature: False
-    leaky_relu: True
-    negative_slope: 0.2
-    last_pool: False
+ name: Conv64F
+ kwargs:
+   is_flatten: False
+   is_feature: False
+   leaky_relu: True
+   negative_slope: 0.15
+   last_pool: True
+# backbone:
+#   name: R2D2Embedding
+#   kwargs: ~
+
+
+# backbone:
+#   name: ViT # FIXME
+#   kwargs:
+#     image_size: 84
+#     patch_size: 28
+#     dim: 128
+#     depth: 12
+#     heads: 16
+#     mlp_dim: 256
+#     channels: 3
+#     dim_head: 32
+#     dropout: 0.1
+#     emb_dropout: 0.1
+#     # num_classes: 200
+
 
 # backbone:
 #   name: resnet12
@@ -29,15 +52,15 @@ backbone:
 
 # need to modify: core/model/backbone/resnet_18.py:114 stride=1
 # backbone:
-#   name: resnet18
-#   kwargs:
-#     is_flatten: False
-#     avg_pool: False
-
+#  name: resnet18
+#  kwargs:
+#    is_flatten: False
+#    avg_pool: False
+# weight_decay: 0.005
 # backbone:
 #   name: WRN
 #   kwargs:
-#     depth: 28
-#     widen_factor: 10
+#     depth: 16
+#     widen_factor: 6
 #     avg_pool: False
 #     is_flatten: False

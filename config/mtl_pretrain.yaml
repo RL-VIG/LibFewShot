@@ -28,10 +28,11 @@ classifier:
   name: MTLPretrain
   kwargs:
     feat_dim: 1600
-    num_classes: 64
+    num_classes: 200
     inner_param:
       iter: 10
-
+      
+data_root: /home/laiwei/Crop_WebCaricature/tmp
 
 # backbone:
 #   name: resnet12

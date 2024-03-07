@@ -7,16 +7,16 @@ includes:
   - classifiers/CAN.yaml
   - backbones/Conv64F.yaml
 
-episode_size: 4
+episode_size: 1
 
 classifier:
   name: CAN
   kwargs:
     scale_cls: 7 # default
-    num_class: 64
+    num_classes: 200
     nFeat: 64
     HW: 10
-
+data_root: /home/laiwei/Crop_WebCaricature/tmp
 backbone:
   name: Conv64F
   kwargs:
@@ -26,6 +26,7 @@ backbone:
     negative_slope: 0.2
     last_pool: False
 
+device_ids: 7
 # backbone:
 #   name: resnet12
 #   kwargs:

@@ -191,6 +191,9 @@ class DistributedCategoriesSampler(Sampler):
                 ]
                 batch.append(idxes[pos])
             if len(batch) == self.episode_size * self.way_num:
+                # for i in range(len(batch)):
+                #     print(batch[i].shape)
+                
                 batch = torch.stack(batch).reshape(-1)
                 yield batch
                 batch = []

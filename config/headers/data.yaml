@@ -1,4 +1,4 @@
-data_root: /data/fewshot/miniImageNet--ravi
+data_root: /data/fewshot/tiered_imagenet/
 image_size: 84
 use_memory: False
 augment: True

@@ -8,7 +8,7 @@ import os
 from core.config import Config
 from core import Trainer
 
-PATH = "./results/Baseline-miniImageNet--ravi-Conv64F-5-5-Dec-01-2021-06-52-41"
+PATH = "results/FRN--resnet12-20-5-Oct-17-2023-12-53-34"
 
 
 def main(rank, config):

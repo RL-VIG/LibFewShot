@@ -1,5 +1,5 @@
-epoch: 50
-test_epoch: 5
+epoch: 150
+test_epoch: 1
 
 parallel_part:
   - emb_func
@@ -19,4 +19,4 @@ test_episode: 100
 
 # general model setting
 batch_size: 128
-val_per_epoch: 1
+val_per_epoch: 5

@@ -7,7 +7,7 @@ from logging import getLogger
 from time import time
 
 import torch
-import yaml
+import yaml 
 from torch import nn
 import torch.distributed as dist
 
@@ -54,7 +54,6 @@ class Trainer(object):
         self.device, self.list_ids = self._init_device(rank, config)
         self.writer = self._init_writer(self.viz_path)
         self.train_meter, self.val_meter, self.test_meter = self._init_meter()
-        print(self.config)
         self.model, self.model_type = self._init_model(config)
         (
             self.train_loader,
@@ -431,7 +430,6 @@ class Trainer(object):
             )
             state_dict = torch.load(self.config["pretrain_path"], map_location="cpu")
             msg = model.emb_func.load_state_dict(state_dict, strict=False)
-
             if len(msg.missing_keys) != 0:
                 print("Missing keys:{}".format(msg.missing_keys), level="warning")
             if len(msg.unexpected_keys) != 0:

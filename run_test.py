@@ -9,13 +9,16 @@ from core.config import Config
 from core import Test
 
 
-PATH = "./results/DN4-miniImageNet--ravi-Conv64F-5-1-Dec-01-2021-06-05-20"
+PATH = "./results/FRN--resnet12-15-5-Dec-01-2023-19-59-46"
 VAR_DICT = {
-    "test_epoch": 5,
-    "device_ids": "4,5",
-    "n_gpu": 2,
-    "test_episode": 600,
-    "episode_size": 2,
+    # "seed": 42,
+    "test_epoch": 2,
+    "device_ids": "6",
+    # "n_gpu": 1,
+    "test_episode": 400,
+    "test_shot": 1,
+    "episode_size": 1,
+    # "data_root": "/data/fewshot/tiered_imagenet"
 }
 
 

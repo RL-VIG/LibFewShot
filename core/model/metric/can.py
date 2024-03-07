@@ -411,7 +411,6 @@ class CAN(MetricModel):
         query_targets_one_hot = query_targets_one_hot.reshape(
             episode_size, self.way_num * self.query_num, self.way_num
         )
-        # print(support_feat.shape, query_feat.shape, support_targets_one_hot.shape, query_targets_one_hot.shape)
         # [75, 64, 6, 6], [75, 5, 6, 6]
         output, cls_scores = self.cam_layer(
             support_feat, query_feat, support_targets_one_hot, query_targets_one_hot
