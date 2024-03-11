@@ -8,10 +8,10 @@ includes:
 deterministic: False
 
 way_num: 5
-shot_num: 5
+shot_num: 1
 query_num: 15
 test_way: 5 # use ~ -> test_* = *_num
-test_shot: 5
+test_shot: 1
 test_query: 15
 
 episode_size: 1

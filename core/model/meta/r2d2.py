@@ -54,7 +54,7 @@ def binv(b_mat):
     """
 
     id_matrix = b_mat.new_ones(b_mat.size(-1)).diag().expand_as(b_mat).to(b_mat.device)
-    b_inv, _ = torch.solve(id_matrix, b_mat)
+    b_inv = torch.linalg.solve(id_matrix, b_mat)
 
     return b_inv
 

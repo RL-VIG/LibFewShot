@@ -175,6 +175,7 @@ This folder contains:
       <td> 67.65 </td>
       <td> 68.17 </td>
   </tr>
+
   <tr>
       <td rowspan="2"><a href="./DN4">DN4</a></td>
       <td>Conv64F</td>
@@ -205,6 +206,21 @@ This folder contains:
       <td> 66.83 </td>
       <td> 82.58 </td>
       <td> 82.13 </td>
+  </tr>
+  <tr>
+      <td rowspan="2"><a href="./MeTaL">MeTal</a></td>
+      <td>Conv64F</td>
+      <td> 52.63 </td>
+      <td> 52.36 </td>
+      <td> 70.52 </td>
+      <td> 70.42 </td>
+  </tr>
+  <tr>
+      <td>ResNet12</td>
+      <td> 59.64 </td>
+      <td> 60.54 </td>
+      <td> 76.20 </td>
+      <td> 76.88 </td>
   </tr>
 </table>
 

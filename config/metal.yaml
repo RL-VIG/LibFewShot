@@ -8,6 +8,7 @@ includes:
 way_num: 5
 shot_num: 1
 query_num: 15
+
 episode_size: 2
 train_episode: 2000
 test_episode: 600
@@ -19,7 +20,7 @@ epoch: 100
 optimizer:
   name: Adam
   kwargs:
-    lr: 1e-3
+    lr: 0.001
   other: ~
 
 backbone:
@@ -32,7 +33,7 @@ backbone:
     last_pool: True
 
 classifier:
-  name: MAML
+  name: METAL
   kwargs:
     inner_param:
       lr: 1e-2
@@ -41,18 +42,18 @@ classifier:
     feat_dim: 1600
 
 
-# backbone:
+#backbone:
 #   name: resnet12
 #   kwargs: ~
-
-# classifier:
-#   name: MAML
+#
+#classifier:
+#   name: METAL
 #   kwargs:
-#     inner_param:
-#       lr: 1e-2
-#       train_iter: 5
-#       test_iter: 10
-#     feat_dim: 640
+#      inner_param:
+#        lr: 1e-2
+#        train_iter: 5
+#        test_iter: 10 #must same as train_iter
+#      feat_dim: 640
 
 
 # backbone:
@@ -60,12 +61,12 @@ classifier:
 #   kwargs: ~
 
 # classifier:
-#   name: MAML
+#   name: METAL
 #   kwargs:
 #     inner_param:
 #       lr: 1e-2
 #       train_iter: 5
-#       test_iter: 10
+#       test_iter: 10 #must same as train_iter
 #     feat_dim: 512
 
 
@@ -76,7 +77,7 @@ classifier:
 #     widen_factor: 10
 
 # classifier:
-#   name: MAML
+#   name: METAL
 #   kwargs:
 #     inner_param:
 #       lr: 1e-2

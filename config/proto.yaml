@@ -9,7 +9,7 @@ includes:
 
 
 device_ids: 0,1
-n_gpu: 2
+n_gpu: 1
 way_num: 5
 shot_num: 1
 query_num: 15
