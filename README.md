@@ -29,9 +29,10 @@ Wenbin Li, Ziyi Wang, Xuesong Yang, Chuanqi Dong, Pinzhuo Tian, Tiexin Qin, Jing
 + [CAN (NeurIPS 2019)](https://arxiv.org/abs/1910.07677)
 + [ATL-Net (IJCAI 2020)](https://www.ijcai.org/proceedings/2020/0100.pdf)
 + [ADM (IJCAI 2020)](https://arxiv.org/abs/2002.00153)
-+ [DSN (CVPR2020)](https://openaccess.thecvf.com/content_CVPR_2020/papers/Simon_Adaptive_Subspaces_for_Few-Shot_Learning_CVPR_2020_paper.pdf)
++ [DSN (CVPR 2020)](https://openaccess.thecvf.com/content_CVPR_2020/papers/Simon_Adaptive_Subspaces_for_Few-Shot_Learning_CVPR_2020_paper.pdf)
 + [FEAT (CVPR 2020)](http://arxiv.org/abs/1812.03664)
 + [RENet (ICCV 2021)](https://arxiv.org/abs/2108.09666)
++ [FRN (CVPR 2021)](https://arxiv.org/abs/2012.01506)
 + [DeepBDC (CVPR 2022)](https://arxiv.org/abs/2204.04567)
 
 
