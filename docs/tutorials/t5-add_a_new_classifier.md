@@ -8,7 +8,7 @@ core/model/metric/*
 core/model/pretrain/*
 ```
 
-We need to select one representative method from `matric based` methods, `meta learning` methods and `fine-tuning` methods, respectively, and describe how to add new methods of the three categories.
+We need to select one representative method from `metric based` methods, `meta learning` methods and `fine-tuning` methods, respectively, and describe how to add new methods of the three categories.
 
 Before this，we need to introduce a parent class of all methods: `abstract_model`.
 
