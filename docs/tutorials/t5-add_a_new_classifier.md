@@ -8,7 +8,7 @@ core/model/metric/*
 core/model/pretrain/*
 ```
 
-我们需要从论文中分类的三种方法，即matric based，meta learning，以及fine tuning，从每种方法中选出一个代表性的方法，描述如何添加这一类别的新的方法。
+我们需要从论文中分类的三种方法，即metric based，meta learning，以及fine tuning，从每种方法中选出一个代表性的方法，描述如何添加这一类别的新的方法。
 
 不过在此之前，需要先了解一下所有分类方法共同的父类`abstract_model`。
 
