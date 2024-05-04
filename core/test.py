@@ -196,6 +196,7 @@ class Test(object):
         state_dict_path = os.path.join(result_path, "checkpoints", "model_best.pth")
         if self.rank == 0:
             create_dirs([result_path, log_path, viz_path])
+            
 
         return viz_path, state_dict_path
 

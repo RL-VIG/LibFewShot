@@ -1,0 +1,63 @@
+augment: true
+augment_times: 1
+augment_times_query: 1
+backbone:
+  kwargs:
+    avg_pool: true
+    is_flatten: true
+    keep_prob: 0.0
+    maxpool_last2: true
+  name: resnet12
+batch_size: 128
+classifier:
+  kwargs:
+
+  name: MetaBaseline
+data_root: /data/fewshot/miniImageNet--ravi
+deterministic: true
+device_ids: 0,1,2,3
+n_gpu: 4
+episode_size: 4
+epoch: 100
+image_size: 84
+log_interval: 100
+log_level: info
+log_name: null
+log_paramerter: false
+lr_scheduler:
+  kwargs:
+    gamma: 1.0
+    step_size: 20
+  name: StepLR
+
+optimizer:
+  kwargs:
+    lr: 0.001
+    weight_decay: 0.0005
+    momentum: 0.9
+  name: SGD
+parallel_part:
+- emb_func
+- classifier
+port: 31691
+pretrain_path: ./results/MetabaselinePretrain-miniImageNet--ravi-resnet12-5-5-Apr-30-2024-10-55-43/checkpoints/emb_func_best.pth
+query_num: 15
+rank: 0
+result_root: ./results
+resume: false
+save_interval: 10
+save_part:
+- emb_func
+seed: 2147483647
+shot_num: 5
+tag: null
+tb_scale: 1.6666666666666667
+test_episode: 600
+test_epoch: 5
+test_query: 15
+test_shot: 5
+test_way: 5
+train_episode: 60
+use_memory: false
+way_num: 5
+workers: 32

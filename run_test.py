@@ -9,14 +9,14 @@ from core.config import Config
 from core import Test
 
 
-PATH = "./results/DN4-miniImageNet--ravi-Conv64F-5-1-Dec-01-2021-06-05-20"
-VAR_DICT = {
-    "test_epoch": 5,
-    "device_ids": "4,5",
-    "n_gpu": 2,
-    "test_episode": 600,
-    "episode_size": 2,
-}
+PATH = "./results/MetaBaseline-miniImageNet--ravi-resnet12-5-1-Apr-30-2024-13-31-39"
+# VAR_DICT = {
+#     "test_epoch": 5,
+#     "device_ids": "4,5",
+#     "n_gpu": 2,
+#     "test_episode": 600,
+#     "episode_size": 2,
+# }
 
 
 def main(rank, config):
@@ -25,7 +25,7 @@ def main(rank, config):
 
 
 if __name__ == "__main__":
-    config = Config(os.path.join(PATH, "config.yaml"), VAR_DICT).get_config_dict()
+    config = Config(os.path.join(PATH, "config.yaml")).get_config_dict()
 
     if config["n_gpu"] > 1:
         os.environ["CUDA_VISIBLE_DEVICES"] = config["device_ids"]
