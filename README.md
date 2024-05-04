@@ -13,6 +13,7 @@ Wenbin Li, Ziyi Wang, Xuesong Yang, Chuanqi Dong, Pinzhuo Tian, Tiexin Qin, Jing
 + [SKD (BMVC 2021)](https://arxiv.org/abs/2006.09785)
 + [Negcos (ECCV 2020)](https://arxiv.org/abs/2003.12060)
 + [S2M2 (WACV 2020)](https://arxiv.org/abs/1907.12087)
++ [Meta-Baseline (ICCV 2021)](https://arxiv.org/abs/2003.04390)
 ### Meta-learning based methods
 + [MAML (ICML 2017)](https://arxiv.org/abs/1703.03400)
 + [Versa (NeurIPS 2018)](https://openreview.net/forum?id=HkxStoC5F7)

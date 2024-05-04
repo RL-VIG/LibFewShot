@@ -12,3 +12,4 @@ from .feat import FEAT
 from .dsn import DSN
 from .deepbdc import DeepBDC
 from .frn import FRN
+from .meta_baseline import MetaBaseline
