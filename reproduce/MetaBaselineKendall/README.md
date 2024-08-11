@@ -25,7 +25,15 @@ Cite this work with:
 ---
 ## Results and Models
 
-**Classification**
+**Paper**
+
+| Method                      | Backbone  | :book: *mini*ImageNet (5,1) | :book:*mini*ImageNet (5,5) |
+| --------------------------- | --------- | --------------------------- | -------------------------- |
+| Meta-Baseline + Diffkendall | ResNet-12 | **65.56 ± 0.43**            | **80.79 ± 0.31**           |
+
+
+
+**Classification**（ours）
 
 |   | Embedding | :book: *mini*ImageNet (5,1) | :computer: *mini*ImageNet (5,1) | :book:*mini*ImageNet (5,5) | :computer: *mini*ImageNet (5,5) | :computer:Pretrain Model |
 |---|-----------|--------------------|--------------------|--------------------|--------------------|---|
