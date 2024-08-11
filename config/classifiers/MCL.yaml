@@ -1,0 +1,7 @@
+classifier:
+  name: MCL
+  kwargs:
+    n_k: 3
+    katz_factor: 0.999
+    gamma: 15
+    gamma2: 10

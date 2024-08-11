@@ -1,0 +1,50 @@
+includes:
+  - headers/data.yaml
+  - headers/device.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
+  - classifiers/R2D2MCL.yaml
+
+pretrain_path: /root/autodl-tmp/MCL-master1/checkpoint/miniImagenet_FRN_pre/miniimagenet-e0_pre.pth
+
+classifier:
+  name: R2D2MCL
+  kwargs: 
+    way_num: 5
+    shot_num: 5
+    katz_factor: 0.999
+    gamma: 10
+    gamma2: 5
+
+backbone:
+  name: resnet12_mcl
+  kwargs: 
+  kwargs: ~
+
+lr_scheduler:
+  name: StepLR
+  kwargs:
+    gamma: 0.1
+    step_size: 10
+
+train_episode: 200
+test_episode: 200
+epoch: 30
+optimizer:
+  name: SGD
+  kwargs:
+    lr: 0.0005
+    weight_decay: 0.0005
+    momentum: 0.9
+    nesterov: True 
+  other: ~
+
+way_num: 5
+shot_num: 5
+query_num: 15
+batch_size: 1
+
+test_way: 5
+test_shot: 5
+test_query: 15

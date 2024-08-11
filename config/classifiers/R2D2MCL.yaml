@@ -1,0 +1,8 @@
+classifier:
+  name: R2D2MCL
+  kwargs: 
+    way_num: 5
+    shot_num: 5
+    katz_factor: 0.999
+    gamma: 10
+    gamma2: 5
