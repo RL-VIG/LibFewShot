@@ -1,6 +1,6 @@
 # Class-Aware Patch Embedding Adaptation for Few-Shot Image Classification
 ## Introduction
-| Name:    | [Class-Aware Patch Embedding Adaptation for Few-Shot Image Classification](https://openaccess.thecvf.com/content/ICCV2023/papers/Hao_Class-Aware_Patch_Embedding_Adaptation_for_Few-Shot_Image_Classification_ICCV_2023_paper.pdf)          |
+| Name:    | [CPEA](https://openaccess.thecvf.com/content/ICCV2023/papers/Hao_Class-Aware_Patch_Embedding_Adaptation_for_Few-Shot_Image_Classification_ICCV_2023_paper.pdf)          |
 |----------|-------------------------------|
 | Embed.:  | ViT-small |
 | Type:    | Metric       |
@@ -27,7 +27,7 @@ Cite this work with:
 |---|-----------|--------------------|--------------------|--------------------|--------------------|
 | 1 | ViT-small | 71.97 ± 0.65 | 76.93 ± 0.70 | 87.06 ± 0.38 | 90.12±0.45 |
 
-**Classification**
+**Ours**
 
 |   | Embedding | 💻: *mini*ImageNet (5,1) | :computer: *tiered*ImageNet (5,1) | :computer:*mini*ImageNet (5,5) | :computer: *tiered*ImageNet (5,5) |
 |---|-----------|--------------------|--------------------|--------------------|--------------------|
