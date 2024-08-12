@@ -1,0 +1,278 @@
+2024-06-11 16:19:18,689 [INFO] core.test: {'data_root': '../datasets/tiered_imagenet', 'image_size': 224, 'use_memory': False, 'augment': True, 'augment_times': 1, 'augment_times_query': 1, 'workers': 8, 'dataloader_num': 1, 'device_ids': '0', 'n_gpu': 1, 'seed': 2147483647, 'deterministic': True, 'port': 49897, 'log_name': None, 'log_level': 'info', 'log_interval': 100, 'log_paramerter': False, 'result_root': './results', 'save_interval': 10, 'save_part': ['emb_func'], 'tag': None, 'epoch': 50, 'test_epoch': 5, 'parallel_part': ['emb_func'], 'pretrain_path': '/mnt/hdd/FSL/LibFewShot/core/model/backbone/pretrain/ViTClassAware_tieredimagenet.pth', 'resume': False, 'way_num': 5, 'shot_num': 1, 'query_num': 15, 'test_way': 5, 'test_shot': 1, 'test_query': 15, 'episode_size': 1, 'train_episode': 100, 'test_episode': 600, 'batch_size': 128, 'val_per_epoch': 1, 'optimizer': {'kwargs': {'lr': 1e-05, 'weight_decay': 0.001}, 'name': 'Adam', 'other': None}, 'lr_scheduler': {'kwargs': {'gamma': 0.5, 'step_size': 5}, 'name': 'StepLR'}, 'warmup': 0, 'includes': ['headers/data.yaml', 'headers/device.yaml', 'headers/misc.yaml', 'headers/model.yaml', 'headers/optimizer.yaml', 'classifiers/CPEA.yaml', 'backbones/ViTClassAware.yaml'], 'backbone': {'kwargs': {'depth': 12, 'embed_dim': 384, 'mlp_ratio': 4, 'num_heads': 6, 'patch_size': 16, 'qkv_bias': True}, 'name': 'VisionTransformer'}, 'classifier': {'kwargs': None, 'name': 'CPEANet'}, 'rank': 0, 'tb_scale': 0.16666666666666666}
+2024-06-11 16:19:19,010 [INFO] core.test: CPEANet(
+  (emb_func): VisionTransformer(
+    (patch_embed): PatchEmbed(
+      (proj): Conv2d(3, 384, kernel_size=(16, 16), stride=(16, 16))
+    )
+    (pos_drop): Dropout(p=0.0, inplace=False)
+    (blocks): ModuleList(
+      (0): Block(
+        (norm1): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (attn): Attention(
+          (qkv): Linear(in_features=384, out_features=1152, bias=True)
+          (attn_drop): Dropout(p=0.0, inplace=False)
+          (proj): Linear(in_features=384, out_features=384, bias=True)
+          (proj_drop): Dropout(p=0.0, inplace=False)
+        )
+        (drop_path): Identity()
+        (norm2): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (mlp): Mlp(
+          (fc1): Linear(in_features=384, out_features=1536, bias=True)
+          (act): GELU(approximate='none')
+          (fc2): Linear(in_features=1536, out_features=384, bias=True)
+          (drop): Dropout(p=0.0, inplace=False)
+        )
+      )
+      (1): Block(
+        (norm1): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (attn): Attention(
+          (qkv): Linear(in_features=384, out_features=1152, bias=True)
+          (attn_drop): Dropout(p=0.0, inplace=False)
+          (proj): Linear(in_features=384, out_features=384, bias=True)
+          (proj_drop): Dropout(p=0.0, inplace=False)
+        )
+        (drop_path): DropPath()
+        (norm2): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (mlp): Mlp(
+          (fc1): Linear(in_features=384, out_features=1536, bias=True)
+          (act): GELU(approximate='none')
+          (fc2): Linear(in_features=1536, out_features=384, bias=True)
+          (drop): Dropout(p=0.0, inplace=False)
+        )
+      )
+      (2): Block(
+        (norm1): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (attn): Attention(
+          (qkv): Linear(in_features=384, out_features=1152, bias=True)
+          (attn_drop): Dropout(p=0.0, inplace=False)
+          (proj): Linear(in_features=384, out_features=384, bias=True)
+          (proj_drop): Dropout(p=0.0, inplace=False)
+        )
+        (drop_path): DropPath()
+        (norm2): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (mlp): Mlp(
+          (fc1): Linear(in_features=384, out_features=1536, bias=True)
+          (act): GELU(approximate='none')
+          (fc2): Linear(in_features=1536, out_features=384, bias=True)
+          (drop): Dropout(p=0.0, inplace=False)
+        )
+      )
+      (3): Block(
+        (norm1): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (attn): Attention(
+          (qkv): Linear(in_features=384, out_features=1152, bias=True)
+          (attn_drop): Dropout(p=0.0, inplace=False)
+          (proj): Linear(in_features=384, out_features=384, bias=True)
+          (proj_drop): Dropout(p=0.0, inplace=False)
+        )
+        (drop_path): DropPath()
+        (norm2): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (mlp): Mlp(
+          (fc1): Linear(in_features=384, out_features=1536, bias=True)
+          (act): GELU(approximate='none')
+          (fc2): Linear(in_features=1536, out_features=384, bias=True)
+          (drop): Dropout(p=0.0, inplace=False)
+        )
+      )
+      (4): Block(
+        (norm1): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (attn): Attention(
+          (qkv): Linear(in_features=384, out_features=1152, bias=True)
+          (attn_drop): Dropout(p=0.0, inplace=False)
+          (proj): Linear(in_features=384, out_features=384, bias=True)
+          (proj_drop): Dropout(p=0.0, inplace=False)
+        )
+        (drop_path): DropPath()
+        (norm2): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (mlp): Mlp(
+          (fc1): Linear(in_features=384, out_features=1536, bias=True)
+          (act): GELU(approximate='none')
+          (fc2): Linear(in_features=1536, out_features=384, bias=True)
+          (drop): Dropout(p=0.0, inplace=False)
+        )
+      )
+      (5): Block(
+        (norm1): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (attn): Attention(
+          (qkv): Linear(in_features=384, out_features=1152, bias=True)
+          (attn_drop): Dropout(p=0.0, inplace=False)
+          (proj): Linear(in_features=384, out_features=384, bias=True)
+          (proj_drop): Dropout(p=0.0, inplace=False)
+        )
+        (drop_path): DropPath()
+        (norm2): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (mlp): Mlp(
+          (fc1): Linear(in_features=384, out_features=1536, bias=True)
+          (act): GELU(approximate='none')
+          (fc2): Linear(in_features=1536, out_features=384, bias=True)
+          (drop): Dropout(p=0.0, inplace=False)
+        )
+      )
+      (6): Block(
+        (norm1): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (attn): Attention(
+          (qkv): Linear(in_features=384, out_features=1152, bias=True)
+          (attn_drop): Dropout(p=0.0, inplace=False)
+          (proj): Linear(in_features=384, out_features=384, bias=True)
+          (proj_drop): Dropout(p=0.0, inplace=False)
+        )
+        (drop_path): DropPath()
+        (norm2): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (mlp): Mlp(
+          (fc1): Linear(in_features=384, out_features=1536, bias=True)
+          (act): GELU(approximate='none')
+          (fc2): Linear(in_features=1536, out_features=384, bias=True)
+          (drop): Dropout(p=0.0, inplace=False)
+        )
+      )
+      (7): Block(
+        (norm1): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (attn): Attention(
+          (qkv): Linear(in_features=384, out_features=1152, bias=True)
+          (attn_drop): Dropout(p=0.0, inplace=False)
+          (proj): Linear(in_features=384, out_features=384, bias=True)
+          (proj_drop): Dropout(p=0.0, inplace=False)
+        )
+        (drop_path): DropPath()
+        (norm2): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (mlp): Mlp(
+          (fc1): Linear(in_features=384, out_features=1536, bias=True)
+          (act): GELU(approximate='none')
+          (fc2): Linear(in_features=1536, out_features=384, bias=True)
+          (drop): Dropout(p=0.0, inplace=False)
+        )
+      )
+      (8): Block(
+        (norm1): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (attn): Attention(
+          (qkv): Linear(in_features=384, out_features=1152, bias=True)
+          (attn_drop): Dropout(p=0.0, inplace=False)
+          (proj): Linear(in_features=384, out_features=384, bias=True)
+          (proj_drop): Dropout(p=0.0, inplace=False)
+        )
+        (drop_path): DropPath()
+        (norm2): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (mlp): Mlp(
+          (fc1): Linear(in_features=384, out_features=1536, bias=True)
+          (act): GELU(approximate='none')
+          (fc2): Linear(in_features=1536, out_features=384, bias=True)
+          (drop): Dropout(p=0.0, inplace=False)
+        )
+      )
+      (9): Block(
+        (norm1): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (attn): Attention(
+          (qkv): Linear(in_features=384, out_features=1152, bias=True)
+          (attn_drop): Dropout(p=0.0, inplace=False)
+          (proj): Linear(in_features=384, out_features=384, bias=True)
+          (proj_drop): Dropout(p=0.0, inplace=False)
+        )
+        (drop_path): DropPath()
+        (norm2): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (mlp): Mlp(
+          (fc1): Linear(in_features=384, out_features=1536, bias=True)
+          (act): GELU(approximate='none')
+          (fc2): Linear(in_features=1536, out_features=384, bias=True)
+          (drop): Dropout(p=0.0, inplace=False)
+        )
+      )
+      (10): Block(
+        (norm1): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (attn): Attention(
+          (qkv): Linear(in_features=384, out_features=1152, bias=True)
+          (attn_drop): Dropout(p=0.0, inplace=False)
+          (proj): Linear(in_features=384, out_features=384, bias=True)
+          (proj_drop): Dropout(p=0.0, inplace=False)
+        )
+        (drop_path): DropPath()
+        (norm2): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (mlp): Mlp(
+          (fc1): Linear(in_features=384, out_features=1536, bias=True)
+          (act): GELU(approximate='none')
+          (fc2): Linear(in_features=1536, out_features=384, bias=True)
+          (drop): Dropout(p=0.0, inplace=False)
+        )
+      )
+      (11): Block(
+        (norm1): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (attn): Attention(
+          (qkv): Linear(in_features=384, out_features=1152, bias=True)
+          (attn_drop): Dropout(p=0.0, inplace=False)
+          (proj): Linear(in_features=384, out_features=384, bias=True)
+          (proj_drop): Dropout(p=0.0, inplace=False)
+        )
+        (drop_path): DropPath()
+        (norm2): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+        (mlp): Mlp(
+          (fc1): Linear(in_features=384, out_features=1536, bias=True)
+          (act): GELU(approximate='none')
+          (fc2): Linear(in_features=1536, out_features=384, bias=True)
+          (drop): Dropout(p=0.0, inplace=False)
+        )
+      )
+    )
+    (norm): LayerNorm((384,), eps=1e-06, elementwise_affine=True)
+    (head): Identity()
+  )
+  (CPEA): CPEALayer(
+    (fc1): Mlp(
+      (fc1): Linear(in_features=384, out_features=96, bias=True)
+      (act): GELU(approximate='none')
+      (fc2): Linear(in_features=96, out_features=384, bias=True)
+      (drop): Dropout(p=0.1, inplace=False)
+    )
+    (fc_norm1): LayerNorm((384,), eps=1e-05, elementwise_affine=True)
+    (fc2): Mlp(
+      (fc1): Linear(in_features=38416, out_features=256, bias=True)
+      (act): GELU(approximate='none')
+      (fc2): Linear(in_features=256, out_features=1, bias=True)
+      (drop): Dropout(p=0.1, inplace=False)
+    )
+  )
+  (loss_func): SmoothCELoss()
+)
+2024-06-11 16:19:19,050 [INFO] core.test: Trainable params in the model: 31575649.
+2024-06-11 16:19:19,051 [INFO] core.test: Loading the state dict from ./results/CPEANet-tiered_imagenet-VisionTransformer-5-1-Jun-11-2024-15-03-58/checkpoints/model_best.pth.
+2024-06-11 16:19:20,780 [INFO] core.test: load 206209 test image with 160 label.
+2024-06-11 16:19:21,267 [INFO] core.test: ============ Testing on the test set ============
+2024-06-11 16:19:46,485 [INFO] core.test: Epoch-(0): [100/600]	Time 0.075 (0.252)	Calc 0.073 (0.081)	Data 0.001 (0.170)	Acc@1 76.000 (77.493)
+2024-06-11 16:20:07,189 [INFO] core.test: Epoch-(0): [200/600]	Time 0.074 (0.229)	Calc 0.073 (0.077)	Data 0.000 (0.151)	Acc@1 85.333 (77.567)
+2024-06-11 16:20:30,580 [INFO] core.test: Epoch-(0): [300/600]	Time 0.613 (0.231)	Calc 0.072 (0.076)	Data 0.539 (0.154)	Acc@1 81.333 (77.409)
+2024-06-11 16:20:52,781 [INFO] core.test: Epoch-(0): [400/600]	Time 0.074 (0.229)	Calc 0.073 (0.075)	Data 0.000 (0.153)	Acc@1 86.667 (77.553)
+2024-06-11 16:21:15,197 [INFO] core.test: Epoch-(0): [500/600]	Time 1.352 (0.228)	Calc 0.073 (0.075)	Data 1.278 (0.152)	Acc@1 72.000 (77.256)
+2024-06-11 16:21:36,781 [INFO] core.test: Epoch-(0): [600/600]	Time 0.074 (0.226)	Calc 0.073 (0.074)	Data 0.000 (0.150)	Acc@1 81.333 (77.538)
+2024-06-11 16:21:36,785 [INFO] core.test: Test Accuracy: 77.538	 h: 0.921
+2024-06-11 16:21:36,786 [INFO] core.test: ============ Testing on the test set ============
+2024-06-11 16:21:57,278 [INFO] core.test: Epoch-(1): [100/600]	Time 0.075 (0.205)	Calc 0.074 (0.073)	Data 0.001 (0.131)	Acc@1 80.000 (79.013)
+2024-06-11 16:22:17,850 [INFO] core.test: Epoch-(1): [200/600]	Time 0.074 (0.205)	Calc 0.073 (0.073)	Data 0.001 (0.131)	Acc@1 73.333 (77.687)
+2024-06-11 16:22:34,300 [INFO] core.test: Epoch-(1): [300/600]	Time 0.075 (0.191)	Calc 0.074 (0.073)	Data 0.001 (0.117)	Acc@1 90.667 (77.524)
+2024-06-11 16:22:51,214 [INFO] core.test: Epoch-(1): [400/600]	Time 0.402 (0.186)	Calc 0.073 (0.073)	Data 0.328 (0.112)	Acc@1 81.333 (77.590)
+2024-06-11 16:23:07,741 [INFO] core.test: Epoch-(1): [500/600]	Time 0.074 (0.182)	Calc 0.073 (0.073)	Data 0.000 (0.108)	Acc@1 80.000 (77.701)
+2024-06-11 16:23:23,670 [INFO] core.test: Epoch-(1): [600/600]	Time 0.075 (0.178)	Calc 0.073 (0.073)	Data 0.001 (0.104)	Acc@1 84.000 (78.051)
+2024-06-11 16:23:23,673 [INFO] core.test: Test Accuracy: 78.051	 h: 0.885
+2024-06-11 16:23:23,674 [INFO] core.test: ============ Testing on the test set ============
+2024-06-11 16:23:40,024 [INFO] core.test: Epoch-(2): [100/600]	Time 0.075 (0.163)	Calc 0.073 (0.073)	Data 0.001 (0.089)	Acc@1 74.667 (76.440)
+2024-06-11 16:23:55,064 [INFO] core.test: Epoch-(2): [200/600]	Time 0.075 (0.157)	Calc 0.073 (0.073)	Data 0.001 (0.082)	Acc@1 57.333 (77.367)
+2024-06-11 16:24:09,728 [INFO] core.test: Epoch-(2): [300/600]	Time 0.075 (0.153)	Calc 0.074 (0.073)	Data 0.001 (0.079)	Acc@1 77.333 (76.858)
+2024-06-11 16:24:24,190 [INFO] core.test: Epoch-(2): [400/600]	Time 0.075 (0.151)	Calc 0.074 (0.073)	Data 0.000 (0.077)	Acc@1 70.667 (76.943)
+2024-06-11 16:24:37,986 [INFO] core.test: Epoch-(2): [500/600]	Time 0.075 (0.148)	Calc 0.073 (0.073)	Data 0.000 (0.074)	Acc@1 61.333 (76.949)
+2024-06-11 16:24:53,095 [INFO] core.test: Epoch-(2): [600/600]	Time 0.320 (0.149)	Calc 0.073 (0.073)	Data 0.246 (0.074)	Acc@1 84.000 (76.982)
+2024-06-11 16:24:53,098 [INFO] core.test: Test Accuracy: 76.982	 h: 0.960
+2024-06-11 16:24:53,100 [INFO] core.test: ============ Testing on the test set ============
+2024-06-11 16:25:06,940 [INFO] core.test: Epoch-(3): [100/600]	Time 0.075 (0.138)	Calc 0.074 (0.074)	Data 0.001 (0.064)	Acc@1 64.000 (75.707)
+2024-06-11 16:25:20,672 [INFO] core.test: Epoch-(3): [200/600]	Time 0.777 (0.138)	Calc 0.073 (0.073)	Data 0.703 (0.063)	Acc@1 90.667 (76.667)
+2024-06-11 16:25:33,212 [INFO] core.test: Epoch-(3): [300/600]	Time 0.076 (0.133)	Calc 0.074 (0.074)	Data 0.000 (0.059)	Acc@1 77.333 (76.569)
+2024-06-11 16:25:46,456 [INFO] core.test: Epoch-(3): [400/600]	Time 0.075 (0.133)	Calc 0.074 (0.074)	Data 0.001 (0.059)	Acc@1 96.000 (76.703)
+2024-06-11 16:25:58,697 [INFO] core.test: Epoch-(3): [500/600]	Time 0.186 (0.131)	Calc 0.073 (0.074)	Data 0.112 (0.057)	Acc@1 65.333 (76.808)
+2024-06-11 16:26:11,510 [INFO] core.test: Epoch-(3): [600/600]	Time 0.075 (0.130)	Calc 0.074 (0.074)	Data 0.001 (0.056)	Acc@1 38.667 (77.102)
+2024-06-11 16:26:11,513 [INFO] core.test: Test Accuracy: 77.102	 h: 0.930
+2024-06-11 16:26:11,514 [INFO] core.test: ============ Testing on the test set ============
+2024-06-11 16:26:22,425 [INFO] core.test: Epoch-(4): [100/600]	Time 0.075 (0.109)	Calc 0.074 (0.074)	Data 0.001 (0.034)	Acc@1 85.333 (77.653)
+2024-06-11 16:26:33,733 [INFO] core.test: Epoch-(4): [200/600]	Time 0.076 (0.111)	Calc 0.074 (0.074)	Data 0.001 (0.036)	Acc@1 93.333 (76.440)
+2024-06-11 16:26:44,278 [INFO] core.test: Epoch-(4): [300/600]	Time 0.075 (0.109)	Calc 0.073 (0.074)	Data 0.001 (0.034)	Acc@1 86.667 (77.564)
+2024-06-11 16:26:55,250 [INFO] core.test: Epoch-(4): [400/600]	Time 0.076 (0.109)	Calc 0.074 (0.074)	Data 0.001 (0.034)	Acc@1 94.667 (77.477)
+2024-06-11 16:27:05,850 [INFO] core.test: Epoch-(4): [500/600]	Time 0.187 (0.108)	Calc 0.073 (0.074)	Data 0.113 (0.034)	Acc@1 84.000 (77.856)
+2024-06-11 16:27:15,812 [INFO] core.test: Epoch-(4): [600/600]	Time 0.075 (0.107)	Calc 0.074 (0.074)	Data 0.001 (0.032)	Acc@1 48.000 (77.744)
+2024-06-11 16:27:15,816 [INFO] core.test: Test Accuracy: 77.744	 h: 0.935
+2024-06-11 16:27:15,820 [INFO] core.test: Aver Accuracy: 77.484	 Aver h: 0.414
+2024-06-11 16:27:15,821 [INFO] core.test: ............Testing is end............

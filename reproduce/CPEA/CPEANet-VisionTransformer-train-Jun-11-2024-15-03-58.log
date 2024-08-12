@@ -1,0 +1,573 @@
+2024-06-11 15:03:58,533 [INFO] core.trainer: {'data_root': '../datasets/tiered_imagenet', 'image_size': 224, 'use_memory': False, 'augment': True, 'augment_times': 1, 'augment_times_query': 1, 'workers': 8, 'dataloader_num': 1, 'device_ids': 1, 'n_gpu': 1, 'seed': 2147483647, 'deterministic': True, 'port': 49897, 'log_name': None, 'log_level': 'info', 'log_interval': 100, 'log_paramerter': False, 'result_root': './results', 'save_interval': 10, 'save_part': ['emb_func'], 'tag': None, 'epoch': 50, 'test_epoch': 5, 'parallel_part': ['emb_func'], 'pretrain_path': '/mnt/hdd/FSL/LibFewShot/core/model/backbone/pretrain/ViTClassAware_tieredimagenet.pth', 'resume': False, 'way_num': 5, 'shot_num': 1, 'query_num': 15, 'test_way': 5, 'test_shot': 1, 'test_query': 15, 'episode_size': 1, 'train_episode': 100, 'test_episode': 100, 'batch_size': 128, 'val_per_epoch': 1, 'optimizer': {'name': 'Adam', 'kwargs': {'lr': 1e-05, 'weight_decay': 0.001}, 'other': None}, 'lr_scheduler': {'name': 'StepLR', 'kwargs': {'gamma': 0.5, 'step_size': 5}}, 'warmup': 0, 'includes': ['headers/data.yaml', 'headers/device.yaml', 'headers/misc.yaml', 'headers/model.yaml', 'headers/optimizer.yaml', 'classifiers/CPEA.yaml', 'backbones/ViTClassAware.yaml'], 'classifier': {'name': 'CPEANet', 'kwargs': None}, 'backbone': {'name': 'VisionTransformer', 'kwargs': {'patch_size': 16, 'embed_dim': 384, 'depth': 12, 'num_heads': 6, 'mlp_ratio': 4, 'qkv_bias': True}}, 'tb_scale': 1.0, 'rank': 0}
+2024-06-11 15:03:58,870 [INFO] core.trainer: Trainable params in the model: 31575649
+2024-06-11 15:03:58,871 [INFO] core.trainer: load pretraining emb_func from /mnt/hdd/FSL/LibFewShot/core/model/backbone/pretrain/ViTClassAware_tieredimagenet.pth
+2024-06-11 15:03:58,937 [INFO] core.trainer: odict_keys(['cls_token', 'pos_embed', 'patch_embed.proj.weight', 'patch_embed.proj.bias', 'blocks.0.norm1.weight', 'blocks.0.norm1.bias', 'blocks.0.attn.qkv.weight', 'blocks.0.attn.qkv.bias', 'blocks.0.attn.proj.weight', 'blocks.0.attn.proj.bias', 'blocks.0.norm2.weight', 'blocks.0.norm2.bias', 'blocks.0.mlp.fc1.weight', 'blocks.0.mlp.fc1.bias', 'blocks.0.mlp.fc2.weight', 'blocks.0.mlp.fc2.bias', 'blocks.1.norm1.weight', 'blocks.1.norm1.bias', 'blocks.1.attn.qkv.weight', 'blocks.1.attn.qkv.bias', 'blocks.1.attn.proj.weight', 'blocks.1.attn.proj.bias', 'blocks.1.norm2.weight', 'blocks.1.norm2.bias', 'blocks.1.mlp.fc1.weight', 'blocks.1.mlp.fc1.bias', 'blocks.1.mlp.fc2.weight', 'blocks.1.mlp.fc2.bias', 'blocks.2.norm1.weight', 'blocks.2.norm1.bias', 'blocks.2.attn.qkv.weight', 'blocks.2.attn.qkv.bias', 'blocks.2.attn.proj.weight', 'blocks.2.attn.proj.bias', 'blocks.2.norm2.weight', 'blocks.2.norm2.bias', 'blocks.2.mlp.fc1.weight', 'blocks.2.mlp.fc1.bias', 'blocks.2.mlp.fc2.weight', 'blocks.2.mlp.fc2.bias', 'blocks.3.norm1.weight', 'blocks.3.norm1.bias', 'blocks.3.attn.qkv.weight', 'blocks.3.attn.qkv.bias', 'blocks.3.attn.proj.weight', 'blocks.3.attn.proj.bias', 'blocks.3.norm2.weight', 'blocks.3.norm2.bias', 'blocks.3.mlp.fc1.weight', 'blocks.3.mlp.fc1.bias', 'blocks.3.mlp.fc2.weight', 'blocks.3.mlp.fc2.bias', 'blocks.4.norm1.weight', 'blocks.4.norm1.bias', 'blocks.4.attn.qkv.weight', 'blocks.4.attn.qkv.bias', 'blocks.4.attn.proj.weight', 'blocks.4.attn.proj.bias', 'blocks.4.norm2.weight', 'blocks.4.norm2.bias', 'blocks.4.mlp.fc1.weight', 'blocks.4.mlp.fc1.bias', 'blocks.4.mlp.fc2.weight', 'blocks.4.mlp.fc2.bias', 'blocks.5.norm1.weight', 'blocks.5.norm1.bias', 'blocks.5.attn.qkv.weight', 'blocks.5.attn.qkv.bias', 'blocks.5.attn.proj.weight', 'blocks.5.attn.proj.bias', 'blocks.5.norm2.weight', 'blocks.5.norm2.bias', 'blocks.5.mlp.fc1.weight', 'blocks.5.mlp.fc1.bias', 'blocks.5.mlp.fc2.weight', 'blocks.5.mlp.fc2.bias', 'blocks.6.norm1.weight', 'blocks.6.norm1.bias', 'blocks.6.attn.qkv.weight', 'blocks.6.attn.qkv.bias', 'blocks.6.attn.proj.weight', 'blocks.6.attn.proj.bias', 'blocks.6.norm2.weight', 'blocks.6.norm2.bias', 'blocks.6.mlp.fc1.weight', 'blocks.6.mlp.fc1.bias', 'blocks.6.mlp.fc2.weight', 'blocks.6.mlp.fc2.bias', 'blocks.7.norm1.weight', 'blocks.7.norm1.bias', 'blocks.7.attn.qkv.weight', 'blocks.7.attn.qkv.bias', 'blocks.7.attn.proj.weight', 'blocks.7.attn.proj.bias', 'blocks.7.norm2.weight', 'blocks.7.norm2.bias', 'blocks.7.mlp.fc1.weight', 'blocks.7.mlp.fc1.bias', 'blocks.7.mlp.fc2.weight', 'blocks.7.mlp.fc2.bias', 'blocks.8.norm1.weight', 'blocks.8.norm1.bias', 'blocks.8.attn.qkv.weight', 'blocks.8.attn.qkv.bias', 'blocks.8.attn.proj.weight', 'blocks.8.attn.proj.bias', 'blocks.8.norm2.weight', 'blocks.8.norm2.bias', 'blocks.8.mlp.fc1.weight', 'blocks.8.mlp.fc1.bias', 'blocks.8.mlp.fc2.weight', 'blocks.8.mlp.fc2.bias', 'blocks.9.norm1.weight', 'blocks.9.norm1.bias', 'blocks.9.attn.qkv.weight', 'blocks.9.attn.qkv.bias', 'blocks.9.attn.proj.weight', 'blocks.9.attn.proj.bias', 'blocks.9.norm2.weight', 'blocks.9.norm2.bias', 'blocks.9.mlp.fc1.weight', 'blocks.9.mlp.fc1.bias', 'blocks.9.mlp.fc2.weight', 'blocks.9.mlp.fc2.bias', 'blocks.10.norm1.weight', 'blocks.10.norm1.bias', 'blocks.10.attn.qkv.weight', 'blocks.10.attn.qkv.bias', 'blocks.10.attn.proj.weight', 'blocks.10.attn.proj.bias', 'blocks.10.norm2.weight', 'blocks.10.norm2.bias', 'blocks.10.mlp.fc1.weight', 'blocks.10.mlp.fc1.bias', 'blocks.10.mlp.fc2.weight', 'blocks.10.mlp.fc2.bias', 'blocks.11.norm1.weight', 'blocks.11.norm1.bias', 'blocks.11.attn.qkv.weight', 'blocks.11.attn.qkv.bias', 'blocks.11.attn.proj.weight', 'blocks.11.attn.proj.bias', 'blocks.11.norm2.weight', 'blocks.11.norm2.bias', 'blocks.11.mlp.fc1.weight', 'blocks.11.mlp.fc1.bias', 'blocks.11.mlp.fc2.weight', 'blocks.11.mlp.fc2.bias', 'norm.weight', 'norm.bias'])
+2024-06-11 15:03:59,958 [INFO] core.trainer: load 448695 train image with 351 label.
+2024-06-11 15:04:00,604 [INFO] core.trainer: load 124261 val image with 97 label.
+2024-06-11 15:04:00,967 [INFO] core.trainer: load 206209 test image with 160 label.
+2024-06-11 15:04:01,474 [INFO] core.trainer: Adam (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: False
+    initial_lr: 1e-05
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0.001
+)
+2024-06-11 15:04:01,527 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:04:01,529 [INFO] core.trainer: learning rate: [1e-05]
+2024-06-11 15:04:27,663 [INFO] core.trainer: Epoch-(0): [100/100]	Time 0.239 (0.261)	Calc 0.236 (0.253)	Data 0.001 (0.005)	Loss 0.845 (1.109)	Acc@1 84.000 (68.933)
+2024-06-11 15:04:27,666 [INFO] core.trainer:  * Acc@1 68.933 
+2024-06-11 15:04:27,667 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:04:43,734 [INFO] core.trainer: Epoch-(0): [100/100]	Time 0.075 (0.160)	Calc 0.073 (0.073)	Data 0.000 (0.086)	Acc@1 70.667 (74.400)
+2024-06-11 15:04:43,736 [INFO] core.trainer:  * Acc@1 74.400 Best acc -inf
+2024-06-11 15:04:43,737 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:04:58,663 [INFO] core.trainer: Epoch-(0): [100/100]	Time 0.074 (0.149)	Calc 0.073 (0.073)	Data 0.000 (0.075)	Acc@1 70.667 (75.200)
+2024-06-11 15:04:58,665 [INFO] core.trainer:  * Acc@1 75.200 Best acc -inf
+2024-06-11 15:04:58,666 [INFO] core.trainer:  * Time: 0:00:57/0:47:30
+2024-06-11 15:04:59,495 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:04:59,497 [INFO] core.trainer: learning rate: [1e-05]
+2024-06-11 15:05:35,941 [INFO] core.trainer: Epoch-(1): [100/100]	Time 0.240 (0.364)	Calc 0.237 (0.247)	Data 0.000 (0.114)	Loss 1.432 (1.039)	Acc@1 40.000 (71.547)
+2024-06-11 15:05:36,812 [INFO] core.trainer:  * Acc@1 71.547 
+2024-06-11 15:05:36,813 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:06:34,730 [INFO] core.trainer: Epoch-(1): [100/100]	Time 0.074 (0.579)	Calc 0.073 (0.073)	Data 0.000 (0.505)	Acc@1 65.333 (73.920)
+2024-06-11 15:06:34,732 [INFO] core.trainer:  * Acc@1 73.920 Best acc 74.400
+2024-06-11 15:06:34,733 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:07:11,897 [INFO] core.trainer: Epoch-(1): [100/100]	Time 0.074 (0.371)	Calc 0.073 (0.073)	Data 0.000 (0.297)	Acc@1 74.667 (79.427)
+2024-06-11 15:07:11,900 [INFO] core.trainer:  * Acc@1 79.427 Best acc 75.200
+2024-06-11 15:07:11,901 [INFO] core.trainer:  * Time: 0:03:10/1:19:10
+2024-06-11 15:07:15,770 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:07:15,771 [INFO] core.trainer: learning rate: [1e-05]
+2024-06-11 15:07:49,683 [INFO] core.trainer: Epoch-(2): [100/100]	Time 0.240 (0.339)	Calc 0.237 (0.238)	Data 0.001 (0.098)	Loss 0.761 (0.972)	Acc@1 86.667 (74.813)
+2024-06-11 15:07:49,686 [INFO] core.trainer:  * Acc@1 74.813 
+2024-06-11 15:07:49,687 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:08:23,797 [INFO] core.trainer: Epoch-(2): [100/100]	Time 0.075 (0.341)	Calc 0.074 (0.073)	Data 0.001 (0.267)	Acc@1 90.667 (73.867)
+2024-06-11 15:08:23,800 [INFO] core.trainer:  * Acc@1 73.867 Best acc 74.400
+2024-06-11 15:08:23,801 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:08:58,070 [INFO] core.trainer: Epoch-(2): [100/100]	Time 0.075 (0.342)	Calc 0.074 (0.073)	Data 0.001 (0.268)	Acc@1 96.000 (78.960)
+2024-06-11 15:08:58,073 [INFO] core.trainer:  * Acc@1 78.960 Best acc 75.200
+2024-06-11 15:08:58,074 [INFO] core.trainer:  * Time: 0:04:56/1:22:13.333333
+2024-06-11 15:09:01,538 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:09:01,540 [INFO] core.trainer: learning rate: [1e-05]
+2024-06-11 15:09:36,081 [INFO] core.trainer: Epoch-(3): [100/100]	Time 0.240 (0.345)	Calc 0.237 (0.238)	Data 0.001 (0.105)	Loss 1.208 (0.990)	Acc@1 60.000 (73.720)
+2024-06-11 15:09:36,084 [INFO] core.trainer:  * Acc@1 73.720 
+2024-06-11 15:09:36,086 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:10:07,304 [INFO] core.trainer: Epoch-(3): [100/100]	Time 0.075 (0.312)	Calc 0.074 (0.073)	Data 0.000 (0.238)	Acc@1 90.667 (74.307)
+2024-06-11 15:10:07,306 [INFO] core.trainer:  * Acc@1 74.307 Best acc 74.400
+2024-06-11 15:10:07,307 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:10:39,304 [INFO] core.trainer: Epoch-(3): [100/100]	Time 0.075 (0.320)	Calc 0.073 (0.073)	Data 0.000 (0.246)	Acc@1 82.667 (76.240)
+2024-06-11 15:10:39,306 [INFO] core.trainer:  * Acc@1 76.240 Best acc 75.200
+2024-06-11 15:10:39,307 [INFO] core.trainer:  * Time: 0:06:37/1:22:42.500000
+2024-06-11 15:10:42,350 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:10:42,352 [INFO] core.trainer: learning rate: [1e-05]
+2024-06-11 15:11:18,126 [INFO] core.trainer: Epoch-(4): [100/100]	Time 2.010 (0.358)	Calc 0.238 (0.238)	Data 1.769 (0.117)	Loss 0.872 (0.962)	Acc@1 70.667 (74.747)
+2024-06-11 15:11:18,130 [INFO] core.trainer:  * Acc@1 74.747 
+2024-06-11 15:11:18,131 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:11:46,961 [INFO] core.trainer: Epoch-(4): [100/100]	Time 0.232 (0.288)	Calc 0.073 (0.073)	Data 0.159 (0.214)	Acc@1 65.333 (73.907)
+2024-06-11 15:11:46,963 [INFO] core.trainer:  * Acc@1 73.907 Best acc 74.400
+2024-06-11 15:11:46,964 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:12:17,198 [INFO] core.trainer: Epoch-(4): [100/100]	Time 0.075 (0.302)	Calc 0.074 (0.073)	Data 0.001 (0.228)	Acc@1 82.667 (78.133)
+2024-06-11 15:12:17,201 [INFO] core.trainer:  * Acc@1 78.133 Best acc 75.200
+2024-06-11 15:12:17,202 [INFO] core.trainer:  * Time: 0:08:15/1:22:30
+2024-06-11 15:12:20,423 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:12:20,425 [INFO] core.trainer: learning rate: [5e-06]
+2024-06-11 15:12:53,374 [INFO] core.trainer: Epoch-(5): [100/100]	Time 0.240 (0.329)	Calc 0.237 (0.238)	Data 0.000 (0.089)	Loss 1.123 (0.919)	Acc@1 70.667 (77.440)
+2024-06-11 15:12:53,377 [INFO] core.trainer:  * Acc@1 77.440 
+2024-06-11 15:12:53,379 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:13:22,552 [INFO] core.trainer: Epoch-(5): [100/100]	Time 0.075 (0.292)	Calc 0.073 (0.073)	Data 0.000 (0.217)	Acc@1 84.000 (75.680)
+2024-06-11 15:13:22,554 [INFO] core.trainer:  * Acc@1 75.680 Best acc 74.400
+2024-06-11 15:13:22,555 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:13:55,689 [INFO] core.trainer: Epoch-(5): [100/100]	Time 1.550 (0.331)	Calc 0.073 (0.073)	Data 1.476 (0.257)	Acc@1 85.333 (74.947)
+2024-06-11 15:13:55,692 [INFO] core.trainer:  * Acc@1 74.947 Best acc 75.200
+2024-06-11 15:13:55,693 [INFO] core.trainer:  * Time: 0:09:54/1:22:30
+2024-06-11 15:14:00,204 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:14:00,205 [INFO] core.trainer: learning rate: [5e-06]
+2024-06-11 15:14:33,098 [INFO] core.trainer: Epoch-(6): [100/100]	Time 0.240 (0.329)	Calc 0.237 (0.238)	Data 0.000 (0.088)	Loss 0.763 (0.917)	Acc@1 89.333 (77.200)
+2024-06-11 15:14:33,101 [INFO] core.trainer:  * Acc@1 77.200 
+2024-06-11 15:14:33,102 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:14:59,750 [INFO] core.trainer: Epoch-(6): [100/100]	Time 0.752 (0.266)	Calc 0.073 (0.073)	Data 0.678 (0.192)	Acc@1 66.667 (73.680)
+2024-06-11 15:14:59,752 [INFO] core.trainer:  * Acc@1 73.680 Best acc 75.680
+2024-06-11 15:14:59,753 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:15:29,168 [INFO] core.trainer: Epoch-(6): [100/100]	Time 0.075 (0.294)	Calc 0.073 (0.073)	Data 0.001 (0.220)	Acc@1 84.000 (80.067)
+2024-06-11 15:15:29,171 [INFO] core.trainer:  * Acc@1 80.067 Best acc 74.947
+2024-06-11 15:15:29,172 [INFO] core.trainer:  * Time: 0:11:27/1:21:47.142857
+2024-06-11 15:15:31,745 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:15:31,747 [INFO] core.trainer: learning rate: [5e-06]
+2024-06-11 15:16:05,558 [INFO] core.trainer: Epoch-(7): [100/100]	Time 0.241 (0.338)	Calc 0.237 (0.238)	Data 0.001 (0.097)	Loss 0.863 (0.899)	Acc@1 80.000 (78.520)
+2024-06-11 15:16:05,561 [INFO] core.trainer:  * Acc@1 78.520 
+2024-06-11 15:16:05,562 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:16:29,709 [INFO] core.trainer: Epoch-(7): [100/100]	Time 0.074 (0.241)	Calc 0.073 (0.073)	Data 0.000 (0.167)	Acc@1 84.000 (75.067)
+2024-06-11 15:16:29,712 [INFO] core.trainer:  * Acc@1 75.067 Best acc 75.680
+2024-06-11 15:16:29,713 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:16:58,972 [INFO] core.trainer: Epoch-(7): [100/100]	Time 0.074 (0.292)	Calc 0.073 (0.073)	Data 0.000 (0.218)	Acc@1 77.333 (78.040)
+2024-06-11 15:16:58,974 [INFO] core.trainer:  * Acc@1 78.040 Best acc 74.947
+2024-06-11 15:16:58,975 [INFO] core.trainer:  * Time: 0:12:57/1:20:56.250000
+2024-06-11 15:17:01,824 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:17:01,826 [INFO] core.trainer: learning rate: [5e-06]
+2024-06-11 15:17:34,527 [INFO] core.trainer: Epoch-(8): [100/100]	Time 0.249 (0.327)	Calc 0.246 (0.238)	Data 0.000 (0.086)	Loss 0.884 (0.937)	Acc@1 81.333 (76.560)
+2024-06-11 15:17:34,530 [INFO] core.trainer:  * Acc@1 76.560 
+2024-06-11 15:17:34,532 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:17:56,752 [INFO] core.trainer: Epoch-(8): [100/100]	Time 0.075 (0.222)	Calc 0.073 (0.073)	Data 0.000 (0.148)	Acc@1 89.333 (73.893)
+2024-06-11 15:17:56,754 [INFO] core.trainer:  * Acc@1 73.893 Best acc 75.680
+2024-06-11 15:17:56,755 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:18:23,568 [INFO] core.trainer: Epoch-(8): [100/100]	Time 0.883 (0.268)	Calc 0.073 (0.073)	Data 0.809 (0.194)	Acc@1 88.000 (77.640)
+2024-06-11 15:18:23,570 [INFO] core.trainer:  * Acc@1 77.640 Best acc 74.947
+2024-06-11 15:18:23,571 [INFO] core.trainer:  * Time: 0:14:22/1:19:48.888889
+2024-06-11 15:18:26,575 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:18:26,576 [INFO] core.trainer: learning rate: [5e-06]
+2024-06-11 15:18:56,896 [INFO] core.trainer: Epoch-(9): [100/100]	Time 2.641 (0.303)	Calc 0.238 (0.238)	Data 2.400 (0.062)	Loss 1.070 (0.887)	Acc@1 69.333 (78.467)
+2024-06-11 15:18:56,899 [INFO] core.trainer:  * Acc@1 78.467 
+2024-06-11 15:18:56,900 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:19:19,563 [INFO] core.trainer: Epoch-(9): [100/100]	Time 1.011 (0.226)	Calc 0.073 (0.073)	Data 0.937 (0.152)	Acc@1 88.000 (76.053)
+2024-06-11 15:19:19,565 [INFO] core.trainer:  * Acc@1 76.053 Best acc 75.680
+2024-06-11 15:19:19,566 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:19:46,611 [INFO] core.trainer: Epoch-(9): [100/100]	Time 0.075 (0.270)	Calc 0.073 (0.073)	Data 0.001 (0.196)	Acc@1 81.333 (77.800)
+2024-06-11 15:19:46,614 [INFO] core.trainer:  * Acc@1 77.800 Best acc 74.947
+2024-06-11 15:19:46,615 [INFO] core.trainer:  * Time: 0:15:45/1:18:45
+2024-06-11 15:19:51,504 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:19:51,505 [INFO] core.trainer: learning rate: [2.5e-06]
+2024-06-11 15:20:23,133 [INFO] core.trainer: Epoch-(10): [100/100]	Time 0.241 (0.316)	Calc 0.239 (0.238)	Data 0.001 (0.075)	Loss 1.053 (0.905)	Acc@1 73.333 (77.840)
+2024-06-11 15:20:23,139 [INFO] core.trainer:  * Acc@1 77.840 
+2024-06-11 15:20:23,141 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:20:44,153 [INFO] core.trainer: Epoch-(10): [100/100]	Time 0.673 (0.210)	Calc 0.073 (0.073)	Data 0.599 (0.136)	Acc@1 61.333 (74.613)
+2024-06-11 15:20:44,156 [INFO] core.trainer:  * Acc@1 74.613 Best acc 76.053
+2024-06-11 15:20:44,156 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:21:09,483 [INFO] core.trainer: Epoch-(10): [100/100]	Time 0.075 (0.253)	Calc 0.073 (0.073)	Data 0.001 (0.179)	Acc@1 70.667 (78.200)
+2024-06-11 15:21:09,485 [INFO] core.trainer:  * Acc@1 78.200 Best acc 77.800
+2024-06-11 15:21:09,486 [INFO] core.trainer:  * Time: 0:17:07/1:17:48.181818
+2024-06-11 15:21:12,590 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:21:12,592 [INFO] core.trainer: learning rate: [2.5e-06]
+2024-06-11 15:21:40,430 [INFO] core.trainer: Epoch-(11): [100/100]	Time 0.848 (0.278)	Calc 0.239 (0.238)	Data 0.606 (0.037)	Loss 0.738 (0.893)	Acc@1 88.000 (78.680)
+2024-06-11 15:21:40,432 [INFO] core.trainer:  * Acc@1 78.680 
+2024-06-11 15:21:40,434 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:22:01,865 [INFO] core.trainer: Epoch-(11): [100/100]	Time 0.076 (0.214)	Calc 0.074 (0.073)	Data 0.001 (0.140)	Acc@1 81.333 (76.293)
+2024-06-11 15:22:01,868 [INFO] core.trainer:  * Acc@1 76.293 Best acc 76.053
+2024-06-11 15:22:01,869 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:22:28,495 [INFO] core.trainer: Epoch-(11): [100/100]	Time 0.898 (0.266)	Calc 0.073 (0.073)	Data 0.824 (0.192)	Acc@1 92.000 (78.347)
+2024-06-11 15:22:28,498 [INFO] core.trainer:  * Acc@1 78.347 Best acc 77.800
+2024-06-11 15:22:28,499 [INFO] core.trainer:  * Time: 0:18:26/1:16:48.333333
+2024-06-11 15:22:33,362 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:22:33,363 [INFO] core.trainer: learning rate: [2.5e-06]
+2024-06-11 15:23:03,487 [INFO] core.trainer: Epoch-(12): [100/100]	Time 0.240 (0.301)	Calc 0.237 (0.238)	Data 0.000 (0.060)	Loss 1.070 (0.911)	Acc@1 66.667 (77.413)
+2024-06-11 15:23:03,490 [INFO] core.trainer:  * Acc@1 77.413 
+2024-06-11 15:23:03,491 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:23:23,176 [INFO] core.trainer: Epoch-(12): [100/100]	Time 0.075 (0.197)	Calc 0.074 (0.074)	Data 0.000 (0.122)	Acc@1 65.333 (76.333)
+2024-06-11 15:23:23,178 [INFO] core.trainer:  * Acc@1 76.333 Best acc 76.293
+2024-06-11 15:23:23,179 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:23:49,227 [INFO] core.trainer: Epoch-(12): [100/100]	Time 0.408 (0.260)	Calc 0.073 (0.073)	Data 0.333 (0.186)	Acc@1 92.000 (76.640)
+2024-06-11 15:23:49,229 [INFO] core.trainer:  * Acc@1 76.640 Best acc 78.347
+2024-06-11 15:23:49,230 [INFO] core.trainer:  * Time: 0:19:47/1:16:05.384615
+2024-06-11 15:23:53,627 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:23:53,629 [INFO] core.trainer: learning rate: [2.5e-06]
+2024-06-11 15:24:24,216 [INFO] core.trainer: Epoch-(13): [100/100]	Time 0.241 (0.306)	Calc 0.238 (0.238)	Data 0.001 (0.065)	Loss 0.852 (0.898)	Acc@1 82.667 (78.013)
+2024-06-11 15:24:24,219 [INFO] core.trainer:  * Acc@1 78.013 
+2024-06-11 15:24:24,220 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:24:43,945 [INFO] core.trainer: Epoch-(13): [100/100]	Time 0.074 (0.197)	Calc 0.073 (0.073)	Data 0.000 (0.123)	Acc@1 82.667 (76.640)
+2024-06-11 15:24:43,948 [INFO] core.trainer:  * Acc@1 76.640 Best acc 76.333
+2024-06-11 15:24:43,949 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:25:10,205 [INFO] core.trainer: Epoch-(13): [100/100]	Time 0.075 (0.262)	Calc 0.074 (0.073)	Data 0.001 (0.188)	Acc@1 90.667 (77.800)
+2024-06-11 15:25:10,207 [INFO] core.trainer:  * Acc@1 77.800 Best acc 76.640
+2024-06-11 15:25:10,209 [INFO] core.trainer:  * Time: 0:21:08/1:15:28.571429
+2024-06-11 15:25:14,976 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:25:14,978 [INFO] core.trainer: learning rate: [2.5e-06]
+2024-06-11 15:25:41,866 [INFO] core.trainer: Epoch-(14): [100/100]	Time 0.240 (0.269)	Calc 0.237 (0.239)	Data 0.000 (0.027)	Loss 0.780 (0.891)	Acc@1 82.667 (78.573)
+2024-06-11 15:25:41,870 [INFO] core.trainer:  * Acc@1 78.573 
+2024-06-11 15:25:41,871 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:26:03,005 [INFO] core.trainer: Epoch-(14): [100/100]	Time 0.075 (0.211)	Calc 0.074 (0.074)	Data 0.001 (0.137)	Acc@1 69.333 (75.827)
+2024-06-11 15:26:03,008 [INFO] core.trainer:  * Acc@1 75.827 Best acc 76.640
+2024-06-11 15:26:03,009 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:26:30,351 [INFO] core.trainer: Epoch-(14): [100/100]	Time 0.074 (0.273)	Calc 0.073 (0.073)	Data 0.000 (0.199)	Acc@1 76.000 (78.507)
+2024-06-11 15:26:30,353 [INFO] core.trainer:  * Acc@1 78.507 Best acc 77.800
+2024-06-11 15:26:30,354 [INFO] core.trainer:  * Time: 0:22:28/1:14:53.333333
+2024-06-11 15:26:33,177 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:26:33,178 [INFO] core.trainer: learning rate: [1.25e-06]
+2024-06-11 15:27:03,752 [INFO] core.trainer: Epoch-(15): [100/100]	Time 0.242 (0.306)	Calc 0.240 (0.239)	Data 0.000 (0.064)	Loss 1.013 (0.880)	Acc@1 74.667 (79.320)
+2024-06-11 15:27:03,755 [INFO] core.trainer:  * Acc@1 79.320 
+2024-06-11 15:27:03,757 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:27:22,866 [INFO] core.trainer: Epoch-(15): [100/100]	Time 0.075 (0.191)	Calc 0.074 (0.074)	Data 0.000 (0.116)	Acc@1 88.000 (76.733)
+2024-06-11 15:27:22,868 [INFO] core.trainer:  * Acc@1 76.733 Best acc 76.640
+2024-06-11 15:27:22,869 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:27:47,794 [INFO] core.trainer: Epoch-(15): [100/100]	Time 0.074 (0.249)	Calc 0.073 (0.073)	Data 0.000 (0.175)	Acc@1 68.000 (76.893)
+2024-06-11 15:27:47,797 [INFO] core.trainer:  * Acc@1 76.893 Best acc 77.800
+2024-06-11 15:27:47,798 [INFO] core.trainer:  * Time: 0:23:46/1:14:16.250000
+2024-06-11 15:27:53,453 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:27:53,454 [INFO] core.trainer: learning rate: [1.25e-06]
+2024-06-11 15:28:24,928 [INFO] core.trainer: Epoch-(16): [100/100]	Time 0.242 (0.315)	Calc 0.239 (0.239)	Data 0.000 (0.073)	Loss 0.831 (0.871)	Acc@1 85.333 (79.880)
+2024-06-11 15:28:24,931 [INFO] core.trainer:  * Acc@1 79.880 
+2024-06-11 15:28:24,932 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:28:45,469 [INFO] core.trainer: Epoch-(16): [100/100]	Time 0.075 (0.205)	Calc 0.074 (0.074)	Data 0.001 (0.131)	Acc@1 54.667 (75.253)
+2024-06-11 15:28:45,472 [INFO] core.trainer:  * Acc@1 75.253 Best acc 76.733
+2024-06-11 15:28:45,473 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:29:09,858 [INFO] core.trainer: Epoch-(16): [100/100]	Time 0.384 (0.244)	Calc 0.073 (0.074)	Data 0.310 (0.169)	Acc@1 82.667 (76.000)
+2024-06-11 15:29:09,862 [INFO] core.trainer:  * Acc@1 76.000 Best acc 76.893
+2024-06-11 15:29:09,864 [INFO] core.trainer:  * Time: 0:25:08/1:13:55.294118
+2024-06-11 15:29:13,064 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:29:13,065 [INFO] core.trainer: learning rate: [1.25e-06]
+2024-06-11 15:29:42,255 [INFO] core.trainer: Epoch-(17): [100/100]	Time 0.241 (0.292)	Calc 0.238 (0.240)	Data 0.001 (0.049)	Loss 0.914 (0.897)	Acc@1 84.000 (77.867)
+2024-06-11 15:29:42,258 [INFO] core.trainer:  * Acc@1 77.867 
+2024-06-11 15:29:42,260 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:30:01,949 [INFO] core.trainer: Epoch-(17): [100/100]	Time 0.076 (0.197)	Calc 0.074 (0.074)	Data 0.001 (0.122)	Acc@1 80.000 (74.600)
+2024-06-11 15:30:01,953 [INFO] core.trainer:  * Acc@1 74.600 Best acc 76.733
+2024-06-11 15:30:01,955 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:30:27,840 [INFO] core.trainer: Epoch-(17): [100/100]	Time 0.075 (0.259)	Calc 0.074 (0.074)	Data 0.001 (0.184)	Acc@1 76.000 (79.160)
+2024-06-11 15:30:27,843 [INFO] core.trainer:  * Acc@1 79.160 Best acc 76.893
+2024-06-11 15:30:27,844 [INFO] core.trainer:  * Time: 0:26:26/1:13:25.555556
+2024-06-11 15:30:30,560 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:30:30,561 [INFO] core.trainer: learning rate: [1.25e-06]
+2024-06-11 15:31:00,004 [INFO] core.trainer: Epoch-(18): [100/100]	Time 0.244 (0.294)	Calc 0.241 (0.239)	Data 0.001 (0.052)	Loss 0.728 (0.891)	Acc@1 85.333 (78.000)
+2024-06-11 15:31:00,008 [INFO] core.trainer:  * Acc@1 78.000 
+2024-06-11 15:31:00,009 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:31:19,561 [INFO] core.trainer: Epoch-(18): [100/100]	Time 0.188 (0.195)	Calc 0.073 (0.074)	Data 0.114 (0.121)	Acc@1 62.667 (75.347)
+2024-06-11 15:31:19,564 [INFO] core.trainer:  * Acc@1 75.347 Best acc 76.733
+2024-06-11 15:31:19,565 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:31:45,777 [INFO] core.trainer: Epoch-(18): [100/100]	Time 0.075 (0.262)	Calc 0.074 (0.073)	Data 0.000 (0.188)	Acc@1 81.333 (76.520)
+2024-06-11 15:31:45,779 [INFO] core.trainer:  * Acc@1 76.520 Best acc 76.893
+2024-06-11 15:31:45,780 [INFO] core.trainer:  * Time: 0:27:44/1:12:58.947368
+2024-06-11 15:31:48,828 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:31:48,830 [INFO] core.trainer: learning rate: [1.25e-06]
+2024-06-11 15:32:18,974 [INFO] core.trainer: Epoch-(19): [100/100]	Time 0.242 (0.301)	Calc 0.239 (0.239)	Data 0.001 (0.060)	Loss 0.778 (0.902)	Acc@1 82.667 (77.360)
+2024-06-11 15:32:18,978 [INFO] core.trainer:  * Acc@1 77.360 
+2024-06-11 15:32:18,979 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:32:37,527 [INFO] core.trainer: Epoch-(19): [100/100]	Time 0.341 (0.185)	Calc 0.073 (0.074)	Data 0.267 (0.111)	Acc@1 96.000 (75.613)
+2024-06-11 15:32:37,529 [INFO] core.trainer:  * Acc@1 75.613 Best acc 76.733
+2024-06-11 15:32:37,530 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:33:03,429 [INFO] core.trainer: Epoch-(19): [100/100]	Time 0.075 (0.259)	Calc 0.074 (0.073)	Data 0.000 (0.184)	Acc@1 78.667 (78.027)
+2024-06-11 15:33:03,431 [INFO] core.trainer:  * Acc@1 78.027 Best acc 76.893
+2024-06-11 15:33:03,432 [INFO] core.trainer:  * Time: 0:29:01/1:12:32.500000
+2024-06-11 15:33:06,113 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:33:06,115 [INFO] core.trainer: learning rate: [6.25e-07]
+2024-06-11 15:33:37,562 [INFO] core.trainer: Epoch-(20): [100/100]	Time 0.242 (0.314)	Calc 0.239 (0.239)	Data 0.001 (0.072)	Loss 0.831 (0.850)	Acc@1 82.667 (80.720)
+2024-06-11 15:33:37,565 [INFO] core.trainer:  * Acc@1 80.720 
+2024-06-11 15:33:37,567 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:33:57,744 [INFO] core.trainer: Epoch-(20): [100/100]	Time 0.075 (0.202)	Calc 0.074 (0.074)	Data 0.000 (0.127)	Acc@1 48.000 (73.947)
+2024-06-11 15:33:57,747 [INFO] core.trainer:  * Acc@1 73.947 Best acc 76.733
+2024-06-11 15:33:57,748 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:34:24,066 [INFO] core.trainer: Epoch-(20): [100/100]	Time 0.316 (0.263)	Calc 0.073 (0.073)	Data 0.242 (0.189)	Acc@1 80.000 (77.760)
+2024-06-11 15:34:24,069 [INFO] core.trainer:  * Acc@1 77.760 Best acc 76.893
+2024-06-11 15:34:24,070 [INFO] core.trainer:  * Time: 0:30:22/1:12:18.095238
+2024-06-11 15:34:27,773 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:34:27,775 [INFO] core.trainer: learning rate: [6.25e-07]
+2024-06-11 15:34:59,773 [INFO] core.trainer: Epoch-(21): [100/100]	Time 0.241 (0.320)	Calc 0.238 (0.239)	Data 0.001 (0.078)	Loss 0.787 (0.868)	Acc@1 86.667 (80.107)
+2024-06-11 15:34:59,777 [INFO] core.trainer:  * Acc@1 80.107 
+2024-06-11 15:34:59,778 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:35:17,853 [INFO] core.trainer: Epoch-(21): [100/100]	Time 0.075 (0.181)	Calc 0.074 (0.073)	Data 0.001 (0.106)	Acc@1 62.667 (74.133)
+2024-06-11 15:35:17,855 [INFO] core.trainer:  * Acc@1 74.133 Best acc 76.733
+2024-06-11 15:35:17,856 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:35:47,353 [INFO] core.trainer: Epoch-(21): [100/100]	Time 0.074 (0.295)	Calc 0.073 (0.073)	Data 0.000 (0.220)	Acc@1 84.000 (77.747)
+2024-06-11 15:35:47,355 [INFO] core.trainer:  * Acc@1 77.747 Best acc 76.893
+2024-06-11 15:35:47,356 [INFO] core.trainer:  * Time: 0:31:45/1:12:09.545455
+2024-06-11 15:35:50,656 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:35:50,657 [INFO] core.trainer: learning rate: [6.25e-07]
+2024-06-11 15:36:23,182 [INFO] core.trainer: Epoch-(22): [100/100]	Time 0.241 (0.325)	Calc 0.238 (0.239)	Data 0.001 (0.083)	Loss 1.094 (0.877)	Acc@1 58.667 (78.733)
+2024-06-11 15:36:23,185 [INFO] core.trainer:  * Acc@1 78.733 
+2024-06-11 15:36:23,186 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:36:43,228 [INFO] core.trainer: Epoch-(22): [100/100]	Time 0.075 (0.200)	Calc 0.074 (0.074)	Data 0.001 (0.126)	Acc@1 92.000 (74.960)
+2024-06-11 15:36:43,231 [INFO] core.trainer:  * Acc@1 74.960 Best acc 76.733
+2024-06-11 15:36:43,232 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:37:08,996 [INFO] core.trainer: Epoch-(22): [100/100]	Time 0.074 (0.257)	Calc 0.073 (0.073)	Data 0.000 (0.183)	Acc@1 66.667 (78.667)
+2024-06-11 15:37:08,999 [INFO] core.trainer:  * Acc@1 78.667 Best acc 76.893
+2024-06-11 15:37:09,000 [INFO] core.trainer:  * Time: 0:33:07/1:11:59.565217
+2024-06-11 15:37:12,115 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:37:12,117 [INFO] core.trainer: learning rate: [6.25e-07]
+2024-06-11 15:37:43,143 [INFO] core.trainer: Epoch-(23): [100/100]	Time 0.241 (0.310)	Calc 0.238 (0.239)	Data 0.001 (0.069)	Loss 0.879 (0.881)	Acc@1 78.667 (78.573)
+2024-06-11 15:37:43,147 [INFO] core.trainer:  * Acc@1 78.573 
+2024-06-11 15:37:43,148 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:38:07,835 [INFO] core.trainer: Epoch-(23): [100/100]	Time 0.075 (0.247)	Calc 0.073 (0.073)	Data 0.001 (0.172)	Acc@1 41.333 (75.653)
+2024-06-11 15:38:07,837 [INFO] core.trainer:  * Acc@1 75.653 Best acc 76.733
+2024-06-11 15:38:07,838 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:38:34,933 [INFO] core.trainer: Epoch-(23): [100/100]	Time 0.076 (0.271)	Calc 0.074 (0.074)	Data 0.001 (0.196)	Acc@1 73.333 (79.307)
+2024-06-11 15:38:34,935 [INFO] core.trainer:  * Acc@1 79.307 Best acc 76.893
+2024-06-11 15:38:34,937 [INFO] core.trainer:  * Time: 0:34:33/1:11:58.750000
+2024-06-11 15:38:38,250 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:38:38,252 [INFO] core.trainer: learning rate: [6.25e-07]
+2024-06-11 15:39:05,984 [INFO] core.trainer: Epoch-(24): [100/100]	Time 0.243 (0.277)	Calc 0.240 (0.239)	Data 0.001 (0.035)	Loss 0.757 (0.880)	Acc@1 86.667 (78.813)
+2024-06-11 15:39:05,988 [INFO] core.trainer:  * Acc@1 78.813 
+2024-06-11 15:39:05,990 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:39:30,719 [INFO] core.trainer: Epoch-(24): [100/100]	Time 0.075 (0.247)	Calc 0.073 (0.074)	Data 0.000 (0.172)	Acc@1 74.667 (75.840)
+2024-06-11 15:39:30,721 [INFO] core.trainer:  * Acc@1 75.840 Best acc 76.733
+2024-06-11 15:39:30,722 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:39:58,956 [INFO] core.trainer: Epoch-(24): [100/100]	Time 0.075 (0.282)	Calc 0.074 (0.073)	Data 0.000 (0.208)	Acc@1 85.333 (77.093)
+2024-06-11 15:39:58,958 [INFO] core.trainer:  * Acc@1 77.093 Best acc 76.893
+2024-06-11 15:39:58,959 [INFO] core.trainer:  * Time: 0:35:57/1:11:54
+2024-06-11 15:40:01,575 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:40:01,577 [INFO] core.trainer: learning rate: [3.125e-07]
+2024-06-11 15:40:30,868 [INFO] core.trainer: Epoch-(25): [100/100]	Time 0.243 (0.293)	Calc 0.239 (0.238)	Data 0.001 (0.052)	Loss 0.856 (0.868)	Acc@1 90.667 (79.440)
+2024-06-11 15:40:30,871 [INFO] core.trainer:  * Acc@1 79.440 
+2024-06-11 15:40:30,872 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:40:51,794 [INFO] core.trainer: Epoch-(25): [100/100]	Time 0.075 (0.209)	Calc 0.073 (0.073)	Data 0.000 (0.135)	Acc@1 68.000 (75.267)
+2024-06-11 15:40:51,796 [INFO] core.trainer:  * Acc@1 75.267 Best acc 76.733
+2024-06-11 15:40:51,797 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:41:20,005 [INFO] core.trainer: Epoch-(25): [100/100]	Time 1.224 (0.282)	Calc 0.073 (0.073)	Data 1.149 (0.207)	Acc@1 88.000 (78.080)
+2024-06-11 15:41:20,008 [INFO] core.trainer:  * Acc@1 78.080 Best acc 76.893
+2024-06-11 15:41:20,009 [INFO] core.trainer:  * Time: 0:37:18/1:11:43.846154
+2024-06-11 15:41:22,907 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:41:22,908 [INFO] core.trainer: learning rate: [3.125e-07]
+2024-06-11 15:41:54,528 [INFO] core.trainer: Epoch-(26): [100/100]	Time 0.796 (0.316)	Calc 0.241 (0.239)	Data 0.553 (0.074)	Loss 0.732 (0.891)	Acc@1 88.000 (78.720)
+2024-06-11 15:41:54,533 [INFO] core.trainer:  * Acc@1 78.720 
+2024-06-11 15:41:54,536 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:42:15,920 [INFO] core.trainer: Epoch-(26): [100/100]	Time 0.076 (0.214)	Calc 0.074 (0.074)	Data 0.001 (0.139)	Acc@1 72.000 (77.960)
+2024-06-11 15:42:15,927 [INFO] core.trainer:  * Acc@1 77.960 Best acc 76.733
+2024-06-11 15:42:15,928 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:42:44,050 [INFO] core.trainer: Epoch-(26): [100/100]	Time 0.075 (0.281)	Calc 0.073 (0.073)	Data 0.001 (0.207)	Acc@1 80.000 (75.627)
+2024-06-11 15:42:44,052 [INFO] core.trainer:  * Acc@1 75.627 Best acc 76.893
+2024-06-11 15:42:44,053 [INFO] core.trainer:  * Time: 0:38:42/1:11:40
+2024-06-11 15:42:48,620 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:42:48,621 [INFO] core.trainer: learning rate: [3.125e-07]
+2024-06-11 15:43:19,949 [INFO] core.trainer: Epoch-(27): [100/100]	Time 1.646 (0.313)	Calc 0.239 (0.239)	Data 1.404 (0.072)	Loss 0.746 (0.882)	Acc@1 86.667 (78.720)
+2024-06-11 15:43:19,952 [INFO] core.trainer:  * Acc@1 78.720 
+2024-06-11 15:43:19,954 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:43:41,146 [INFO] core.trainer: Epoch-(27): [100/100]	Time 0.075 (0.212)	Calc 0.074 (0.073)	Data 0.001 (0.137)	Acc@1 89.333 (74.613)
+2024-06-11 15:43:41,148 [INFO] core.trainer:  * Acc@1 74.613 Best acc 77.960
+2024-06-11 15:43:41,149 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:44:08,998 [INFO] core.trainer: Epoch-(27): [100/100]	Time 0.074 (0.278)	Calc 0.073 (0.073)	Data 0.000 (0.204)	Acc@1 65.333 (80.547)
+2024-06-11 15:44:09,001 [INFO] core.trainer:  * Acc@1 80.547 Best acc 75.627
+2024-06-11 15:44:09,002 [INFO] core.trainer:  * Time: 0:40:07/1:11:38.214286
+2024-06-11 15:44:12,298 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:44:12,299 [INFO] core.trainer: learning rate: [3.125e-07]
+2024-06-11 15:44:42,626 [INFO] core.trainer: Epoch-(28): [100/100]	Time 0.260 (0.303)	Calc 0.239 (0.239)	Data 0.018 (0.062)	Loss 0.797 (0.895)	Acc@1 84.000 (78.107)
+2024-06-11 15:44:42,629 [INFO] core.trainer:  * Acc@1 78.107 
+2024-06-11 15:44:42,631 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:45:02,305 [INFO] core.trainer: Epoch-(28): [100/100]	Time 0.074 (0.197)	Calc 0.073 (0.074)	Data 0.000 (0.122)	Acc@1 92.000 (72.373)
+2024-06-11 15:45:02,307 [INFO] core.trainer:  * Acc@1 72.373 Best acc 77.960
+2024-06-11 15:45:02,308 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:45:29,589 [INFO] core.trainer: Epoch-(28): [100/100]	Time 0.075 (0.273)	Calc 0.073 (0.073)	Data 0.001 (0.198)	Acc@1 94.667 (76.453)
+2024-06-11 15:45:29,592 [INFO] core.trainer:  * Acc@1 76.453 Best acc 75.627
+2024-06-11 15:45:29,593 [INFO] core.trainer:  * Time: 0:41:28/1:11:29.655172
+2024-06-11 15:45:32,769 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:45:32,770 [INFO] core.trainer: learning rate: [3.125e-07]
+2024-06-11 15:46:02,067 [INFO] core.trainer: Epoch-(29): [100/100]	Time 0.241 (0.293)	Calc 0.238 (0.239)	Data 0.000 (0.051)	Loss 0.918 (0.869)	Acc@1 74.667 (79.253)
+2024-06-11 15:46:02,070 [INFO] core.trainer:  * Acc@1 79.253 
+2024-06-11 15:46:02,072 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:46:23,205 [INFO] core.trainer: Epoch-(29): [100/100]	Time 0.076 (0.211)	Calc 0.074 (0.074)	Data 0.001 (0.137)	Acc@1 78.667 (73.840)
+2024-06-11 15:46:23,208 [INFO] core.trainer:  * Acc@1 73.840 Best acc 77.960
+2024-06-11 15:46:23,209 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:46:49,608 [INFO] core.trainer: Epoch-(29): [100/100]	Time 0.075 (0.264)	Calc 0.073 (0.073)	Data 0.000 (0.189)	Acc@1 70.667 (77.373)
+2024-06-11 15:46:49,610 [INFO] core.trainer:  * Acc@1 77.373 Best acc 75.627
+2024-06-11 15:46:49,611 [INFO] core.trainer:  * Time: 0:42:48/1:11:20
+2024-06-11 15:46:52,641 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:46:52,643 [INFO] core.trainer: learning rate: [1.5625e-07]
+2024-06-11 15:47:22,672 [INFO] core.trainer: Epoch-(30): [100/100]	Time 0.242 (0.300)	Calc 0.239 (0.239)	Data 0.001 (0.059)	Loss 0.839 (0.858)	Acc@1 82.667 (80.307)
+2024-06-11 15:47:22,675 [INFO] core.trainer:  * Acc@1 80.307 
+2024-06-11 15:47:22,677 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:47:44,137 [INFO] core.trainer: Epoch-(30): [100/100]	Time 0.075 (0.214)	Calc 0.074 (0.074)	Data 0.000 (0.140)	Acc@1 65.333 (77.107)
+2024-06-11 15:47:44,140 [INFO] core.trainer:  * Acc@1 77.107 Best acc 77.960
+2024-06-11 15:47:44,141 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:48:10,137 [INFO] core.trainer: Epoch-(30): [100/100]	Time 0.315 (0.260)	Calc 0.073 (0.073)	Data 0.241 (0.185)	Acc@1 93.333 (77.613)
+2024-06-11 15:48:10,139 [INFO] core.trainer:  * Acc@1 77.613 Best acc 75.627
+2024-06-11 15:48:10,140 [INFO] core.trainer:  * Time: 0:44:08/1:11:10.967742
+2024-06-11 15:48:13,367 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:48:13,368 [INFO] core.trainer: learning rate: [1.5625e-07]
+2024-06-11 15:48:43,806 [INFO] core.trainer: Epoch-(31): [100/100]	Time 0.242 (0.304)	Calc 0.239 (0.239)	Data 0.001 (0.063)	Loss 0.921 (0.879)	Acc@1 78.667 (79.440)
+2024-06-11 15:48:43,809 [INFO] core.trainer:  * Acc@1 79.440 
+2024-06-11 15:48:43,811 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:49:02,250 [INFO] core.trainer: Epoch-(31): [100/100]	Time 0.075 (0.184)	Calc 0.074 (0.074)	Data 0.000 (0.110)	Acc@1 78.667 (75.213)
+2024-06-11 15:49:02,252 [INFO] core.trainer:  * Acc@1 75.213 Best acc 77.960
+2024-06-11 15:49:02,253 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:49:27,374 [INFO] core.trainer: Epoch-(31): [100/100]	Time 0.074 (0.251)	Calc 0.073 (0.073)	Data 0.000 (0.177)	Acc@1 92.000 (78.187)
+2024-06-11 15:49:27,377 [INFO] core.trainer:  * Acc@1 78.187 Best acc 75.627
+2024-06-11 15:49:27,378 [INFO] core.trainer:  * Time: 0:45:25/1:10:57.812500
+2024-06-11 15:49:30,347 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:49:30,348 [INFO] core.trainer: learning rate: [1.5625e-07]
+2024-06-11 15:50:01,309 [INFO] core.trainer: Epoch-(32): [100/100]	Time 0.241 (0.309)	Calc 0.238 (0.239)	Data 0.001 (0.068)	Loss 0.832 (0.865)	Acc@1 78.667 (80.493)
+2024-06-11 15:50:01,313 [INFO] core.trainer:  * Acc@1 80.493 
+2024-06-11 15:50:01,314 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:50:19,882 [INFO] core.trainer: Epoch-(32): [100/100]	Time 0.322 (0.185)	Calc 0.073 (0.073)	Data 0.248 (0.111)	Acc@1 85.333 (76.373)
+2024-06-11 15:50:19,884 [INFO] core.trainer:  * Acc@1 76.373 Best acc 77.960
+2024-06-11 15:50:19,885 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:50:45,802 [INFO] core.trainer: Epoch-(32): [100/100]	Time 1.064 (0.259)	Calc 0.073 (0.073)	Data 0.990 (0.184)	Acc@1 84.000 (75.920)
+2024-06-11 15:50:45,804 [INFO] core.trainer:  * Acc@1 75.920 Best acc 75.627
+2024-06-11 15:50:45,805 [INFO] core.trainer:  * Time: 0:46:44/1:10:48.484848
+2024-06-11 15:50:48,836 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:50:48,838 [INFO] core.trainer: learning rate: [1.5625e-07]
+2024-06-11 15:51:17,336 [INFO] core.trainer: Epoch-(33): [100/100]	Time 0.498 (0.285)	Calc 0.237 (0.239)	Data 0.258 (0.043)	Loss 0.711 (0.873)	Acc@1 86.667 (79.613)
+2024-06-11 15:51:17,339 [INFO] core.trainer:  * Acc@1 79.613 
+2024-06-11 15:51:17,340 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:51:36,080 [INFO] core.trainer: Epoch-(33): [100/100]	Time 0.075 (0.187)	Calc 0.074 (0.074)	Data 0.000 (0.113)	Acc@1 92.000 (78.040)
+2024-06-11 15:51:36,082 [INFO] core.trainer:  * Acc@1 78.040 Best acc 77.960
+2024-06-11 15:51:36,083 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:52:00,721 [INFO] core.trainer: Epoch-(33): [100/100]	Time 0.075 (0.246)	Calc 0.073 (0.073)	Data 0.000 (0.172)	Acc@1 76.000 (79.147)
+2024-06-11 15:52:00,724 [INFO] core.trainer:  * Acc@1 79.147 Best acc 75.627
+2024-06-11 15:52:00,725 [INFO] core.trainer:  * Time: 0:47:59/1:10:33.823529
+2024-06-11 15:52:05,773 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:52:05,775 [INFO] core.trainer: learning rate: [1.5625e-07]
+2024-06-11 15:52:33,961 [INFO] core.trainer: Epoch-(34): [100/100]	Time 0.241 (0.282)	Calc 0.238 (0.239)	Data 0.001 (0.040)	Loss 0.677 (0.870)	Acc@1 90.667 (80.147)
+2024-06-11 15:52:33,964 [INFO] core.trainer:  * Acc@1 80.147 
+2024-06-11 15:52:33,965 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:52:53,909 [INFO] core.trainer: Epoch-(34): [100/100]	Time 0.075 (0.199)	Calc 0.073 (0.074)	Data 0.000 (0.125)	Acc@1 89.333 (75.987)
+2024-06-11 15:52:53,912 [INFO] core.trainer:  * Acc@1 75.987 Best acc 78.040
+2024-06-11 15:52:53,913 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:53:18,224 [INFO] core.trainer: Epoch-(34): [100/100]	Time 0.075 (0.243)	Calc 0.074 (0.073)	Data 0.000 (0.168)	Acc@1 64.000 (75.453)
+2024-06-11 15:53:18,226 [INFO] core.trainer:  * Acc@1 75.453 Best acc 79.147
+2024-06-11 15:53:18,227 [INFO] core.trainer:  * Time: 0:49:16/1:10:22.857143
+2024-06-11 15:53:21,244 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:53:21,246 [INFO] core.trainer: learning rate: [7.8125e-08]
+2024-06-11 15:53:51,943 [INFO] core.trainer: Epoch-(35): [100/100]	Time 0.241 (0.307)	Calc 0.238 (0.239)	Data 0.000 (0.065)	Loss 0.752 (0.883)	Acc@1 82.667 (79.067)
+2024-06-11 15:53:51,946 [INFO] core.trainer:  * Acc@1 79.067 
+2024-06-11 15:53:51,947 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:54:10,520 [INFO] core.trainer: Epoch-(35): [100/100]	Time 0.076 (0.186)	Calc 0.074 (0.074)	Data 0.001 (0.111)	Acc@1 88.000 (74.893)
+2024-06-11 15:54:10,523 [INFO] core.trainer:  * Acc@1 74.893 Best acc 78.040
+2024-06-11 15:54:10,524 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:54:34,770 [INFO] core.trainer: Epoch-(35): [100/100]	Time 0.074 (0.242)	Calc 0.073 (0.074)	Data 0.000 (0.168)	Acc@1 89.333 (77.507)
+2024-06-11 15:54:34,773 [INFO] core.trainer:  * Acc@1 77.507 Best acc 79.147
+2024-06-11 15:54:34,774 [INFO] core.trainer:  * Time: 0:50:33/1:10:12.500000
+2024-06-11 15:54:37,663 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:54:37,665 [INFO] core.trainer: learning rate: [7.8125e-08]
+2024-06-11 15:55:07,797 [INFO] core.trainer: Epoch-(36): [100/100]	Time 0.241 (0.301)	Calc 0.238 (0.239)	Data 0.001 (0.060)	Loss 0.928 (0.856)	Acc@1 81.333 (80.613)
+2024-06-11 15:55:07,800 [INFO] core.trainer:  * Acc@1 80.613 
+2024-06-11 15:55:07,802 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:55:26,611 [INFO] core.trainer: Epoch-(36): [100/100]	Time 0.076 (0.188)	Calc 0.074 (0.074)	Data 0.000 (0.113)	Acc@1 82.667 (76.227)
+2024-06-11 15:55:26,613 [INFO] core.trainer:  * Acc@1 76.227 Best acc 78.040
+2024-06-11 15:55:26,614 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:55:51,064 [INFO] core.trainer: Epoch-(36): [100/100]	Time 0.075 (0.244)	Calc 0.074 (0.073)	Data 0.000 (0.170)	Acc@1 82.667 (79.613)
+2024-06-11 15:55:51,066 [INFO] core.trainer:  * Acc@1 79.613 Best acc 79.147
+2024-06-11 15:55:51,067 [INFO] core.trainer:  * Time: 0:51:49/1:10:01.351351
+2024-06-11 15:55:53,636 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:55:53,638 [INFO] core.trainer: learning rate: [7.8125e-08]
+2024-06-11 15:56:24,104 [INFO] core.trainer: Epoch-(37): [100/100]	Time 0.241 (0.304)	Calc 0.238 (0.238)	Data 0.000 (0.063)	Loss 0.925 (0.882)	Acc@1 80.000 (78.480)
+2024-06-11 15:56:24,107 [INFO] core.trainer:  * Acc@1 78.480 
+2024-06-11 15:56:24,108 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:56:43,521 [INFO] core.trainer: Epoch-(37): [100/100]	Time 1.081 (0.194)	Calc 0.073 (0.074)	Data 1.007 (0.119)	Acc@1 86.667 (74.720)
+2024-06-11 15:56:43,523 [INFO] core.trainer:  * Acc@1 74.720 Best acc 78.040
+2024-06-11 15:56:43,524 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:57:07,071 [INFO] core.trainer: Epoch-(37): [100/100]	Time 0.075 (0.235)	Calc 0.073 (0.073)	Data 0.000 (0.161)	Acc@1 90.667 (77.267)
+2024-06-11 15:57:07,073 [INFO] core.trainer:  * Acc@1 77.267 Best acc 79.147
+2024-06-11 15:57:07,074 [INFO] core.trainer:  * Time: 0:53:05/1:09:50.789474
+2024-06-11 15:57:10,054 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:57:10,063 [INFO] core.trainer: learning rate: [7.8125e-08]
+2024-06-11 15:57:39,323 [INFO] core.trainer: Epoch-(38): [100/100]	Time 0.241 (0.292)	Calc 0.238 (0.238)	Data 0.000 (0.051)	Loss 0.670 (0.857)	Acc@1 94.667 (80.147)
+2024-06-11 15:57:39,326 [INFO] core.trainer:  * Acc@1 80.147 
+2024-06-11 15:57:39,327 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:57:57,327 [INFO] core.trainer: Epoch-(38): [100/100]	Time 0.075 (0.180)	Calc 0.074 (0.074)	Data 0.000 (0.105)	Acc@1 69.333 (76.440)
+2024-06-11 15:57:57,329 [INFO] core.trainer:  * Acc@1 76.440 Best acc 78.040
+2024-06-11 15:57:57,330 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:58:21,966 [INFO] core.trainer: Epoch-(38): [100/100]	Time 0.075 (0.246)	Calc 0.073 (0.074)	Data 0.000 (0.172)	Acc@1 72.000 (78.560)
+2024-06-11 15:58:21,969 [INFO] core.trainer:  * Acc@1 78.560 Best acc 79.147
+2024-06-11 15:58:21,970 [INFO] core.trainer:  * Time: 0:54:20/1:09:39.487179
+2024-06-11 15:58:24,888 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:58:24,890 [INFO] core.trainer: learning rate: [7.8125e-08]
+2024-06-11 15:58:54,506 [INFO] core.trainer: Epoch-(39): [100/100]	Time 0.393 (0.296)	Calc 0.239 (0.238)	Data 0.151 (0.055)	Loss 1.263 (0.902)	Acc@1 60.000 (77.453)
+2024-06-11 15:58:54,509 [INFO] core.trainer:  * Acc@1 77.453 
+2024-06-11 15:58:54,510 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 15:59:12,313 [INFO] core.trainer: Epoch-(39): [100/100]	Time 0.075 (0.178)	Calc 0.073 (0.073)	Data 0.001 (0.103)	Acc@1 66.667 (72.453)
+2024-06-11 15:59:12,315 [INFO] core.trainer:  * Acc@1 72.453 Best acc 78.040
+2024-06-11 15:59:12,316 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 15:59:35,975 [INFO] core.trainer: Epoch-(39): [100/100]	Time 0.128 (0.236)	Calc 0.073 (0.073)	Data 0.054 (0.162)	Acc@1 86.667 (79.027)
+2024-06-11 15:59:35,977 [INFO] core.trainer:  * Acc@1 79.027 Best acc 79.147
+2024-06-11 15:59:35,978 [INFO] core.trainer:  * Time: 0:55:34/1:09:27.500000
+2024-06-11 15:59:38,663 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 15:59:38,665 [INFO] core.trainer: learning rate: [3.90625e-08]
+2024-06-11 16:00:09,441 [INFO] core.trainer: Epoch-(40): [100/100]	Time 2.557 (0.308)	Calc 0.239 (0.238)	Data 2.316 (0.066)	Loss 0.729 (0.871)	Acc@1 88.000 (79.333)
+2024-06-11 16:00:09,445 [INFO] core.trainer:  * Acc@1 79.333 
+2024-06-11 16:00:09,446 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 16:00:26,161 [INFO] core.trainer: Epoch-(40): [100/100]	Time 0.075 (0.167)	Calc 0.074 (0.074)	Data 0.000 (0.092)	Acc@1 78.667 (76.347)
+2024-06-11 16:00:26,164 [INFO] core.trainer:  * Acc@1 76.347 Best acc 78.040
+2024-06-11 16:00:26,165 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 16:00:49,877 [INFO] core.trainer: Epoch-(40): [100/100]	Time 0.075 (0.237)	Calc 0.074 (0.073)	Data 0.000 (0.163)	Acc@1 72.000 (78.093)
+2024-06-11 16:00:49,879 [INFO] core.trainer:  * Acc@1 78.093 Best acc 79.147
+2024-06-11 16:00:49,880 [INFO] core.trainer:  * Time: 0:56:48/1:09:16.097561
+2024-06-11 16:00:53,118 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 16:00:53,120 [INFO] core.trainer: learning rate: [3.90625e-08]
+2024-06-11 16:01:24,516 [INFO] core.trainer: Epoch-(41): [100/100]	Time 0.243 (0.314)	Calc 0.240 (0.238)	Data 0.000 (0.073)	Loss 1.119 (0.857)	Acc@1 70.667 (80.227)
+2024-06-11 16:01:24,519 [INFO] core.trainer:  * Acc@1 80.227 
+2024-06-11 16:01:24,521 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 16:01:39,960 [INFO] core.trainer: Epoch-(41): [100/100]	Time 0.075 (0.154)	Calc 0.074 (0.074)	Data 0.000 (0.080)	Acc@1 65.333 (75.933)
+2024-06-11 16:01:39,963 [INFO] core.trainer:  * Acc@1 75.933 Best acc 78.040
+2024-06-11 16:01:39,964 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 16:02:05,075 [INFO] core.trainer: Epoch-(41): [100/100]	Time 0.753 (0.251)	Calc 0.073 (0.074)	Data 0.678 (0.176)	Acc@1 70.667 (77.720)
+2024-06-11 16:02:05,077 [INFO] core.trainer:  * Acc@1 77.720 Best acc 79.147
+2024-06-11 16:02:05,078 [INFO] core.trainer:  * Time: 0:58:03/1:09:06.428571
+2024-06-11 16:02:08,134 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 16:02:08,135 [INFO] core.trainer: learning rate: [3.90625e-08]
+2024-06-11 16:02:35,675 [INFO] core.trainer: Epoch-(42): [100/100]	Time 0.240 (0.275)	Calc 0.237 (0.239)	Data 0.000 (0.034)	Loss 0.805 (0.867)	Acc@1 81.333 (80.013)
+2024-06-11 16:02:35,678 [INFO] core.trainer:  * Acc@1 80.013 
+2024-06-11 16:02:35,679 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 16:02:55,032 [INFO] core.trainer: Epoch-(42): [100/100]	Time 0.075 (0.193)	Calc 0.074 (0.074)	Data 0.001 (0.119)	Acc@1 81.333 (78.280)
+2024-06-11 16:02:55,034 [INFO] core.trainer:  * Acc@1 78.280 Best acc 78.040
+2024-06-11 16:02:55,035 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 16:03:18,328 [INFO] core.trainer: Epoch-(42): [100/100]	Time 0.075 (0.233)	Calc 0.074 (0.074)	Data 0.001 (0.158)	Acc@1 97.333 (77.840)
+2024-06-11 16:03:18,330 [INFO] core.trainer:  * Acc@1 77.840 Best acc 79.147
+2024-06-11 16:03:18,331 [INFO] core.trainer:  * Time: 0:59:16/1:08:54.883721
+2024-06-11 16:03:23,698 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 16:03:23,699 [INFO] core.trainer: learning rate: [3.90625e-08]
+2024-06-11 16:03:52,386 [INFO] core.trainer: Epoch-(43): [100/100]	Time 0.241 (0.287)	Calc 0.238 (0.238)	Data 0.001 (0.046)	Loss 0.660 (0.881)	Acc@1 90.667 (78.267)
+2024-06-11 16:03:52,389 [INFO] core.trainer:  * Acc@1 78.267 
+2024-06-11 16:03:52,391 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 16:04:10,575 [INFO] core.trainer: Epoch-(43): [100/100]	Time 0.332 (0.182)	Calc 0.073 (0.074)	Data 0.258 (0.107)	Acc@1 76.000 (76.533)
+2024-06-11 16:04:10,577 [INFO] core.trainer:  * Acc@1 76.533 Best acc 78.280
+2024-06-11 16:04:10,578 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 16:04:33,209 [INFO] core.trainer: Epoch-(43): [100/100]	Time 0.075 (0.226)	Calc 0.074 (0.073)	Data 0.000 (0.152)	Acc@1 68.000 (76.467)
+2024-06-11 16:04:33,211 [INFO] core.trainer:  * Acc@1 76.467 Best acc 77.840
+2024-06-11 16:04:33,213 [INFO] core.trainer:  * Time: 1:00:31/1:08:46.136364
+2024-06-11 16:04:36,562 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 16:04:36,564 [INFO] core.trainer: learning rate: [3.90625e-08]
+2024-06-11 16:05:07,245 [INFO] core.trainer: Epoch-(44): [100/100]	Time 0.241 (0.307)	Calc 0.238 (0.238)	Data 0.001 (0.066)	Loss 0.704 (0.899)	Acc@1 89.333 (78.333)
+2024-06-11 16:05:07,248 [INFO] core.trainer:  * Acc@1 78.333 
+2024-06-11 16:05:07,250 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 16:05:24,421 [INFO] core.trainer: Epoch-(44): [100/100]	Time 0.076 (0.172)	Calc 0.074 (0.074)	Data 0.000 (0.097)	Acc@1 92.000 (77.507)
+2024-06-11 16:05:24,424 [INFO] core.trainer:  * Acc@1 77.507 Best acc 78.280
+2024-06-11 16:05:24,425 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 16:05:47,638 [INFO] core.trainer: Epoch-(44): [100/100]	Time 0.621 (0.232)	Calc 0.073 (0.073)	Data 0.547 (0.158)	Acc@1 81.333 (78.080)
+2024-06-11 16:05:47,641 [INFO] core.trainer:  * Acc@1 78.080 Best acc 77.840
+2024-06-11 16:05:47,642 [INFO] core.trainer:  * Time: 1:01:46/1:08:37.777778
+2024-06-11 16:05:50,779 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 16:05:50,780 [INFO] core.trainer: learning rate: [1.953125e-08]
+2024-06-11 16:06:18,610 [INFO] core.trainer: Epoch-(45): [100/100]	Time 0.242 (0.278)	Calc 0.239 (0.239)	Data 0.000 (0.037)	Loss 1.127 (0.856)	Acc@1 64.000 (80.347)
+2024-06-11 16:06:18,613 [INFO] core.trainer:  * Acc@1 80.347 
+2024-06-11 16:06:18,615 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 16:06:37,234 [INFO] core.trainer: Epoch-(45): [100/100]	Time 0.074 (0.186)	Calc 0.073 (0.073)	Data 0.000 (0.112)	Acc@1 62.667 (75.920)
+2024-06-11 16:06:37,237 [INFO] core.trainer:  * Acc@1 75.920 Best acc 78.280
+2024-06-11 16:06:37,238 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 16:07:02,249 [INFO] core.trainer: Epoch-(45): [100/100]	Time 0.075 (0.250)	Calc 0.074 (0.073)	Data 0.000 (0.176)	Acc@1 52.000 (74.133)
+2024-06-11 16:07:02,251 [INFO] core.trainer:  * Acc@1 74.133 Best acc 77.840
+2024-06-11 16:07:02,252 [INFO] core.trainer:  * Time: 1:03:00/1:08:28.695652
+2024-06-11 16:07:04,975 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 16:07:04,977 [INFO] core.trainer: learning rate: [1.953125e-08]
+2024-06-11 16:07:33,742 [INFO] core.trainer: Epoch-(46): [100/100]	Time 0.240 (0.287)	Calc 0.238 (0.238)	Data 0.000 (0.047)	Loss 0.840 (0.871)	Acc@1 81.333 (79.907)
+2024-06-11 16:07:33,745 [INFO] core.trainer:  * Acc@1 79.907 
+2024-06-11 16:07:33,747 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 16:07:52,308 [INFO] core.trainer: Epoch-(46): [100/100]	Time 0.075 (0.185)	Calc 0.074 (0.074)	Data 0.001 (0.111)	Acc@1 88.000 (76.507)
+2024-06-11 16:07:52,311 [INFO] core.trainer:  * Acc@1 76.507 Best acc 78.280
+2024-06-11 16:07:52,312 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 16:08:14,744 [INFO] core.trainer: Epoch-(46): [100/100]	Time 0.074 (0.224)	Calc 0.073 (0.073)	Data 0.000 (0.150)	Acc@1 73.333 (78.093)
+2024-06-11 16:08:14,746 [INFO] core.trainer:  * Acc@1 78.093 Best acc 77.840
+2024-06-11 16:08:14,747 [INFO] core.trainer:  * Time: 1:04:13/1:08:18.936170
+2024-06-11 16:08:18,463 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 16:08:18,464 [INFO] core.trainer: learning rate: [1.953125e-08]
+2024-06-11 16:08:49,345 [INFO] core.trainer: Epoch-(47): [100/100]	Time 0.243 (0.309)	Calc 0.240 (0.239)	Data 0.001 (0.067)	Loss 1.092 (0.896)	Acc@1 66.667 (77.720)
+2024-06-11 16:08:49,347 [INFO] core.trainer:  * Acc@1 77.720 
+2024-06-11 16:08:49,349 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 16:09:06,696 [INFO] core.trainer: Epoch-(47): [100/100]	Time 0.075 (0.173)	Calc 0.073 (0.074)	Data 0.000 (0.099)	Acc@1 76.000 (74.107)
+2024-06-11 16:09:06,698 [INFO] core.trainer:  * Acc@1 74.107 Best acc 78.280
+2024-06-11 16:09:06,699 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 16:09:30,884 [INFO] core.trainer: Epoch-(47): [100/100]	Time 0.075 (0.242)	Calc 0.074 (0.073)	Data 0.000 (0.167)	Acc@1 74.667 (76.413)
+2024-06-11 16:09:30,886 [INFO] core.trainer:  * Acc@1 76.413 Best acc 77.840
+2024-06-11 16:09:30,887 [INFO] core.trainer:  * Time: 1:05:29/1:08:12.708333
+2024-06-11 16:09:34,571 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 16:09:34,572 [INFO] core.trainer: learning rate: [1.953125e-08]
+2024-06-11 16:10:02,047 [INFO] core.trainer: Epoch-(48): [100/100]	Time 0.241 (0.275)	Calc 0.238 (0.239)	Data 0.001 (0.033)	Loss 0.851 (0.862)	Acc@1 81.333 (79.453)
+2024-06-11 16:10:02,050 [INFO] core.trainer:  * Acc@1 79.453 
+2024-06-11 16:10:02,051 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 16:10:20,817 [INFO] core.trainer: Epoch-(48): [100/100]	Time 0.144 (0.187)	Calc 0.073 (0.073)	Data 0.070 (0.113)	Acc@1 58.667 (74.773)
+2024-06-11 16:10:20,819 [INFO] core.trainer:  * Acc@1 74.773 Best acc 78.280
+2024-06-11 16:10:20,820 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 16:10:44,009 [INFO] core.trainer: Epoch-(48): [100/100]	Time 0.074 (0.232)	Calc 0.073 (0.073)	Data 0.000 (0.157)	Acc@1 85.333 (76.973)
+2024-06-11 16:10:44,011 [INFO] core.trainer:  * Acc@1 76.973 Best acc 77.840
+2024-06-11 16:10:44,012 [INFO] core.trainer:  * Time: 1:06:42/1:08:03.673469
+2024-06-11 16:10:46,904 [INFO] core.trainer: ============ Train on the train set ============
+2024-06-11 16:10:46,906 [INFO] core.trainer: learning rate: [1.953125e-08]
+2024-06-11 16:11:16,780 [INFO] core.trainer: Epoch-(49): [100/100]	Time 0.242 (0.299)	Calc 0.239 (0.238)	Data 0.001 (0.058)	Loss 1.009 (0.889)	Acc@1 73.333 (78.707)
+2024-06-11 16:11:16,783 [INFO] core.trainer:  * Acc@1 78.707 
+2024-06-11 16:11:16,784 [INFO] core.trainer: ============ Validation on the val set ============
+2024-06-11 16:11:33,181 [INFO] core.trainer: Epoch-(49): [100/100]	Time 0.075 (0.164)	Calc 0.073 (0.074)	Data 0.000 (0.089)	Acc@1 52.000 (76.107)
+2024-06-11 16:11:33,183 [INFO] core.trainer:  * Acc@1 76.107 Best acc 78.280
+2024-06-11 16:11:33,184 [INFO] core.trainer: ============ Testing on the test set ============
+2024-06-11 16:11:56,650 [INFO] core.trainer: Epoch-(49): [100/100]	Time 0.075 (0.234)	Calc 0.074 (0.073)	Data 0.001 (0.160)	Acc@1 61.333 (78.640)
+2024-06-11 16:11:56,652 [INFO] core.trainer:  * Acc@1 78.640 Best acc 77.840
+2024-06-11 16:11:56,653 [INFO] core.trainer:  * Time: 1:07:55/1:07:55
+2024-06-11 16:11:59,928 [INFO] core.trainer: End of experiment, took 1:07:58
+2024-06-11 16:11:59,930 [INFO] core.trainer: Result DIR: ./results/CPEANet-tiered_imagenet-VisionTransformer-5-1-Jun-11-2024-15-03-58
