@@ -5,7 +5,7 @@
 | Embed.:  | ResNet12 |
 | Type:    | Meta       |
 | Venue:   | NeurIPS'16                      |
-| Codes:   | [**CloserLookFewShot**](https://github.com/gitabcworld/MatchingNetworks)|
+| Codes:   | [**MatchingNetworks**](https://github.com/gitabcworld/MatchingNetworks)|
 
 + In addition to using MatchingNet's meta-learning method, we also added [another paper's](https://proceedings.neurips.cc/paper/2020/hash/1cc8a8ea51cd0adddf5dab504a285915-Abstract.html) IFSL method to modify backbone knowledge in the process of transferring to fine-tuning
 
