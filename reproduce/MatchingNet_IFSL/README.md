@@ -38,4 +38,4 @@ Cite this work with:
 
 |   | Embedding | :book: *tiered*ImageNet (5,1) | :computer: *tiered*ImageNet (5,1) | :book:*tiered*ImageNet (5,5) | :computer: *tiered*ImageNet (5,5) | :memo: Comments  |
 |---|-----------|--------------------|--------------------|--------------------|--------------------|---|
-| 1 | ResNet12 | - | 67.562 ± 0.19 [:arrow_down:](https://pan.baidu.com/s/1oSdllUS-Juo-f77WWtzXig) code: gofr | - | 81.85 ± 0.21 [:arrow_down:](https://pan.baidu.com/s/1a8VSRX2XdVojTi3H7ulQ1g ) code: kx9m | Table.2 |
+| 1 | ResNet12 | - | 67.56 ± 0.19 [:arrow_down:](https://pan.baidu.com/s/1oSdllUS-Juo-f77WWtzXig) code: gofr | - | 81.85 ± 0.21 [:arrow_down:](https://pan.baidu.com/s/1a8VSRX2XdVojTi3H7ulQ1g ) code: kx9m | Table.2 |
