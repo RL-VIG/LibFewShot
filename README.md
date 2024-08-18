@@ -22,7 +22,7 @@ Wenbin Li, Ziyi Wang, Xuesong Yang, Chuanqi Dong, Pinzhuo Tian, Tiexin Qin, Jing
 + [MTL (CVPR 2019)](https://arxiv.org/abs/1812.02391)
 + [ANIL (ICLR 2020)](https://arxiv.org/abs/1909.09157)
 + [BOIL (ICLR 2021)](https://arxiv.org/abs/2008.08882)
-+ [MatchingNet (NeurIPS 2016)](https://arxiv.org/abs/1606.04080)
++ [MatchingNet (NeurIPS 2016)](https://arxiv.org/abs/1606.04080)+[IFSL(NeurIPS 2020)](https://arxiv.org/abs/2009.13000)
 ### Metric-learning based methods
 + [ProtoNet (NeurIPS 2017)](https://arxiv.org/abs/1703.05175)
 + [RelationNet (CVPR 2018)](https://arxiv.org/abs/1711.06025)
