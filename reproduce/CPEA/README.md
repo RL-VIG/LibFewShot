@@ -6,6 +6,7 @@
 | Type:    | Metric       |
 | Venue:   | ICCV'23                      |
 | Codes:   | [*CPEA*](https://github.com/FushengHao/CPEA)                   |
+| Backbone: | [*ViT(pretrained on specific datasets)*](https://github.com/mrkshllr/FewTURE) |
 
 Cite this work with:
 ```bibtex
