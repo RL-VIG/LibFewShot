@@ -1,0 +1,61 @@
+includes:
+  - headers/data.yaml
+  - headers/device.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
+
+way_num: 5
+shot_num: 1
+query_num: 15
+episode_size: 2
+train_episode: 100
+test_episode: 600
+
+device_ids: 0,3
+n_gpu: 2
+epoch: 100
+
+optimizer:
+  name: Adam
+  kwargs:
+    lr: 1e-3
+  other: ~
+
+backbone:
+   name: resnet12
+   kwargs:
+      keep_prob: 0.0
+      avg_pool: True
+      is_flatten: True
+
+pretrain_path: /data1/student/stx/ML/FSL/pretrained/IfslPretrain-miniImageNet-resnet12-5-1-Jun-02-2024-19-27-07/checkpoints/emb_func_best.pth
+classifier:
+  name: DMatchingNet
+  kwargs:
+    inner_param:
+      lr: 1e-2
+      train_iter: 20
+      test_iter: 20
+    feat_dim: 640
+    ifsl_param:
+      cls_path: /data1/student/stx/ML/FSL/pretrained/IfslPretrain-miniImageNet-resnet12-5-1-Jun-02-2024-19-27-07/checkpoints/classifier_best.pth
+      feature_path: /data1/student/stx/ML/FSL/pretrained/IfslPretrain-miniImageNet-resnet12-5-1-Jun-02-2024-19-27-07/resnet12.npy
+      n_splits: 16
+      temp: 100
+      class_num: 64
+      d_feature: "ed"
+      preprocess_after_split: "none"
+      preprocess_before_split: "none"
+      logit_fusion: "product" #in ["linear_sum","product","sum","harmonic"]
+      fusion: "concat" #in ["concat","+","-"]
+      sum_log: False
+      approx: False
+      single: True #
+      use_counterfactual: False
+      x_zero: False
+      is_cosine_feature: True #
+      use_x_only: False
+      normalize_before_center: False
+      normalize_d: False
+      normalize_ed: False
