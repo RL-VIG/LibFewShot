@@ -37,6 +37,7 @@ Wenbin Li, Ziyi Wang, Xuesong Yang, Chuanqi Dong, Pinzhuo Tian, Tiexin Qin, Jing
 + [RENet (ICCV 2021)](https://arxiv.org/abs/2108.09666)
 + [FRN (CVPR 2021)](https://arxiv.org/abs/2012.01506)
 + [DeepBDC (CVPR 2022)](https://arxiv.org/abs/2204.04567)
++ [CPEA (ICCV 2023)](https://openaccess.thecvf.com/content/ICCV2023/papers/Hao_Class-Aware_Patch_Embedding_Adaptation_for_Few-Shot_Image_Classification_ICCV_2023_paper.pdf)
 
 
 ## Quick Installation

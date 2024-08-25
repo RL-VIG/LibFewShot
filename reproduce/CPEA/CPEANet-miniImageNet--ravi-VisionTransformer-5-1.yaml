@@ -1,0 +1,73 @@
+augment: true
+augment_times: 1
+augment_times_query: 1
+backbone:
+  kwargs:
+    depth: 12
+    embed_dim: 384
+    mlp_ratio: 4
+    num_heads: 6
+    patch_size: 16
+    qkv_bias: true
+  name: VisionTransformer
+batch_size: 128
+classifier:
+  kwargs: null
+  name: CPEANet
+data_root: ../datasets/miniImageNet--ravi
+dataloader_num: 1
+deterministic: true
+device_ids: 1
+episode_size: 1
+epoch: 50
+image_size: 224
+includes:
+- headers/data.yaml
+- headers/device.yaml
+- headers/misc.yaml
+- headers/model.yaml
+- headers/optimizer.yaml
+- classifiers/CPEA.yaml
+- backbones/ViTClassAware.yaml
+log_interval: 100
+log_level: info
+log_name: null
+log_paramerter: false
+lr_scheduler:
+  kwargs:
+    gamma: 0.5
+    step_size: 5
+  name: StepLR
+n_gpu: 1
+optimizer:
+  kwargs:
+    lr: 1.0e-05
+    weight_decay: 0.001
+  name: Adam
+  other: null
+parallel_part:
+- emb_func
+port: 51612
+pretrain_path: /mnt/hdd/FSL/LibFewShot/core/model/backbone/pretrain/ViTClassAware_miniimagenet.pth
+query_num: 15
+rank: 0
+result_root: ./results
+resume: false
+save_interval: 10
+save_part:
+- emb_func
+seed: 2147483647
+shot_num: 1
+tag: null
+tb_scale: 1.0
+test_episode: 100
+test_epoch: 5
+test_query: 15
+test_shot: 1
+test_way: 5
+train_episode: 100
+use_memory: false
+val_per_epoch: 1
+warmup: 0
+way_num: 5
+workers: 8
