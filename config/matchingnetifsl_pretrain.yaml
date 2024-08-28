@@ -1,0 +1,56 @@
+includes:
+  - headers/data.yaml
+  - headers/device.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
+
+pretrain_path: ~
+
+batch_size: 256
+val_per_epoch: 40
+episode_size: 2
+
+optimizer:
+  name: Adam
+  kwargs:
+    lr: 0.0001
+  other: ~
+
+lr_scheduler:
+  kwargs:
+    gamma: 0.5
+    step_size: 40
+  name: StepLR
+
+classifier:
+  name: IfslPretrain
+  kwargs:
+    emd_func_path: /data1/student/stx/ML/FSL/pretrained/miniimagenet-e0_pre.pth
+    cls_classifier_path: ~
+    inner_param:
+      inner_optim:
+        name: Adam
+        kwargs:
+          lr: 1e-3
+      inner_train_iter: 100
+      inner_batch_size: 4
+    feat_dim: 640
+    num_class: 351
+    ifsl_pretrain_param:
+      norm: false
+      featuring: false
+      feature_path: ./pretrained/lsq-resnet.npy
+
+epoch: 100
+
+save_part:
+  - emb_func
+  - classifier
+
+backbone:
+ name: resnet12
+ kwargs:
+   keep_prob: 0.0
+   avg_pool: True
+   is_flatten: True
