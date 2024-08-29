@@ -27,15 +27,19 @@ Cite this work with:
 
 **Paper**
 
-| Method                      | Backbone  | :book: *mini*ImageNet (5,1) | :book:*mini*ImageNet (5,5) |
-| --------------------------- | --------- | --------------------------- | -------------------------- |
-| Meta-Baseline + Diffkendall | ResNet-12 | **65.56 ± 0.43**            | **80.79 ± 0.31**           |
+|   | Embedding | 💻*mini*ImageNet (5,1) | :computer: *tiered*ImageNet (5,1) | :computer:*mini*ImageNet (5,5) | :computer: *tiered*ImageNet (5,5) |
+|---|-----------|--------------------|--------------------|--------------------|--------------------|
+| 1 | ResNet12 | 65.56 ± 0.43 | 70.76 ± 0.43 | 80.79 ± 0.31 | 85.31±0.34 |
 
+**Ours**
 
+|   | Embedding | 💻 *mini*ImageNet (5,1) | :computer: *tiered*ImageNet (5,1) | :computer:*mini*ImageNet (5,5) | :computer: *tiered*ImageNet (5,5) |
+|---|-----------|--------------------|--------------------|--------------------|--------------------|
+| 1 | ResNet12 | 64.30 ± 0.37[:arrow_down:](https://drive.google.com/drive/folders/1hP8nFCcIHJN_2jil6BHczDXvCxMtPE1F?usp=sharing) [:clipboard:](./MetaBaselineKendall-miniImageNet--ravi-resnet12-5-1.yaml) | 69.47 ± 0.43 [:arrow_down:](https://drive.google.com/drive/folders/17b89D5GhQzNOLdqbiBiW8P8sGM5cSvxQ?usp=sharing) [:clipboard:](./MetaBaselineKendall-tiered_imagenet-resnet12-5-1.yaml) | 80.49 ± 0.25[:arrow_down:](https://drive.google.com/drive/folders/19IY3wQicsx1jvZ4trxU0oOYH3LckMGM7?usp=sharing) [:clipboard:](./MetaBaselineKendall-miniImageNet--ravi-resnet12-5-5.yaml) | 84.59 ± 0.27[:arrow_down:](https://drive.google.com/drive/folders/1oq3884J1Rce_LnnW8coTFK_82LsqgNS5) [:clipboard:](./MetaBaselineKendall-tiered_imagenet-resnet12-5-5.yaml) |
 
-**Classification**（ours）
+**Pretrain model**
 
-|   | Embedding | :book: *mini*ImageNet (5,1) | :computer: *mini*ImageNet (5,1) | :book:*mini*ImageNet (5,5) | :computer: *mini*ImageNet (5,5) | :computer:Pretrain Model |
-|---|-----------|--------------------|--------------------|--------------------|--------------------|---|
-| 1 | ResNet12| - | 64.30 ± 0.37 [:arrow_down:](https://drive.google.com/drive/folders/1hP8nFCcIHJN_2jil6BHczDXvCxMtPE1F?usp=sharing) [:clipboard:](./MetaBaselineKendall-miniImageNet--ravi-resnet12-5-1.yaml) | - | 80.49 ± 0.25 [:arrow_down:](https://drive.google.com/drive/folders/19IY3wQicsx1jvZ4trxU0oOYH3LckMGM7?usp=sharing) [:clipboard:](./MetaBaselineKendall-miniImageNet--ravi-resnet12-5-5.yaml) |[:arrow_down:](https://drive.google.com/drive/folders/1UmNqCq12TFPJxnndu_pSJyHLMP5a78mC?usp=sharing) [:clipboard:](./MetabaselineKendallPretrain-miniImageNet--ravi-resnet12-5-5.yaml)|
+| 💻*mini*ImageNet | :computer: *tiered*ImageNet |
+| --------------- | --------------------------- |
+|[:arrow_down:](https://drive.google.com/drive/folders/1UmNqCq12TFPJxnndu_pSJyHLMP5a78mC?usp=sharing) [:clipboard:](./MetabaselineKendallPretrain-miniImageNet--ravi-resnet12.yaml)                 |[:arrow_down:](https://drive.google.com/drive/folders/1e8tM9jFGsZs3c9P54Bb_19Q2T2WZ6SNe?usp=sharing) [:clipboard:](./MetabaselineKendallPretrain-tiered_imagenet-resnet12.yaml)                             |
 
