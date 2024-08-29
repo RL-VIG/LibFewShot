@@ -1,0 +1,39 @@
+includes:
+- headers/data.yaml
+- headers/device.yaml
+- headers/misc.yaml
+- headers/model.yaml
+- headers/optimizer.yaml
+
+way_num: 5
+shot_num: 1
+query_num: 6
+episode_size: 8
+train_episode: 2000
+test_episode: 1200
+
+device_ids: 0,1,2,3
+n_gpu: 4
+epoch: 120
+
+optimizer:
+  name: SGD
+  kwargs:
+    lr: 0.05
+    momentum: 0.9
+    nesterov: true
+    weight_decay: 0.0005
+  other: null
+
+backbone:
+  name: resnet12_drop
+  kwargs:
+    drop_block: true
+
+classifier:
+  name: DMF
+  kwargs:
+    num_class: 64
+    nFeat: 640
+    kernel: 1
+    groups: 64
