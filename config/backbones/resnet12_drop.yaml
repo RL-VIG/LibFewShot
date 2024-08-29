@@ -1,0 +1,4 @@
+backbone:
+  name: resnet12_drop
+  kwargs:
+    drop_block: true
