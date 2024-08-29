@@ -1,0 +1,72 @@
+augment: true
+augment_method: S2M2Augment
+augment_times: 1
+augment_times_query: 1
+backbone:
+  kwargs:
+    avg_pool: true
+    is_flatten: true
+    keep_prob: 0.0
+    maxpool_last2: true
+  name: resnet12
+batch_size: 512
+classifier:
+  kwargs:
+    feat_dim: 640
+    num_class: 400
+  name: MetabaselineKendallPretrain
+data_root: /data/Libfewshot/tiered_imagenet
+dataloader_num: 1
+deterministic: true
+device_ids: 0,1,2,3
+episode_size: 4
+epoch: 100
+image_size: 84
+includes:
+- headers/data.yaml
+- headers/device.yaml
+- headers/misc.yaml
+- headers/model.yaml
+- headers/optimizer.yaml
+log_interval: 100
+log_level: info
+log_name: null
+log_paramerter: false
+lr_scheduler:
+  kwargs:
+    milestones:
+    - 40
+    - 80
+  name: MultiStepLR
+n_gpu: 4
+optimizer:
+  kwargs:
+    lr: 0.1
+    weight_decay: 0.0005
+  name: SGD
+parallel_part:
+- emb_func
+port: 27926
+pretrain_path: null
+query_num: 15
+rank: 0
+result_root: ./results
+resume: false
+save_interval: 10
+save_part:
+- emb_func
+seed: 2147483647
+shot_num: 5
+tag: null
+tb_scale: 1.0
+test_episode: 600
+test_epoch: 5
+test_query: 15
+test_shot: 5
+test_way: 5
+train_episode: 600
+use_memory: false
+val_per_epoch: 1
+warmup: 0
+way_num: 5
+workers: 32
