@@ -8,6 +8,7 @@ from .vit import ViT
 from .swin_transformer import swin_s, swin_l, swin_b, swin_t, swin_mini
 from .resnet_bdc import resnet12Bdc, resnet18Bdc
 from core.model.backbone.utils.maml_module import convert_maml_module
+from .resnet12_drop import resnet12_drop
 
 
 def get_backbone(config):
