@@ -15,6 +15,7 @@ Wenbin Li, Ziyi Wang, Xuesong Yang, Chuanqi Dong, Pinzhuo Tian, Tiexin Qin, Jing
 + [Negcos (ECCV 2020)](https://arxiv.org/abs/2003.12060)
 + [S2M2 (WACV 2020)](https://arxiv.org/abs/1907.12087)
 + [Meta-Baseline (ICCV 2021)](https://arxiv.org/abs/2003.04390)
++ [Diffkendall(NeurIPS 2023)](https://arxiv.org/abs/2307.15317)
 ### Meta-learning based methods
 + [MatchingNet (NeurIPS 2016)](https://arxiv.org/abs/1606.04080)
 + [MAML (ICML 2017)](https://arxiv.org/abs/1703.03400)
