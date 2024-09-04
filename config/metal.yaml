@@ -1,0 +1,61 @@
+includes:
+  - headers/data.yaml
+  - headers/device.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
+
+data_root: /data/Libfewshot/tiered_imagenet
+way_num: 5
+shot_num: 1
+
+# query_num: 15
+query_num: 3
+
+episode_size: 2
+
+train_episode: 2000
+test_episode: 600
+
+device_ids: 0
+n_gpu: 1
+epoch: 100
+
+optimizer:
+  name: Adam
+  kwargs:
+    lr: 0.001
+  other: ~
+
+# backbone:
+#   name: Conv64F
+#   kwargs:
+#     is_flatten: True
+#     is_feature: False
+#     leaky_relu: False
+#     negative_slope: 0.2
+#     last_pool: True
+
+# classifier:
+#   name: METAL
+#   kwargs:
+#     inner_param:
+#       lr: 1e-2
+#       train_iter: 5
+#       test_iter: 10
+#     feat_dim: 1600
+
+
+backbone:
+  name: resnet12
+  kwargs: ~
+
+classifier:
+  name: METAL
+  kwargs:
+     inner_param:
+       lr: 1e-2
+       train_iter: 5
+       test_iter: 5
+     feat_dim: 640
+
