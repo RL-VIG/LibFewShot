@@ -1,0 +1,69 @@
+augment: true
+augment_times: 1
+augment_times_query: 1
+backbone:
+  kwargs: null
+  name: resnet12
+batch_size: 128
+classifier:
+  kwargs:
+    feat_dim: 640
+    inner_param:
+      lr: 0.01
+      test_iter: 5
+      train_iter: 5
+  name: METAL
+data_root: /data/Libfewshot/tiered_imagenet
+dataloader_num: 1
+deterministic: true
+device_ids: 0, 1, 2, 3, 4, 5, 6, 7
+episode_size: 4
+epoch: 100
+image_size: 84
+includes:
+- headers/data.yaml
+- headers/device.yaml
+- headers/misc.yaml
+- headers/model.yaml
+- headers/optimizer.yaml
+log_interval: 100
+log_level: info
+log_name: null
+log_paramerter: false
+lr_scheduler:
+  kwargs:
+    gamma: 1.0
+    step_size: 20
+  name: StepLR
+n_gpu: 4
+optimizer:
+  kwargs:
+    lr: 0.001
+  name: Adam
+  other: null
+parallel_part:
+- emb_func
+port: 40726
+pretrain_path: null
+query_num: 3
+rank: 0
+result_root: ./results
+resume: false
+save_interval: 10
+save_part:
+- emb_func
+seed: 2147483647
+shot_num: 5
+tag: null
+tb_scale: 3.3333333333333335
+test_episode: 600
+test_epoch: 5
+test_query: 3
+test_shot: 5
+test_way: 5
+train_episode: 2000
+use_memory: false
+val_per_epoch: 1
+warmup: 0
+way_num: 5
+workers: 8

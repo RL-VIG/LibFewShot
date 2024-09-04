@@ -1,0 +1,3 @@
+classifier:
+  name: CPEANet
+  kwargs: ~

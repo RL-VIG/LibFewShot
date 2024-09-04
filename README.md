@@ -1,6 +1,7 @@
 # [LibFewShot](https://arxiv.org/abs/2109.04898)
 Make few-shot learning easy.
 
+
 [LibFewShot: A Comprehensive Library for Few-shot Learning](https://www.computer.org/csdl/journal/tp/5555/01/10239698/1Qck3o85t60).
 Wenbin Li, Ziyi Wang, Xuesong Yang, Chuanqi Dong, Pinzhuo Tian, Tiexin Qin, Jing Huo, Yinghuan Shi, Lei Wang, Yang Gao, Jiebo Luo. In TPAMI 2023.<br>
 <img src='flowchart.png' width=1000/>
@@ -15,13 +16,16 @@ Wenbin Li, Ziyi Wang, Xuesong Yang, Chuanqi Dong, Pinzhuo Tian, Tiexin Qin, Jing
 + [S2M2 (WACV 2020)](https://arxiv.org/abs/1907.12087)
 + [Meta-Baseline (ICCV 2021)](https://arxiv.org/abs/2003.04390)
 ### Meta-learning based methods
++ [MatchingNet (NeurIPS 2016)](https://arxiv.org/abs/1606.04080)
 + [MAML (ICML 2017)](https://arxiv.org/abs/1703.03400)
 + [Versa (NeurIPS 2018)](https://openreview.net/forum?id=HkxStoC5F7)
 + [R2D2 (ICLR 2019)](https://arxiv.org/abs/1805.08136)
 + [LEO (ICLR 2019)](https://arxiv.org/abs/1807.05960)
 + [MTL (CVPR 2019)](https://arxiv.org/abs/1812.02391)
 + [ANIL (ICLR 2020)](https://arxiv.org/abs/1909.09157)
++ [IFSL(NeurIPS 2020)](https://arxiv.org/abs/2009.13000)
 + [BOIL (ICLR 2021)](https://arxiv.org/abs/2008.08882)
++ [MeTAL (ICCV 2021)](https://arxiv.org/abs/2110.03909)
 ### Metric-learning based methods
 + [ProtoNet (NeurIPS 2017)](https://arxiv.org/abs/1703.05175)
 + [RelationNet (CVPR 2018)](https://arxiv.org/abs/1711.06025)
@@ -35,7 +39,8 @@ Wenbin Li, Ziyi Wang, Xuesong Yang, Chuanqi Dong, Pinzhuo Tian, Tiexin Qin, Jing
 + [RENet (ICCV 2021)](https://arxiv.org/abs/2108.09666)
 + [FRN (CVPR 2021)](https://arxiv.org/abs/2012.01506)
 + [DeepBDC (CVPR 2022)](https://arxiv.org/abs/2204.04567)
-
++ [CPEA (ICCV 2023)](https://openaccess.thecvf.com/content/ICCV2023/papers/Hao_Class-Aware_Patch_Embedding_Adaptation_for_Few-Shot_Image_Classification_ICCV_2023_paper.pdf)
++ [MCL (CVPR 2022)](http://openaccess.thecvf.com/content/CVPR2022/html/Liu_Learning_To_Affiliate_Mutual_Centralized_Learning_for_Few-Shot_Classification_CVPR_2022_paper.html)
 
 ## Quick Installation
 
