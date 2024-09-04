@@ -206,7 +206,23 @@ This folder contains:
       <td> 82.58 </td>
       <td> 82.13 </td>
   </tr>
+  <tr>
+      <td rowspan="2"> <a href="./MeTAL">MeTAL</a></td>
+      <td>Conv64F</td>
+      <td> 52.63 </td>
+      <td> 55.48 </td>
+      <td> 70.52 </td>
+      <td> 70.89 </td>
+  </tr>
+  <tr>
+      <td>ResNet12</td>
+      <td> 59.64 </td>
+      <td> 59.23 </td>
+      <td> 76.20 </td>
+      <td> 77.84 </td>
+  </tr>
 </table>
+
 
 
 ## The overview picture of the SOTAs
@@ -388,7 +404,17 @@ This folder contains:
         <td> 61.62  </td>
         <td> 76.74  </td>
     </tr>
+    <tr>
+        <td><a href="./MeTAL">MeTAL</a></td>
+        <td>ICCV’21</td>
+        <td> Meta </td>
+        <td> 55.48  </td>
+        <td> 70.89  </td>
+        <td> 55.60  </td>
+        <td> 71.27  </td>
+    </tr>
 </table>
+
 
 ### ResNet12
 <table>
@@ -557,6 +583,15 @@ This folder contains:
         <td> 79.90  </td>
         <td> 70.14  </td>
         <td> 82.70  </td>
+    </tr>
+    <tr>
+        <td><a href="./MeTAL">MeTAL</a></td>
+        <td>ICCV’21</td>
+        <td> Meta</td>
+        <td> 59.23  </td>
+        <td> 77.84  </td>
+        <td> 61.77  </td>
+        <td> 78.58  </td>
     </tr>
 </table>
 
