@@ -67,6 +67,10 @@ def get_augment_method(
                 transforms.RandomHorizontalFlip(),
                 transforms.ColorJitter(**CJ_DICT),
             ]
+        elif config["augment_method"] == "COSOCAugment":
+            trfms_list = [
+                transforms.RandomHorizontalFlip(),
+            ]
         else:
             trfms_list = get_default_image_size_trfms(config["image_size"])
             trfms_list += [
@@ -75,24 +79,30 @@ def get_augment_method(
             ]
             
     else:
-        if config["image_size"] == 224:
+        if config['classifier']['name'] == 'COSOC':
             trfms_list = [
-                transforms.Resize((256, 256)),
-                transforms.CenterCrop((224, 224)),
-            ]
-        elif config["image_size"] == 84:
-            trfms_list = [
-                transforms.Resize((96, 96)),
-                transforms.CenterCrop((84, 84)),
-            ]
-        # for MTL -> alternative solution: use avgpool(ks=11)
-        elif config["image_size"] == 80:
-            trfms_list = [
-                transforms.Resize((92, 92)),
-                transforms.CenterCrop((80, 80)),
+                transforms.RandomResizedCrop(config["image_size"]),
+                transforms.RandomHorizontalFlip(),
             ]
         else:
-            raise RuntimeError
+            if config["image_size"] == 224:
+                trfms_list = [
+                    transforms.Resize((256, 256)),
+                    transforms.CenterCrop((224, 224)),
+                ]
+            elif config["image_size"] == 84:
+                trfms_list = [
+                    transforms.Resize((96, 96)),
+                    transforms.CenterCrop((84, 84)),
+                ]
+            # for MTL -> alternative solution: use avgpool(ks=11)
+            elif config["image_size"] == 80:
+                trfms_list = [
+                    transforms.Resize((92, 92)),
+                    transforms.CenterCrop((80, 80)),
+                ]
+            else:
+                raise RuntimeError
 
     return trfms_list
 

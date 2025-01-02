@@ -81,6 +81,7 @@ class Trainer(object):
             print("============ Train on the train set ============")
             print("learning rate: {}".format(self.scheduler.get_last_lr()))
             train_acc = self._train(epoch_idx)
+            train_acc = 0.
             print(" * Acc@1 {:.3f} ".format(train_acc))
             if ((epoch_idx + 1) % self.val_per_epoch) == 0:
                 print("============ Validation on the val set ============")
@@ -411,10 +412,10 @@ class Trainer(object):
         emb_func = get_instance(arch, "backbone", config)
         model_kwargs = {
             "way_num": config["way_num"],
-            "shot_num": config["shot_num"] * config["augment_times"],
+            "shot_num": config["shot_num"] if config['classifier']['name'] == 'COSOC' else config["shot_num"] * config["augment_times"],
             "query_num": config["query_num"],
             "test_way": config["test_way"],
-            "test_shot": config["test_shot"] * config["augment_times"],
+            "test_shot": config["test_shot"] if config['classifier']['name'] == 'COSOC' else config["test_shot"] * config["augment_times"],
             "test_query": config["test_query"],
             "emb_func": emb_func,
             "device": self.device,
