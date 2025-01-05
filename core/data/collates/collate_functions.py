@@ -156,18 +156,20 @@ class FewShotAugCollateFunction(object):
             # global_labels = torch.tensor(labels,dtype=torch.int64)
             # global_labels = torch.tensor(labels,dtype=torch.int64).reshape(self.episode_size,self.way_num,
             # self.shot_num*self.times+self.query_num)
+            patch_mode = True
             global_labels = torch.tensor(labels, dtype=torch.int64).reshape(
                 -1, self.way_num, self.shot_num + self.query_num
             )
-            global_labels = (
-                global_labels[..., 0]
-                .unsqueeze(-1)
-                .repeat(
-                    1,
-                    1,
-                    self.shot_num * self.times + self.query_num * self.times_q,
+            if not patch_mode:
+                global_labels = (
+                    global_labels[..., 0]
+                    .unsqueeze(-1)
+                    .repeat(
+                        1,
+                        1,
+                        self.shot_num * self.times + self.query_num * self.times_q,
+                    )
                 )
-            )
 
             return images, global_labels
             # images.shape = [e*w*(q+s) x c x h x w],  global_labels.shape = [e x w x (q+s)]

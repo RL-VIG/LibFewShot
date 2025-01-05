@@ -5,6 +5,11 @@ import pickle
 
 from PIL import Image
 from torch.utils.data import Dataset
+from torchvision import transforms
+import torchvision.transforms.functional as functional
+import numpy as np
+import torch
+import random
 
 
 def pil_loader(path):
@@ -183,3 +188,101 @@ class GeneralDataset(Dataset):
         label = self.label_list[idx]
 
         return data, label
+
+def crop_func(img, crop, ratio = 1.2):
+    """
+    Given cropping positios, relax for a certain ratio, and return new crops
+    , along with the area ratio.
+    """
+    assert len(crop) == 4
+    w,h = functional.get_image_size(img)
+    if crop[0] == -1.:
+        crop[0],crop[1],crop[2],crop[3]  = 0., 0., h, w
+    else:
+        crop[0] = max(0, crop[0]-crop[2]*(ratio-1)/2)
+        crop[1] = max(0, crop[1]-crop[3]*(ratio-1)/2)
+        crop[2] = min(ratio*crop[2], h-crop[0])
+        crop[3] = min(ratio*crop[3], w-crop[1])
+    return crop, crop[2]*crop[3]/(w*h)
+
+class COSOCDataset(GeneralDataset):
+    def __init__(self, data_root="", mode="train", loader=default_loader, use_memory=True, trfms=None, feature_image_and_crop_id='', position_list='', ratio = 1.2, crop_size = 0.08, image_sz = 84):
+        super().__init__(data_root, mode, loader, use_memory, trfms)
+        self.image_sz = image_sz
+        self.ratio = ratio
+        self.crop_size = crop_size
+        with open(feature_image_and_crop_id, 'rb') as f:
+            self.feature_image_and_crop_id = pickle.load(f)
+        self.position_list = np.load(position_list)
+        self._get_id_position_map()
+
+    def _get_id_position_map(self):
+        self.position_map = {}
+        for i, feature_image_and_crop_ids in self.feature_image_and_crop_id.items():
+            for clusters in feature_image_and_crop_ids:
+                for image in clusters:
+                    # print(image)
+                    if image[0] in self.position_map:
+                        self.position_map[image[0]].append((image[1],image[2]))
+                    else:
+                        self.position_map[image[0]] = [(image[1],image[2])]
+
+    def _multi_crop_get(self, idx):
+        if self.use_memory:
+            data = self.data_list[idx]
+        else:
+            image_name = self.data_list[idx]
+            image_path = os.path.join(self.data_root, "images", image_name)
+            data = self.loader(image_path)
+            ... # image -> aug(collate) -> tensor (b, patch, ...) -> classifier
+
+        if self.trfms is not None:
+            data = self.trfms(data)
+        label = self.label_list[idx]
+
+        return data, label
+
+    def _prob_crop_get(self, idx):
+        if self.use_memory:
+            data = self.data_list[idx]
+        else:
+            image_name = self.data_list[idx]
+            image_path = os.path.join(self.data_root, "images", image_name)
+            data = self.loader(image_path)
+            idx = int(idx)
+
+            x = random.random()
+            ran_crop_prob = 1 - torch.tensor(self.position_map[idx][0][1]).sum()
+            if x > ran_crop_prob:
+                crop_ids = self.position_map[idx][0][0]
+                if ran_crop_prob <= x < ran_crop_prob+self.position_map[idx][0][1][0]:
+                    crop_id = crop_ids[0]
+                elif ran_crop_prob+self.position_map[idx][0][1][0] <= x < ran_crop_prob+self.position_map[idx][0][1][1]+self.position_map[idx][0][1][0]:
+                    crop_id = crop_ids[1]
+                else:
+                    crop_id = crop_ids[2]
+                crop = self.position_list[idx][crop_id]
+                crop, space_ratio = crop_func(data, crop, ratio = self.ratio)
+                data = functional.crop(data,crop[0],crop[1], crop[2],crop[3])
+                data = transforms.RandomResizedCrop(self.image_sz, scale = (self.crop_size/space_ratio, 1.0))(data)
+            else:
+                data = transforms.RandomResizedCrop(self.image_sz)(data)
+
+        if self.trfms is not None:
+            data = self.trfms(data)
+        label = self.label_list[idx]
+        return data, label
+
+    def __getitem__(self, idx):
+        """Return a PyTorch like dataset item of (data, label) tuple.
+
+        Args:
+            idx (int): The __getitem__ id.
+
+        Returns:
+            tuple: A tuple of (image, label)
+        """
+        if self.mode == 'train':
+            return self._prob_crop_get(idx)
+        else:
+            return self._multi_crop_get(idx)

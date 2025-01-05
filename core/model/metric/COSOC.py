@@ -36,58 +36,84 @@ import torchvision.transforms.functional as functional
 import torchvision.transforms as transforms
 from torchvision.datasets import ImageFolder
 
+# COSOC.py
+from torch.nn.utils.weight_norm import WeightNorm
 
-class COSOCLayer(nn.Module):
-    def __init__(self):
-        super(COSOCLayer, self).__init__()
+def weight_norm(module, name='weight', dim=0):
+    r"""Applies weight normalization to a parameter in the given module.
 
-    def forward(
-        self,
-        query_feat,
-        support_feat,
-        way_num,
-        shot_num,
-        query_num,
-        mode="euclidean",
-    ):
-        t, wq, c = query_feat.size()
-        _, ws, _ = support_feat.size()
+    .. math::
+         \mathbf{w} = g \dfrac{\mathbf{v}}{\|\mathbf{v}\|}
 
-        # t, wq, c
-        query_feat = query_feat.reshape(t, way_num * query_num, c)
-        # t, w, c
-        support_feat = support_feat.reshape(t, way_num, shot_num, c)
-        proto_feat = torch.mean(support_feat, dim=2)
+    Weight normalization is a reparameterization that decouples the magnitude
+    of a weight tensor from its direction. This replaces the parameter specified
+    by :attr:`name` (e.g. ``'weight'``) with two parameters: one specifying the magnitude
+    (e.g. ``'weight_g'``) and one specifying the direction (e.g. ``'weight_v'``).
+    Weight normalization is implemented via a hook that recomputes the weight
+    tensor from the magnitude and direction before every :meth:`~Module.forward`
+    call.
 
-        return {
-            # t, wq, 1, c - t, 1, w, c -> t, wq, w
-            "euclidean": lambda x, y: -torch.sum(
-                torch.pow(x.unsqueeze(2) - y.unsqueeze(1), 2),
-                dim=3,
-            ),
-            # t, wq, c - t, c, w -> t, wq, w
-            "cos_sim": lambda x, y: torch.matmul(
-                F.normalize(x, p=2, dim=-1),
-                torch.transpose(F.normalize(y, p=2, dim=-1), -1, -2)
-                # FEAT did not normalize the query_feat
-            ),
-        }[mode](query_feat, proto_feat)
+    By default, with ``dim=0``, the norm is computed independently per output
+    channel/plane. To compute a norm over the entire weight tensor, use
+    ``dim=None``.
 
+    See https://arxiv.org/abs/1602.07868
 
-class COSOC(MetricModel):
-    def __init__(self, **kwargs):
-        super(COSOC, self).__init__(**kwargs)
-        # self.proto_layer = ProtoLayer()
-        self.loss_func = nn.CrossEntropyLoss()
-    
-    def __forward(self, feature_extractor, data, way, shot, batch_size):
-        
-        # print(shot)
-        # print(data.shape)
+    Args:
+        module (Module): containing module
+        name (str, optional): name of weight parameter
+        dim (int, optional): dimension over which to compute the norm
+
+    Returns:
+        The original module with the weight norm hook
+
+    Example::
+
+        >>> m = weight_norm(nn.Linear(20, 40), name='weight')
+        >>> m
+        Linear(in_features=20, out_features=40, bias=True)
+        >>> m.weight_g.size()
+        torch.Size([40, 1])
+        >>> m.weight_v.size()
+        torch.Size([40, 20])
+
+    """
+    WeightNorm.apply(module, name, dim)
+    return module
+
+class CC_head(nn.Module):
+    def __init__(self, indim, outdim,scale_cls=10.0, learn_scale=True, normalize=True):
+        super().__init__()
+        self.L = weight_norm(nn.Linear(indim, outdim, bias=False), name='weight', dim=0)
+        self.scale_cls = nn.Parameter(
+            torch.FloatTensor(1).fill_(scale_cls), requires_grad=learn_scale
+        )
+        self.normalize=normalize
+
+    def forward(self, features):
+        if features.dim() == 4:
+            if self.normalize:
+                features=F.normalize(features, p=2, dim=1, eps=1e-12)
+            features = F.adaptive_avg_pool2d(features, 1).squeeze_(-1).squeeze_(-1)
+        assert features.dim() == 2
+        x_normalized = F.normalize(features, p=2, dim=1, eps = 1e-12)
+        self.L.weight.data = F.normalize(self.L.weight.data, p=2, dim=1, eps = 1e-12)
+        cos_dist = self.L(x_normalized)
+        classification_scores = self.scale_cls * cos_dist
+
+        return classification_scores
+
+class SOC(nn.Module):
+    def __init__(self, num_patch=7, alpha=0.8, beta=0.8):
+        super().__init__()
+        self.num_patch = num_patch
+        self.alpha = alpha
+        self.beta = beta
+
+    def forward(self, emb, data, way, shot, batch_size):
         num_support_samples = way * shot
-        num_patch = data.size(1)
-        data = data.reshape([-1]+list(data.shape[-3:]))
-        data = feature_extractor(data)
+        num_patch = self.num_patch
+        data = emb # (560, 640, 5, 5)
         data = nn.functional.normalize(data, dim=1)
         data = F.adaptive_avg_pool2d(data, 1)
         data = data.reshape([batch_size, -1, num_patch] + list(data.shape[-3:]))
@@ -165,11 +191,7 @@ class COSOC(MetricModel):
             features_train = F.normalize(features_train, p=2, dim=2, eps=1e-12)
             features_focus.append(count*feature_avg)
             features_focus = torch.stack(features_focus, dim=3)#[b,way,c,num]
-
-                            
-
-
-
+            
         M = way
         features_focus = features_focus.unsqueeze(2)
         features_test= features_test.unsqueeze(1)
@@ -198,26 +220,84 @@ class COSOC(MetricModel):
         classification_scores = torch.transpose(combination, 1,2)
         return classification_scores
 
+class ProtoLayer(nn.Module):
+    def __init__(self):
+        super(ProtoLayer, self).__init__()
+
+    def forward(
+        self,
+        query_feat,
+        support_feat,
+        way_num,
+        shot_num,
+        query_num,
+        mode="euclidean",
+    ):
+        t, wq, c = query_feat.size()
+        _, ws, _ = support_feat.size()
+
+        # t, wq, c
+        query_feat = query_feat.reshape(t, way_num * query_num, c)
+        # t, w, c
+        support_feat = support_feat.reshape(t, way_num, shot_num, c)
+        proto_feat = torch.mean(support_feat, dim=2)
+
+        return {
+            # t, wq, 1, c - t, 1, w, c -> t, wq, w
+            "euclidean": lambda x, y: -torch.sum(
+                torch.pow(x.unsqueeze(2) - y.unsqueeze(1), 2),
+                dim=3,
+            ),
+            # t, wq, c - t, c, w -> t, wq, w
+            "cos_sim": lambda x, y: torch.matmul(
+                F.normalize(x, p=2, dim=-1),
+                torch.transpose(F.normalize(y, p=2, dim=-1), -1, -2)
+                # FEAT did not normalize the query_feat
+            ),
+        }[mode](query_feat, proto_feat)
+
+class COSOC(MetricModel):
+    def __init__(self, **kwargs):
+        super(COSOC, self).__init__(**kwargs)
+        num_patch=kwargs['num_patches']
+        alpha=kwargs['alpha']
+        beta=kwargs['beta']
+        num_classes = kwargs['num_classes']
+        scale_cls = kwargs['scale_cls']
+        self.batch_size_per_gpu = 1
+
+        self.emb_func = kwargs['emb_func']
+        # CC or PN as the FSL alg.
+        self.fsl_alg = kwargs['fsl_alg']
+        if self.fsl_alg == 'CC':
+            self.classifier = CC_head(self.emb_func.outdim, num_classes, scale_cls)
+        elif self.fsl_alg == 'PN':
+            self.classifier = ProtoLayer()
+        else:
+            raise NotImplementedError
+
+        self.SOC_classifier = SOC(num_patch, alpha, beta)
+        self.test_way = kwargs['test_way']
+        self.test_shot = kwargs['test_shot']
+
     def set_forward(self, batch):
         """
 
         :param batch:
         :return:
         """
-        image, global_target = batch
-        image = image.to(self.device)
-        episode_size = image.size(0) // (
-            self.way_num * (self.shot_num + self.query_num)
-        )
-        feat = self.emb_func(image)
+        images, global_targets = batch
+        images = images.to(self.device)
+        global_targets = global_targets.to(self.device)
+        emb = self.emb_func(images) # features
         support_feat, query_feat, support_target, query_target = self.split_by_episode(
-            feat, mode=1
+            emb, mode=1
         )
 
-        output = self.__forward(self.emb_func, batch, self.test_way, self.test_shot, image.shape[0])
-        acc = accuracy(output, query_target.reshape(-1))
+        logits = self.SOC_classifier(emb, images, self.test_way, self.test_shot, self.batch_size_per_gpu)
+        acc = accuracy(logits[0], query_target[0])
 
-        return output, acc
+        return logits, acc
 
     def set_forward_loss(self, batch):
         """
@@ -227,21 +307,24 @@ class COSOC(MetricModel):
         """
         images, global_targets = batch
         images = images.to(self.device)
+        global_targets = global_targets.to(self.device)
         episode_size = images.size(0) // (
             self.way_num * (self.shot_num + self.query_num)
         )
-        emb = self.emb_func(images)
-        support_feat, query_feat, support_target, query_target = self.split_by_episode(
+        emb = self.emb_func(images[:80]) # features # FIXME 还是应该只增广image，这样改动最少 (b*5) -> b
+        
+        if self.fsl_alg == "CC":
+            logits = self.classifier(emb)
+            loss = F.cross_entropy(logits, global_targets.reshape(-1))
+            acc = accuracy(logits, global_targets.reshape(-1))
+        elif self.fsl_alg == "PN":
+            support_feat, query_feat, support_target, query_target = self.split_by_episode(
             emb, mode=1
         )
+            logits = self.classifier(
+                query_feat, support_feat, self.way_num, self.shot_num, self.query_num
+            ).reshape(episode_size * self.way_num * self.query_num, self.way_num)
+            loss = F.cross_entropy(logits, query_target.reshape(-1))
+            acc = accuracy(logits, query_target.reshape(-1))
 
-        logits = self.__forward(self.emb_func, batch, self.test_way, self.test_shot, images.shape[0])
-
-        labels = query_target
-
-        loss = F.cross_entropy(logits, labels)
-
-        # loss = self.loss_func(output, query_target.reshape(-1))
-        acc = accuracy(output, query_target.reshape(-1))
-
-        return output, acc, loss
+        return logits, acc, loss

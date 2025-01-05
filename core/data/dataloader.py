@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 from torchvision import transforms
 
-from core.data.dataset import GeneralDataset
+from core.data.dataset import GeneralDataset, COSOCDataset
 from .collates import get_collate_function, get_augment_method,get_mean_std
 from .samplers import DistributedCategoriesSampler, get_sampler
 from ..utils import ModelType
@@ -40,16 +40,27 @@ def get_dataloader(config, mode, model_type, distribute):
     MEAN,STD=get_mean_std(config, mode)
     
     trfms_list = get_augment_method(config, mode)
-
     trfms_list.append(transforms.ToTensor())
     trfms_list.append(transforms.Normalize(mean=MEAN, std=STD))
     trfms = transforms.Compose(trfms_list)
 
-    dataset = GeneralDataset(
-        data_root=config["data_root"],
-        mode=mode,
-        use_memory=config["use_memory"],
-    )
+    if config['classifier']['name'] == 'COSOC':
+        dataset = COSOCDataset(
+            data_root=config["data_root"],
+            mode=mode,
+            use_memory=config["use_memory"],
+            feature_image_and_crop_id=config['feature_image_and_crop_id'],
+            position_list=config['position_list'],
+            # ratio=config['ratio'],
+            # crop_size=config['crop_size'],
+            image_sz=config['image_size'],
+        )
+    else:
+        dataset = GeneralDataset(
+            data_root=config["data_root"],
+            mode=mode,
+            use_memory=config["use_memory"],
+        )
 
     if config["dataloader_num"] == 1 or mode in ["val", "test"]:
 
