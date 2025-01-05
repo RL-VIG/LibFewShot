@@ -1,0 +1,8 @@
+classifier:
+  name: COSOC
+  kwargs: 
+    alpha: 0.8
+    beta: 0.8
+    num_patches: 7
+    fsl_alg: CC
+    

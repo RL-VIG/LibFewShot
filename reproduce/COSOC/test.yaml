@@ -1,22 +1,27 @@
 augment: true
-augment_times: 1
-augment_times_query: 1
+augment_method: COSOCAugment
+augment_times: 7
+augment_times_query: 7
 backbone:
-  kwargs:
-    avg_pool: true
-    is_flatten: true
-    keep_prob: 0.0
-    maxpool_last2: true
-  name: resnet12
+  kwargs: null
+  name: resnet12_cosoc
 batch_size: 128
 classifier:
-  kwargs: null
-  name: ProtoNet
+  kwargs: 
+    alpha: 0.8
+    beta: 0.8
+    num_patches: 7
+    fsl_alg: CC
+    num_classes: 64
+    scale_cls: 10
+  name: COSOC
 data_root: /tmp/miniImageNet--ravi
+feature_image_and_crop_id: /tmp/miniImageNet--ravi/feature_image_and_crop_id.pkl
+position_list: /tmp/miniImageNet--ravi/position_list.npy
 deterministic: true
-device_ids: 0
+device_ids: 1
 episode_size: 1
-epoch: 100
+epoch: 3 # TODO
 image_size: 84
 includes:
 - headers/data.yaml
@@ -24,7 +29,7 @@ includes:
 - headers/misc.yaml
 - headers/model.yaml
 - headers/optimizer.yaml
-- classifiers/Proto.yaml
+- classifiers/COSOC.yaml
 log_interval: 100
 log_level: info
 log_name: null
@@ -37,14 +42,14 @@ lr_scheduler:
 n_gpu: 1
 optimizer:
   kwargs:
-    lr: 0.001
+    lr: 0.005
     weight_decay: 0.0005
   name: Adam
   other: null
 parallel_part:
 - emb_func
 port: 48828
-pretrain_path: null
+pretrain_path: /tmp/miniImageNet--ravi/backbone.pth
 query_num: 15
 rank: 0
 result_root: ./results

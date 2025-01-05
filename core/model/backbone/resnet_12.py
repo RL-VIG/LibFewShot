@@ -185,6 +185,7 @@ class ResNet(nn.Module):
         maxpool_last2=True,
     ):
         self.inplanes = 3
+        self.outdim = planes[-1]
         super(ResNet, self).__init__()
 
         self.layer1 = self._make_layer(

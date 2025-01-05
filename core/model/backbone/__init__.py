@@ -3,6 +3,7 @@ from .conv_four import Conv32F, Conv64F, R2D2Embedding
 from .conv_four_mcl import Conv64F_MCL
 from .resnet_12 import resnet12, resnet12woLSC
 from .resnet_12_mcl import resnet12_mcl,resnet12_r2d2
+from .resnet_12_cosoc import resnet12_cosoc
 from .resnet_18 import resnet18
 from .wrn import WRN
 from .resnet_12_mtl_offcial import resnet12MTLofficial
@@ -10,7 +11,6 @@ from .vit import ViT
 from .swin_transformer import swin_s, swin_l, swin_b, swin_t, swin_mini
 from .resnet_bdc import resnet12Bdc, resnet18Bdc
 from core.model.backbone.utils.maml_module import convert_maml_module
-
 
 def get_backbone(config):
     """Get the backbone according to the config dict.
