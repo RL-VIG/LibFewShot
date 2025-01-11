@@ -6,7 +6,6 @@ import numpy as np
 from .meta_model import MetaModel
 from core.utils import accuracy
 from ..backbone.utils import convert_maml_module
-import utils
 import torch.nn.functional as F
 
 class IFSLUtils(nn.Module):

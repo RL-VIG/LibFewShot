@@ -25,7 +25,7 @@ classifier:
       inner_train_iter: 100
     num_class: 200
   name: Baseline
-data_root: /data/wzy/miniImageNet--ravi
+data_root: /data/fewshot/miniImageNet--ravi
 deterministic: true
 device_ids: 1
 episode_size: 1
