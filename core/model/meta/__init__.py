@@ -8,4 +8,4 @@ from .versa import VERSA
 from .leo import LEO
 from .mtl import MTL
 from .boil import BOIL
-from .matchingnet import DMatchingNet
+from .matchingnet_ifsl import DMatchingNet
