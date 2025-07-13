@@ -1,0 +1,32 @@
+backbone:
+  name: CNNEncoder
+  kwargs: null
+
+classifier:
+  name: TPN
+  kwargs:
+    topk: 20
+    sigma: 0.25
+    alpha: 0.99
+    rn: 300
+
+way_num: 5
+shot_num: 1
+query_num: 15
+
+epoch: 2100
+test_epoch: 100
+train_episode: 100
+test_episode: 100
+episode_size: 1
+
+optimizer:
+  name: Adam
+  kwargs:
+    lr: 1e-3
+
+lr_scheduler:
+  name: StepLR
+  kwargs:
+    step_size: 10000
+    gamma: 0.5
