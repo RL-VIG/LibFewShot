@@ -6,6 +6,12 @@ includes:
   - headers/optimizer.yaml
   - TPN.yaml
 
+lr_scheduler:
+  name: StepLR
+  kwargs:
+    step_size: 25000
+    gamma: 0.5
+
 way_num: 5
 shot_num: 1
 query_num: 15
