@@ -18,9 +18,9 @@ seed: 0
 n_gpu: 1
 device_ids: 0
 
-
 log_interval: 100
 log_level: info
 log_name: TPN-miniImageNet--ravi-10-1-Table1
 
 result_root: ./results
+save_interval: 100

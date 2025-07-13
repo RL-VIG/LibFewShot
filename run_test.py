@@ -16,6 +16,7 @@ VAR_DICT = {
     "n_gpu": 2,
     "test_episode": 600,
     "episode_size": 2,
+    "checkpoint_type": "best",  # best, last or an epoch number
 }
 
 
