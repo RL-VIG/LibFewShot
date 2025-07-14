@@ -14,11 +14,11 @@ way_num: 5
 shot_num: 1
 query_num: 15
 
-epoch: 2100
+epoch: 1000
 test_epoch: 100
 train_episode: 100
 test_episode: 100
-episode_size: 1
+episode_size: 5
 
 optimizer:
   name: Adam

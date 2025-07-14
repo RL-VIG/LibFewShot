@@ -104,7 +104,7 @@ class TPN(MetricModel):
         total   = self.query_num * self.way_num
         acc = 1.0 * correct.float() / float(total)
 
-        acc = torch.tensor([acc]).to(self.device)
+        acc = torch.tensor([acc])
 
         return loss, acc
 
@@ -135,6 +135,7 @@ class TPN(MetricModel):
             acc_list.append(acc)
         
         loss = torch.stack(loss_list)
+        loss = torch.mean(loss) 
         acc = torch.stack(acc_list)
         acc = torch.mean(acc) * 100.0
 
