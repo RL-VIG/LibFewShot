@@ -1,3 +1,17 @@
+"""
+@misc{liu2019learningpropagatelabelstransductive,
+      title={Learning to Propagate Labels: Transductive Propagation Network for Few-shot Learning}, 
+      author={Yanbin Liu and Juho Lee and Minseop Park and Saehoon Kim and Eunho Yang and Sung Ju Hwang and Yi Yang},
+      year={2019},
+      eprint={1805.10002},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/1805.10002}, 
+}
+
+Adapted From https://github.com/csyanbin/TPN-pytorch
+"""
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

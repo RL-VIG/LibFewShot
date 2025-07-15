@@ -1,6 +1,13 @@
 backbone:
-  name: CNNEncoder
-  kwargs: null
+  name: Conv64F
+  kwargs: 
+    is_flatten: false
+    is_feature: false
+    leaky_relu: false
+    negative_slope: 0.2
+    last_pool: true
+    maxpool_last2: true
+    use_running_statistics: true 
 
 classifier:
   name: TPN
