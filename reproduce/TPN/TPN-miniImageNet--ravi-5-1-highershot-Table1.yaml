@@ -1,0 +1,27 @@
+includes:
+  - headers/data.yaml
+  - headers/device.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
+  - TPN.yaml
+
+way_num: 5
+shot_num: 5
+query_num: 15
+test_shot: 1
+
+data_root: /data/fewshot/miniImageNet--ravi
+use_memory: false
+
+seed: 0
+
+n_gpu: 1
+device_ids: 0
+
+log_interval: 100
+log_level: info
+log_name: TPN-miniImageNet--ravi-5-1-highershot-Table1
+
+result_root: ./results
+save_interval: 100

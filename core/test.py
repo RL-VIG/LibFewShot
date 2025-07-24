@@ -193,7 +193,22 @@ class Test(object):
             rank=self.rank,
         )
 
-        state_dict_path = os.path.join(result_path, "checkpoints", "model_best.pth")
+        checkpoint_type = config.get("checkpoint_type", "best")
+        if checkpoint_type == "best":
+            checkpoint_filename = "model_best.pth"
+        elif checkpoint_type == "last":
+            checkpoint_filename = "model_last.pth"
+        elif isinstance(checkpoint_type, int) or checkpoint_type.isdigit():
+            epoch_num = int(checkpoint_type)
+            checkpoint_filename = f"model_{epoch_num:05d}.pth"
+        else:
+            print(
+                f"Warning: Invalid checkpoint_type '{checkpoint_type}', using 'best'",
+                level="warning",
+            )
+            checkpoint_filename = "model_best.pth"
+
+        state_dict_path = os.path.join(result_path, "checkpoints", checkpoint_filename)
         if self.rank == 0:
             create_dirs([result_path, log_path, viz_path])
             
