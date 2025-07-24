@@ -42,20 +42,17 @@ class RelationNetwork(nn.Module):
         self.fc3 = nn.Linear(2 * 2, 8)
         self.fc4 = nn.Linear(8, 1)
 
-        self.m0 = nn.MaxPool2d(2)  # max-pool without padding
-        self.m1 = nn.MaxPool2d(2, padding=1)  # max-pool with padding
-
-    def forward(self, x, rn):
+    def forward(self, x):
         x = x.view(-1, 64, 5, 5)
 
         out = self.layer1(x)
         out = self.layer2(out)
-        # flatten
+
         out = out.view(out.size(0), -1)
         out = F.relu(self.fc3(out))
-        out = self.fc4(out)  # no relu
+        out = self.fc4(out)  
 
-        out = out.view(out.size(0), -1)  # bs*1
+        out = out.view(out.size(0), -1)  
 
         return out
 
@@ -65,6 +62,7 @@ class TPN(MetricModel):
         super().__init__(**kwargs)
 
         self.relation = RelationNetwork()
+        self.eps = torch.finfo(torch.float32).eps
 
         if self.rn == 300:
             self.alpha = torch.tensor([alpha], requires_grad=False).to(self.device)
@@ -81,59 +79,49 @@ class TPN(MetricModel):
         return one_hot
 
     def label_propagation(self, support, query, support_label, query_label):
-        eps = np.finfo(float).eps
-
         input_feat = torch.cat((support, query), 0)
         embedding_all = self.emb_func(input_feat).view(-1, 1600)
         num_nodes = embedding_all.shape[0]
 
         if self.rn in [30, 300]:
-            self.sigma = self.relation(embedding_all, self.rn)
-            embedding_all = embedding_all / (self.sigma + eps)
-            embedding_1 = torch.unsqueeze(embedding_all, 1)
-            embedding_2 = torch.unsqueeze(embedding_all, 0)
-            weight_matrix = ((embedding_1 - embedding_2) ** 2).mean(2)
+            self.sigma = self.relation(embedding_all)
+            embedding_all = embedding_all / (self.sigma + self.eps)
+            
+            weight_matrix = torch.cdist(embedding_all, embedding_all, p=2) ** 2
             weight_matrix = torch.exp(-weight_matrix / 2)
 
         if self.topk > 0:
             topk_values, topk_indices = torch.topk(weight_matrix, self.topk)
             mask = torch.zeros_like(weight_matrix)
             mask = mask.scatter(1, topk_indices, 1)
-            mask = ((mask + torch.t(mask)) > 0).type(torch.float32)
+            mask = (mask + mask.t()) > 0
             weight_matrix = weight_matrix * mask
 
         degree_matrix = weight_matrix.sum(0)
-        degree_sqrt_inv = torch.sqrt(1.0 / (degree_matrix + eps))
-        degree_1 = torch.unsqueeze(degree_sqrt_inv, 1).repeat(1, num_nodes)
-        degree_2 = torch.unsqueeze(degree_sqrt_inv, 0).repeat(num_nodes, 1)
-        symmetric_matrix = degree_1 * weight_matrix * degree_2
+        degree_sqrt_inv = torch.rsqrt(degree_matrix + self.eps)  
+        
+        symmetric_matrix = weight_matrix * degree_sqrt_inv.unsqueeze(0) * degree_sqrt_inv.unsqueeze(1)
 
         support_labels = support_label
-        unlabeled_query = torch.zeros(self.way_num * self.query_num, self.way_num).to(
-            self.device
-        )
+        unlabeled_query = torch.zeros(self.way_num * self.query_num, self.way_num, 
+                                    device=self.device, dtype=support_labels.dtype)
         combined_labels = torch.cat((support_labels, unlabeled_query), 0)
-        propagated_labels = torch.matmul(
-            torch.inverse(
-                torch.eye(num_nodes).to(self.device)
-                - self.alpha * symmetric_matrix
-                + eps
-            ),
-            combined_labels,
-        )
-        query_predictions = propagated_labels[self.way_num * self.shot_num :, :]
+        
+        identity_matrix = torch.eye(num_nodes, device=self.device)
+        A = identity_matrix - self.alpha * symmetric_matrix
+        propagated_labels = torch.linalg.solve(A, combined_labels)
+        
+        query_predictions = propagated_labels[self.way_num * self.shot_num:, :]
 
-        ground_truth = torch.argmax(torch.cat((support_label, query_label), 0), 1)
+        all_labels = torch.cat((support_label, query_label), 0)
+        ground_truth = torch.argmax(all_labels, 1)
         criterion = nn.CrossEntropyLoss()
         loss = criterion(propagated_labels, ground_truth)
 
         predicted_query = torch.argmax(query_predictions, 1)
         ground_truth_query = torch.argmax(query_label, 1)
-        correct_predictions = (predicted_query == ground_truth_query).sum()
-        total_queries = self.query_num * self.way_num
-        accuracy = 1.0 * correct_predictions.float() / float(total_queries)
-
-        accuracy = torch.tensor([accuracy])
+        
+        accuracy = (predicted_query == ground_truth_query).float().mean()
 
         return loss, accuracy
 
@@ -152,8 +140,8 @@ class TPN(MetricModel):
             query_target,
         ) = self.split_by_episode(image, mode=2)
 
-        loss_list = []
-        acc_list = []
+        loss_list = torch.zeros(episode_size, device=self.device)
+        acc_list = torch.zeros(episode_size, device=self.device)
 
         for i in range(episode_size):
             support_label_onehot = self.labels_to_onehot(support_target[i])
@@ -166,13 +154,11 @@ class TPN(MetricModel):
                 query_label_onehot,
             )
 
-            loss_list.append(loss)
-            acc_list.append(acc)
+            loss_list[i] = loss
+            acc_list[i] = acc
 
-        loss = torch.stack(loss_list)
-        loss = torch.mean(loss)
-        acc = torch.stack(acc_list)
-        acc = torch.mean(acc) * 100.0
+        loss = loss_list.mean()
+        acc = acc_list.mean() * 100.0
 
         return None, acc, loss
 
@@ -191,7 +177,7 @@ class TPN(MetricModel):
             query_target,
         ) = self.split_by_episode(image, mode=2)
 
-        acc_list = []
+        acc_list = torch.zeros(episode_size, device=self.device)
 
         for i in range(episode_size):
             support_label_onehot = self.labels_to_onehot(support_target[i])
@@ -204,9 +190,8 @@ class TPN(MetricModel):
                 query_label_onehot,
             )
 
-            acc_list.append(acc)
+            acc_list[i] = acc
 
-        acc = torch.stack(acc_list)
-        acc = torch.mean(acc) * 100.0
+        acc = acc_list.mean() * 100.0
 
         return None, acc
