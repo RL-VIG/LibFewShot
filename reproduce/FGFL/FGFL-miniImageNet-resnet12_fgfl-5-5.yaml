@@ -1,0 +1,107 @@
+augment: 1
+augment_methods: []
+augment_times: 1
+augment_times_query: 1
+backbone:
+  kwargs:
+    avg_pool: false
+    keep_prob: 1.0
+  name: fgfl_resnet12
+batch_size: 128
+classifier:
+  kwargs:
+    balance: 0.01
+    lr_mul: 1
+    temperature: 64.0
+    temperature2: 32
+    use_euclidean: true
+  name: GAINModel
+data:
+  test:
+    episode_num: 600
+    episode_size: 100
+    name: MiniImageNet
+    query: 15
+    shot: 5
+    split: test
+    total_categories: 20
+    way: 5
+  train:
+    episode_num: 2000
+    episode_size: 100
+    name: MiniImageNet
+    query: 15
+    shot: 5
+    split: train
+    total_categories: 64
+    way: 5
+  val:
+    episode_num: 600
+    episode_size: 100
+    name: MiniImageNet
+    query: 15
+    shot: 5
+    split: val
+    total_categories: 16
+    way: 5
+data_root: ./data/mini-imagenet
+dataloader_num: 1
+deterministic: true
+device_ids: 3
+episode_size: 1
+epoch: 200
+eval_shot: 5
+fgfl_init_weights: ./saves/mini_feat/feat-5-shot.pth
+fgfl_init_weights2: ./saves/mini_proto_freq/5-shot.pth
+image_size: 84
+includes:
+- headers/data.yaml
+- headers/device.yaml
+- headers/misc.yaml
+- headers/model.yaml
+- headers/optimizer.yaml
+log_interval: 100
+log_level: info
+log_name: null
+log_paramerter: false
+log_pararms: []
+lr_scheduler:
+  kwargs:
+    gamma: 0.5
+    step_size: 10
+  name: StepLR
+max_epoch: 200
+n_gpu: 1
+optimizer:
+  kwargs:
+    lr: 5.0e-05
+    momentum: 0.9
+    weight_decay: 0.0005
+  name: SGD
+parallel_part:
+- emb_func
+port: 52067
+pretrain_path: null
+query_num: 15
+rank: 0
+result_root: ./results
+resume: false
+save_interval: 10
+save_part:
+- emb_func
+save_path: ./results
+seed: 0
+shot_num: 5
+tag: null
+tb_scale: 1.0
+test_episode: 100
+test_epoch: 5
+test_query: 15
+test_shot: 5
+test_way: 5
+train_episode: 100
+use_memory: false
+val_per_epoch: 5
+warmup: 0
+way_num: 5
+workers: 8
