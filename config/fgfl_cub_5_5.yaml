@@ -1,0 +1,102 @@
+# FGFL Configuration for CUB-200-2011 Dataset
+
+augment: 1
+augment_times: 1
+augment_methods: []
+
+backbone:
+  name: fgfl_resnet12
+  kwargs:
+    keep_prob: 1.0
+    avg_pool: false
+
+classifier:
+  name: GAINModel
+  kwargs:
+    temperature: 64.0
+    temperature2: 32
+    balance: 0.01
+    use_euclidean: true
+    lr_mul: 1
+
+data:
+  train:
+    name: CUB                   # ✅ 修改为CUB
+    split: train
+    total_categories: 100       # ✅ CUB训练集类别数
+    episode_size: 100
+    episode_num: 2000
+    way: 5
+    shot: 5
+    query: 15
+
+  val:
+    name: CUB                   # ✅ 修改为CUB
+    split: val
+    total_categories: 50        # ✅ CUB验证集类别数
+    episode_size: 100
+    episode_num: 600
+    way: 5
+    shot: 5
+    query: 15
+
+  test:
+    name: CUB                   # ✅ 修改为CUB
+    split: test
+    total_categories: 50        # ✅ CUB测试集类别数
+    episode_size: 100
+    episode_num: 600
+    way: 5
+    shot: 5
+    query: 15
+
+# ✅ 指定CUB数据集路径（如果不在默认位置）
+data_root: ./data/CUB_200_2011_FewShot
+
+device_ids: 0
+deterministic: true
+episode_size: 1
+
+# ✅ CUB特定的预训练权重
+fgfl_init_weights: ./saves/cub_feat/feat-5-shot.pth
+fgfl_init_weights2: ./saves/cub_proto_freq/5-shot.pth
+
+log_level: info
+log_name: null
+log_pararms: []
+
+n_gpu: 1
+
+optimizer:
+  name: SGD
+  kwargs:
+    lr: 0.00005               # 可能需要调整学习率
+    momentum: 0.9
+    weight_decay: 0.0005
+
+lr_scheduler:
+  name: StepLR
+  kwargs:
+    step_size: 10
+    gamma: 0.5
+
+warmup: 0
+epoch: 200
+max_epoch: 200
+pretrain_path: null
+query_num: 15
+resume: false
+save_interval: 10
+save_path: ./results
+seed: 0
+shot_num: 5
+
+# Test configuration
+test_epoch: 5
+test_query: 15
+test_shot: 5
+test_way: 5
+
+val_per_epoch: 5
+way_num: 5
+eval_shot: 5

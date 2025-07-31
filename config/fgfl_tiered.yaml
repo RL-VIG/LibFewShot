@@ -1,0 +1,124 @@
+# FGFL Configuration for TieredImageNet Dataset
+# TieredImageNet dataset configuration
+
+augment: 1
+augment_times: 1
+augment_methods: []
+
+backbone:
+  name: fgfl_resnet12
+  kwargs:
+    keep_prob: 1.0
+    avg_pool: false
+
+classifier:
+  name: GAINModel
+  kwargs:
+    temperature: 64.0
+    temperature2: 32
+    balance: 0.01
+    use_euclidean: true
+    lr_mul: 1
+
+data_root: ./data/tiered-imagenet
+data:
+  train:
+    name: TieredImageNet
+    split: train
+    total_categories: 351  # TieredImageNet train classes
+    episode_size: 100
+    episode_num: 2000
+    way: 5
+    shot: 5
+    query: 15
+
+  val:
+    name: TieredImageNet
+    split: val
+    total_categories: 97   # TieredImageNet val classes
+    episode_size: 100
+    episode_num: 600
+    way: 5
+    shot: 5
+    query: 15
+
+  test:
+    name: TieredImageNet
+    split: test
+    total_categories: 160  # TieredImageNet test classes
+    episode_size: 100
+    episode_num: 600
+    way: 5
+    shot: 5
+    query: 15
+
+device_ids: 0
+deterministic: true
+episode_size: 1
+
+# FGFL specific weight initialization for TieredImageNet
+fgfl_init_weights: ./saves/tiered_feat/feat-5-shot.pth
+fgfl_init_weights2: ./saves/tiered_proto_freq/5-shot.pth
+
+log_level: info
+log_name: null
+log_pararms: []
+
+n_gpu: 1
+
+optimizer:
+  name: SGD
+  kwargs:
+    lr: 0.00005
+    momentum: 0.9
+    weight_decay: 0.0005
+
+lr_scheduler:
+  name: StepLR
+  kwargs:
+    step_size: 10
+    gamma: 0.5
+
+warmup: 0
+
+epoch: 200
+max_epoch: 200
+
+pretrain_path: null
+
+query_num: 15
+
+resume: false
+
+save_interval: 10
+save_path: ./results
+
+seed: 0
+
+shot_num: 5
+
+# Test configuration
+test_epoch: 5
+test_query: 15
+test_shot: 5
+test_way: 5
+
+val_per_epoch: 5
+
+way_num: 5
+
+# Additional FGFL specific parameters
+eval_shot: 5
+
+# Image size for TieredImageNet (typically 84x84)
+image_size: 84
+
+# Memory usage
+use_memory: true
+
+# Frequency domain processing
+enable_freq_domain: true
+freq_processing:
+  type: "all"  # "all", "low", "mid", "high", "wo_low", "wo_mid", "wo_high"
+  low_freq_cutoff: 8
+  mid_freq_cutoff: 42

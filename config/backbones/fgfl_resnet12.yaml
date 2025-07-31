@@ -1,0 +1,10 @@
+# FGFL-specific ResNet-12 backbone configuration
+# This backbone is designed for FGFL (Frequency-enhanced Graph Few-shot Learning)
+# and returns both feature maps and flattened features for frequency domain processing
+
+backbone:
+  name: fgfl_resnet12
+  kwargs:
+    # Dropout configuration
+    keep_prob: 1.0          # Keep probability for dropout (1.0 = no dropout)
+    avg_pool: false         # FGFL typically uses avg_pool=false for preserving spatial info

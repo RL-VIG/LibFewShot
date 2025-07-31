@@ -1,0 +1,127 @@
+# FGFL Configuration for CUB Dataset
+# CUB-200-2011 dataset configuration
+
+augment: 1
+augment_times: 1
+augment_methods: []
+
+backbone:
+  name: fgfl_resnet12
+  kwargs:
+    keep_prob: 1.0
+    avg_pool: false
+
+classifier:
+  name: GAINModel
+  kwargs:
+    temperature: 64.0
+    temperature2: 32
+    balance: 0.01
+    use_euclidean: true
+    lr_mul: 1
+    image_size: 84 # CUB image size
+    shot_num: 5  # Number of shots for CUB
+
+
+
+data_root: ./data/cub
+data:
+  train:
+    name: CUB
+    split: train
+    total_categories: 100  # CUB train classes
+    episode_size: 100
+    episode_num: 2000
+    way: 5
+    shot: 5
+    query: 15
+
+  val:
+    name: CUB
+    split: val
+    total_categories: 50   # CUB val classes
+    episode_size: 100
+    episode_num: 600
+    way: 5
+    shot: 5
+    query: 15
+
+  test:
+    name: CUB
+    split: test
+    total_categories: 50   # CUB test classes
+    episode_size: 100
+    episode_num: 600
+    way: 5
+    shot: 5
+    query: 15
+
+device_ids: 5
+deterministic: true
+episode_size: 1
+
+# FGFL specific weight initialization for CUB
+# fgfl_init_weights: ./saves/initialization/cub/con-pre.pth
+# fgfl_init_weights2: ./saves/initialization/cub/con-pre.pth
+log_level: info
+log_name: null
+log_pararms: []
+
+n_gpu: 1
+
+optimizer:
+  name: SGD
+  kwargs:
+    lr: 0.00005
+    momentum: 0.9
+    weight_decay: 0.0005
+
+lr_scheduler:
+  name: StepLR
+  kwargs:
+    step_size: 10
+    gamma: 0.5
+
+warmup: 0
+
+epoch: 200
+max_epoch: 200
+
+pretrain_path: null
+
+query_num: 15
+
+resume: false
+
+save_interval: 10
+save_path: ./results
+
+seed: 0
+
+shot_num: 5
+
+# Test configuration
+test_epoch: 5
+test_query: 15
+test_shot: 5
+test_way: 5
+
+val_per_epoch: 5
+
+way_num: 5
+
+# Additional FGFL specific parameters
+eval_shot: 5
+
+# Image size for CUB (typically 224x224)
+image_size: 84
+
+# Memory usage
+use_memory: true
+data_root: ./data/CUB_200_2011_FewShot
+# Frequency domain processing
+enable_freq_domain: true
+freq_processing:
+  type: "all"  # "all", "low", "mid", "high", "wo_low", "wo_mid", "wo_high"
+  low_freq_cutoff: 8
+  mid_freq_cutoff: 42

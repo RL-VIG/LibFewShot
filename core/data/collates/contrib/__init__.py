@@ -128,23 +128,35 @@ def get_mean_std(
 ):
     """Return the corresponding mean and std according to the setting.
 
-
     Args:
         config (dict): A LFS setting dict
         mode (str): mode in train/test/val
 
     Returns:
-        list: A list of specific transforms.
+        tuple: A tuple of (mean, std) lists.
         
     """
-
+    
+    # Default mean and std (MiniImageNet/TieredImageNet)
     MEAN = [120.39586422 / 255.0, 115.59361427 / 255.0, 104.54012653 / 255.0]
     STD = [70.68188272 / 255.0, 68.27635443 / 255.0, 72.54505529 / 255.0]
     
-    if "augment_method" not in config or config["augment_method"] == "NormalAug":
+    # Check dataset name first
+    dataset_name = config.get("data", {}).get(mode, {}).get("name", "MiniImageNet")
+    
+    # Dataset-specific mean and std
+    if dataset_name == "CUB":
+        MEAN = [0.485, 0.456, 0.406]  # ImageNet pretrained mean
+        STD = [0.229, 0.224, 0.225]   # ImageNet pretrained std
+    elif dataset_name in ["MiniImageNet", "TieredImageNet"]:
         MEAN = [120.39586422 / 255.0, 115.59361427 / 255.0, 104.54012653 / 255.0]
         STD = [70.68188272 / 255.0, 68.27635443 / 255.0, 72.54505529 / 255.0]
-    elif config["augment_method"]== "S2M2Augment":
-        MEAN= [0.485, 0.456, 0.406]
-        STD=[0.229, 0.224, 0.225]
-    return MEAN,STD
+    
+    # Override with augment method specific settings if present
+    if "augment_method" in config:
+        if config["augment_method"] == "S2M2Augment":
+            MEAN = [0.485, 0.456, 0.406]
+            STD = [0.229, 0.224, 0.225]
+        # Add other augment method specific settings here if needed
+    
+    return MEAN, STD

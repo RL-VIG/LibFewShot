@@ -1,0 +1,102 @@
+# FGFL (Frequency-enhanced Graph Few-shot Learning) Configuration
+# Based on the command line parameters provided
+
+augment: 1
+augment_times: 1
+augment_methods: []
+
+backbone:
+  name: fgfl_resnet12
+  kwargs:
+    keep_prob: 1.0
+    avg_pool: false
+
+classifier:
+  name: GAINModel
+  kwargs:
+    use_euclidean: true
+data:
+  train:
+    name: MiniImageNet
+    split: train
+    episode_size: 80
+    episode_num: 600
+    way: 5
+    shot: 1
+    query: 15
+
+  val:
+    name: MiniImageNet
+    split: val
+    episode_size: 80
+    episode_num: 600
+    way: 5
+    shot: 1
+    query: 15
+
+  test:
+    name: MiniImageNet
+    split: test
+    episode_size: 80
+    episode_num: 600
+    way: 5
+    shot: 1
+    query: 15
+
+device_ids: 6
+deterministic: true
+episode_size: 1
+
+# FGFL specific weight initialization
+fgfl_init_weights: ./saves/mini_feat/feat-1-shot.pth
+fgfl_init_weights2: ./saves/mini_proto_freq/1-shot.pth
+
+log_level: info
+log_name: null
+log_pararms: []
+
+n_gpu: 1
+
+optimizer:
+  name: SGD
+  kwargs:
+    lr: 0.0002
+    momentum: 0.9
+    weight_decay: 0.0005
+
+lr_scheduler:
+  name: StepLR
+  kwargs:
+    step_size: 20
+    gamma: 0.5
+data_root: ./data/mini-imagenet
+warmup: 0
+
+epoch: 200
+max_epoch: 200
+
+pretrain_path: null
+
+query_num: 15
+
+resume: false
+
+save_interval: 10
+save_path: ./results
+
+seed: 0
+
+shot_num: 1
+
+# Test configuration
+test_epoch: 5
+test_query: 15
+test_shot: 1
+test_way: 5
+
+val_per_epoch: 5
+
+way_num: 5
+
+# Additional FGFL specific parameters
+eval_shot: 1
