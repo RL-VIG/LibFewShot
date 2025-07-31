@@ -85,7 +85,7 @@ def one_hot(indices, depth):
     """
     encoded_indicies = torch.zeros(indices.size() + torch.Size([depth]))
     if indices.is_cuda:
-        encoded_indicies = encoded_indicies.cuda()
+        encoded_indicies = encoded_indicies.to(indices.device)
     index = indices.view(indices.size() + torch.Size([1]))
     encoded_indicies = encoded_indicies.scatter_(1, index, 1)
     return encoded_indicies
@@ -222,6 +222,10 @@ class GAINModel(MetricModel):
         # Initialize parent class
         super(GAINModel, self).__init__(**kwargs)
 
+        # Device management
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        print(f"FGFL Model will use device: {self.device}")
+
         # Model architecture setup
         hdim = 640
         from ..backbone.fgfl_resnet12 import FGFLResNet
@@ -229,6 +233,10 @@ class GAINModel(MetricModel):
         # Dual encoders for spatial and frequency domains
         self.encoder = FGFLResNet()      # Spatial domain encoder
         self.encoder_f = FGFLResNet()    # Frequency domain encoder
+
+        # Move encoders to device
+        self.encoder = self.encoder.to(self.device)
+        self.encoder_f = self.encoder_f.to(self.device)
 
         # Normalization parameters for different preprocessing
         self.mean1 = (120.39586422 / 255.0, 115.59361427 / 255.0, 104.54012653 / 255.0)
@@ -261,10 +269,88 @@ class GAINModel(MetricModel):
         # Multi-head attention for feature enhancement
         self.feat_dim = hdim
         self.slf_attn2 = MultiHeadAttention(1, hdim, hdim, hdim, dropout=0.5)
+        
+        # Move all components to device
+        self.reverse_layer = self.reverse_layer.to(self.device)
+        self.tri_loss_sp = self.tri_loss_sp.to(self.device)
+        self.slf_attn2 = self.slf_attn2.to(self.device)
 
     # ===============================
     # Utility Methods
     # ===============================
+    
+    def to_device(self, tensor):
+        """Move tensor to the model's device."""
+        if tensor is not None:
+            return tensor.to(self.device)
+        return tensor
+    
+    def ensure_device_consistency(self, *tensors):
+        """Ensure all tensors are on the model's device."""
+        result = []
+        for tensor in tensors:
+            if tensor is not None:
+                result.append(tensor.to(self.device))
+            else:
+                result.append(tensor)
+        return result if len(result) > 1 else result[0]
+    
+    def check_device_status(self):
+        """Check and print the device status of all model components."""
+        print(f"=== FGFL Model Device Status ===")
+        print(f"Model device: {self.device}")
+        print(f"CUDA available: {torch.cuda.is_available()}")
+        if torch.cuda.is_available():
+            print(f"Current CUDA device: {torch.cuda.current_device()}")
+            print(f"GPU name: {torch.cuda.get_device_name()}")
+        
+        # Check encoder devices
+        encoder_device = next(self.encoder.parameters()).device
+        encoder_f_device = next(self.encoder_f.parameters()).device
+        print(f"Encoder device: {encoder_device}")
+        print(f"Encoder_f device: {encoder_f_device}")
+        
+        # Check other components
+        try:
+            slf_attn_device = next(self.slf_attn2.parameters()).device
+            print(f"Self-attention device: {slf_attn_device}")
+        except:
+            print("Self-attention device: Not accessible")
+            
+        print(f"================================")
+        
+        return self.device == encoder_device == encoder_f_device
+    
+    def cuda(self, device=None):
+        """Override cuda method to handle all components."""
+        if torch.cuda.is_available():
+            self.device = torch.device('cuda' if device is None else device)
+            super().cuda(device)
+            
+            # Move all components to CUDA
+            self.encoder = self.encoder.cuda(device)
+            self.encoder_f = self.encoder_f.cuda(device)
+            self.reverse_layer = self.reverse_layer.cuda(device)
+            self.tri_loss_sp = self.tri_loss_sp.cuda(device)
+            self.slf_attn2 = self.slf_attn2.cuda(device)
+            
+            print(f"FGFL Model moved to CUDA device: {self.device}")
+        return self
+    
+    def cpu(self):
+        """Override cpu method to handle all components."""
+        self.device = torch.device('cpu')
+        super().cpu()
+        
+        # Move all components to CPU
+        self.encoder = self.encoder.cpu()
+        self.encoder_f = self.encoder_f.cpu()
+        self.reverse_layer = self.reverse_layer.cpu()
+        self.tri_loss_sp = self.tri_loss_sp.cpu()
+        self.slf_attn2 = self.slf_attn2.cpu()
+        
+        print("FGFL Model moved to CPU")
+        return self
     
     def set_lambda(self, para):
         """Dynamically adjust the lambda parameter for gradient reversal."""
@@ -318,7 +404,7 @@ class GAINModel(MetricModel):
 
     def _to_ohe(self, labels, num_classes=5):
         """Convert labels to one-hot encoding."""
-        ohe = torch.zeros((labels.size(0), num_classes))
+        ohe = torch.zeros((labels.size(0), num_classes)).to(self.device)
         for i, label in enumerate(labels):
             ohe[i, label] = 1
         ohe = torch.autograd.Variable(ohe, requires_grad=True)
@@ -331,6 +417,7 @@ class GAINModel(MetricModel):
                 torch.Tensor(np.arange(self.way_num * self.shot_num))
                 .long()
                 .view(1, self.shot_num, self.way_num)
+                .to(self.device)
             )
             query_idx = (
                 torch.Tensor(np.arange(
@@ -339,12 +426,14 @@ class GAINModel(MetricModel):
                 ))
                 .long()
                 .view(1, self.query_num, self.way_num)
+                .to(self.device)
             )
         else:
             support_idx = (
                 torch.Tensor(np.arange(self.test_way * self.test_shot))
                 .long()
                 .view(1, self.test_shot, self.test_way)
+                .to(self.device)
             )
             query_idx = (
                 torch.Tensor(np.arange(
@@ -353,6 +442,7 @@ class GAINModel(MetricModel):
                 ))
                 .long()
                 .view(1, self.test_query, self.test_way)
+                .to(self.device)
             )
         return support_idx, query_idx
 
@@ -377,13 +467,13 @@ class GAINModel(MetricModel):
                 self.test_query * 2
             )
 
-        # Convert to LongTensor
-        labels = [label.type(torch.LongTensor), label_aux.type(torch.LongTensor),
-                 label_shot.type(torch.LongTensor), label_q2.type(torch.LongTensor)]
-        
-        # Move to GPU if available
-        if torch.cuda.is_available():
-            labels = [lab.cuda() for lab in labels]
+        # Convert to LongTensor and move to device
+        labels = [
+            label.type(torch.LongTensor).to(self.device),
+            label_aux.type(torch.LongTensor).to(self.device),
+            label_shot.type(torch.LongTensor).to(self.device),
+            label_q2.type(torch.LongTensor).to(self.device)
+        ]
 
         return labels
 
@@ -393,65 +483,69 @@ class GAINModel(MetricModel):
     
     def denorm(self, tensor):
         """Denormalize tensor using mean and std."""
+        device = tensor.device if tensor.device.type != 'cpu' else self.device
         t_mean = (
             torch.FloatTensor(self.mean)
             .view(3, 1, 1)
             .expand(3, self.img_size, self.img_size)
-            .cuda(device=tensor.device)
+            .to(device)
         )
         t_std = (
             torch.FloatTensor(self.std)
             .view(3, 1, 1)
             .expand(3, self.img_size, self.img_size)
-            .cuda(device=tensor.device)
+            .to(device)
         )
         return tensor * t_std + t_mean
 
     def fnorm(self, tensor):
         """Normalize tensor using mean and std."""
+        device = tensor.device if tensor.device.type != 'cpu' else self.device
         t_mean = (
             torch.FloatTensor(self.mean)
             .view(3, 1, 1)
             .expand(3, self.img_size, self.img_size)
-            .cuda(device=tensor.device)
+            .to(device)
         )
         t_std = (
             torch.FloatTensor(self.std)
             .view(3, 1, 1)
             .expand(3, self.img_size, self.img_size)
-            .cuda(device=tensor.device)
+            .to(device)
         )
         return (tensor - t_mean) / t_std
 
     def denorms(self, tensor):
         """Denormalize tensor using mean1 and std1."""
+        device = tensor.device if tensor.device.type != 'cpu' else self.device
         t_mean = (
             torch.FloatTensor(self.mean1)
             .view(3, 1, 1)
             .expand(3, self.img_size, self.img_size)
-            .cuda(device=tensor.device)
+            .to(device)
         )
         t_std = (
             torch.FloatTensor(self.std1)
             .view(3, 1, 1)
             .expand(3, self.img_size, self.img_size)
-            .cuda(device=tensor.device)
+            .to(device)
         )
         return tensor * t_std + t_mean
 
     def fnorms(self, tensor):
         """Normalize tensor using mean1 and std1."""
+        device = tensor.device if tensor.device.type != 'cpu' else self.device
         t_mean = (
             torch.FloatTensor(self.mean1)
             .view(3, 1, 1)
             .expand(3, self.img_size, self.img_size)
-            .cuda(device=tensor.device)
+            .to(device)
         )
         t_std = (
             torch.FloatTensor(self.std1)
             .view(3, 1, 1)
             .expand(3, self.img_size, self.img_size)
-            .cuda(device=tensor.device)
+            .to(device)
         )
         return (tensor - t_mean) / t_std
 
@@ -461,6 +555,9 @@ class GAINModel(MetricModel):
     
     def set_forward(self, x, **kwargs):
         """Forward pass for inference."""
+        # Ensure input is on the correct device
+        x = x.to(self.device)
+        
         q_lab, labels, s_lab, label_q2 = self.prepare_label()
         support_idx, query_idx = self.split_instances(x)
         
@@ -472,6 +569,9 @@ class GAINModel(MetricModel):
 
     def set_forward_loss(self, x, **kwargs):
         """Forward pass for training with loss computation."""
+        # Ensure input is on the correct device
+        x = x.to(self.device)
+        
         q_lab, labels, s_lab, label_q2 = self.prepare_label()
         support_idx, query_idx = self.split_instances(x)
         
@@ -570,11 +670,11 @@ class GAINModel(MetricModel):
             )
 
             if self.training:
-                q_ohe = self._to_ohe(s_lab, self.way_num).cuda()
-                q_lab = self._to_ohe(labels, self.way_num).cuda()
+                q_ohe = self._to_ohe(s_lab, self.way_num)
+                q_lab = self._to_ohe(labels, self.way_num)
                 q_ohe = torch.cat([q_ohe, q_lab], dim=0)
             else:
-                q_ohe = self._to_ohe(s_lab, self.test_way).cuda()
+                q_ohe = self._to_ohe(s_lab, self.test_way)
                 q_ohe = torch.cat([q_ohe, probs.softmax(1)], dim=0)
 
             gradient_q = (logits_fsf * self.temp * q_ohe).sum(dim=1)
@@ -918,7 +1018,7 @@ class GAINModel(MetricModel):
             [num_batch, 1, 1]
         )
         if torch.cuda.is_available():
-            label_support_onehot = label_support_onehot.cuda()
+            label_support_onehot = label_support_onehot.to(x_shot.device)
 
         proto_shot = x_shot.mean(dim=1)
         if self.use_euclidean:
