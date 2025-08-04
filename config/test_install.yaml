@@ -1,0 +1,26 @@
+includes:
+  - headers/data.yaml
+  - headers/device.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
+  - classifiers/Proto.yaml
+  - backbones/Conv64F.yaml
+
+
+device_ids: 0
+way_num: 5
+shot_num: 1
+query_num: 15
+episode_size: 1
+train_episode: 100
+test_episode: 100
+
+backbone:
+  name: Conv64F
+  kwargs:
+    is_flatten: True
+    is_feature: False
+    leaky_relu: False
+    negative_slope: 0.2
+    last_pool: True
