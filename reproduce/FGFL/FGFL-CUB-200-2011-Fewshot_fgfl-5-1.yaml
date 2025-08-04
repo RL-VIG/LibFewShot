@@ -1,5 +1,5 @@
 augment: 1
-augment_methods: []
+augment_methods: S2M2Augment
 augment_times: 1
 augment_times_query: 1
 backbone:

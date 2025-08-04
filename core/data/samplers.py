@@ -10,11 +10,12 @@ def get_sampler(dataset, few_shot, distribute, mode, config):
         # Check if FGFL mode is enabled by classifier name
         classifier_name = config.get("classifier", {}).get("name", "")
         use_fgfl = "GAIN" in classifier_name.upper()
-
         print(f"Sampler debug: classifier_name={classifier_name}, use_fgfl={use_fgfl}")
 
         if distribute:
-            sampler = DistributedCategoriesSampler(
+            # Choose distributed sampler based on FGFL mode
+            sampler_class = FGFLDistributedCategoriesSampler if use_fgfl else DistributedCategoriesSampler
+            sampler = sampler_class(
                 label_list=dataset.label_list,
                 label_num=dataset.label_num,
                 episode_size=config["episode_size"] // config["n_gpu"],
@@ -27,11 +28,9 @@ def get_sampler(dataset, few_shot, distribute, mode, config):
                     // config["n_gpu"]
                 ),
                 way_num=config["way_num"] if mode == "train" else config["test_way"],
-                image_num=(
-                    config["shot_num"] + config["query_num"]
-                    if mode == "train"
-                    else config["test_shot"] + config["test_query"]
-                ),
+                image_num=config["shot_num"] + config["query_num"]
+                if mode == "train"
+                else config["test_shot"] + config["test_query"],
                 rank=config["rank"],
                 seed=0,
                 world_size=config["n_gpu"],
@@ -49,11 +48,9 @@ def get_sampler(dataset, few_shot, distribute, mode, config):
                     else config["test_episode"]
                 ),
                 way_num=config["way_num"] if mode == "train" else config["test_way"],
-                image_num=(
-                    config["shot_num"] + config["query_num"]
-                    if mode == "train"
-                    else config["test_shot"] + config["test_query"]
-                ),
+                image_num=config["shot_num"] + config["query_num"]
+                if mode == "train"
+                else config["test_shot"] + config["test_query"],
             )
     else:
         if distribute:
@@ -120,27 +117,19 @@ class CategoriesSampler(Sampler):
                 pos = torch.randperm(idxes.size(0))[: self.image_num]
                 batch.append(idxes[pos])
             if len(batch) == self.episode_size * self.way_num:
-                # TODO
                 batch = torch.stack(batch).reshape(-1)
                 yield batch
                 batch = []
 
 
 class FGFLCompatibleSampler(CategoriesSampler):
-    """FGFL兼容的sampler，使用.t().reshape(-1)来保持原始行为
 
-    FGFL使用shot-wise的数据组织方式，这对于其对比学习和triplet loss
-    训练策略是必要的。
-    """
 
     def __iter__(self):
         """Random sample a FSL task batch with FGFL-compatible ordering.
 
         FGFL ordering: shot-wise organization
-        - 第1组包含所有类别的第1个样本
-        - 第2组包含所有类别的第2个样本
-        - 这种方式有利于类间对比学习
-
+        (e.g., [shot1_class1, shot1_class2, ..., shotN_class1, shotN_class2]).
         Yields:
             torch.Tensor: The stacked tensor with FGFL-compatible ordering.
         """
@@ -152,25 +141,7 @@ class FGFLCompatibleSampler(CategoriesSampler):
                 pos = torch.randperm(idxes.size(0))[: self.image_num]
                 batch.append(idxes[pos])
             if len(batch) == self.episode_size * self.way_num:
-                # 调试信息 - 只在第一个episode显示
-                if i_batch == 0:
-                    print("=== FGFL Sampler Debug ===")
-                    print(f"Episode {i_batch}: Selected classes {classes}")
-                    before_transpose = torch.stack(batch)
-                    print(f"Before transpose shape: {before_transpose.shape}")
-                    print(
-                        f"Before transpose (class-wise): "
-                        f"{before_transpose.reshape(-1)[:10]}"
-                    )
-
-                # 使用FGFL的reshape方式: transpose + reshape
-                # 这会改变数据组织从class-wise到shot-wise
                 batch = torch.stack(batch).t().reshape(-1)
-
-                # if i_batch == 0:
-                #     print(f"After transpose (shot-wise): {batch[:10]}")
-                #     print("FGFL shot-wise: 前5个来自各类第1个样本")
-                #     print("=========================")
 
                 yield batch
                 batch = []
@@ -271,3 +242,37 @@ class DistributedCategoriesSampler(Sampler):
         # self.cls_g.manual_seed(self.seed + self.epoch)
         # # FIXME not so random, 10000 means no method could train 10000 epochs, so cls_g will not have the same seed with img_g
         # self.img_g.manual_seed(self.seed + self.epoch + 10000)
+
+
+class FGFLDistributedCategoriesSampler(DistributedCategoriesSampler):
+    """A Distributed Sampler for FGFL-compatible FSL task sampling.
+    
+    This sampler uses shot-wise organization instead of class-wise organization,
+    which is required for FGFL methods.
+    """
+
+    def __iter__(self):
+        """Random sample a FSL task batch with FGFL-compatible ordering.
+
+        FGFL ordering: shot-wise organization
+        (e.g., [shot1_class1, shot1_class2, ..., shotN_class1, shotN_class2]).
+        
+        Yields:
+            torch.Tensor: The stacked tensor with FGFL-compatible ordering.
+        """
+        batch = []
+        for i_batch in range(self.episode_num):
+            classes = torch.randperm(len(self.idx_list), generator=self.cls_g)[
+                : self.way_num
+            ]
+            for c in classes:
+                idxes = self.idx_list[c.item()]
+                pos = torch.randperm(idxes.size(0), generator=self.img_g)[
+                    : self.image_num
+                ]
+                batch.append(idxes[pos])
+            if len(batch) == self.episode_size * self.way_num:
+                # FGFL-compatible ordering: transpose then reshape
+                batch = torch.stack(batch).t().reshape(-1)
+                yield batch
+                batch = []

@@ -25,7 +25,6 @@ class DropBlock(nn.Module):
                     width - (self.block_size - 1),
                 )
             )
-            # 确保mask在与x相同的设备上
             mask = mask.to(x.device)
             block_mask = self._compute_block_mask(mask)
             countM = (

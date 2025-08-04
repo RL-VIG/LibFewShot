@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import itertools
-from collections.abc import Iterable
+from collections import Iterable
 
 import torch
 
@@ -137,17 +137,17 @@ class FewShotAugCollateFunction(object):
                 cls[1] = cls[1] * self.times_q  # aug query
 
             # flatten and apply trfms
-            flat = lambda t: (
-                [x for sub in t for x in flat(sub)] if isinstance(t, Iterable) else [t]
+            flat = (
+                lambda t: [x for sub in t for x in flat(sub)]
+                if isinstance(t, Iterable)
+                else [t]
             )
             images = flat(images_split_by_label_type)  # 1111111111122222222222
             # images = [self.trfms(image) for image in images]  # list of tensors([c, h, w])
             images = [
-                (
-                    self.trfms_support(image)
-                    if index % (self.shot_aug + self.query_aug) < self.shot_aug
-                    else self.trfms_query(image)
-                )
+                self.trfms_support(image)
+                if index % (self.shot_aug + self.query_aug) < self.shot_aug
+                else self.trfms_query(image)
                 for index, image in enumerate(images)
             ]  # list of tensors([c, h, w])
             images = torch.stack(images)  # [b', c, h, w] <- b' = b after aug

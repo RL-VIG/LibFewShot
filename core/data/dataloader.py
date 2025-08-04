@@ -36,9 +36,9 @@ def get_dataloader(config, mode, model_type, distribute):
 
     # Add user's trfms in get_augment_method()
 
-    # get mean std
-    MEAN, STD = get_mean_std(config, mode)
-
+    #get mean std
+    MEAN,STD=get_mean_std(config, mode)
+    
     trfms_list = get_augment_method(config, mode)
 
     trfms_list.append(transforms.ToTensor())
@@ -90,15 +90,18 @@ def get_dataloader(config, mode, model_type, distribute):
         data_scale = 1 if config["n_gpu"] == 0 else config["n_gpu"]
         workers = config["workers"] // data_scale
         if workers == 0:
-            print("Warning: with zero workers, the training phase will be very slow")
+            print(
+                "with zero workers, the training phase will be very slow",
+                level="warning",
+            )
 
         dataloader = MultiEpochsDataLoader(
             dataset=dataset,
             sampler=None if few_shot else sampler,
             batch_sampler=sampler if few_shot else None,
-            batch_size=(
-                1 if few_shot else (config["batch_size"] // data_scale)
-            ),  # batch_size is default set to 1
+            batch_size=1
+            if few_shot
+            else (config["batch_size"] // data_scale),  # batch_size is default set to 1
             shuffle=False if few_shot or distribute else True,
             num_workers=workers,  # num_workers for each gpu
             drop_last=False if few_shot else True,

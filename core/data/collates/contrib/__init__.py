@@ -141,22 +141,10 @@ def get_mean_std(
     MEAN = [120.39586422 / 255.0, 115.59361427 / 255.0, 104.54012653 / 255.0]
     STD = [70.68188272 / 255.0, 68.27635443 / 255.0, 72.54505529 / 255.0]
     
-    # Check dataset name first
-    dataset_name = config.get("data", {}).get(mode, {}).get("name", "MiniImageNet")
-    
-    # Dataset-specific mean and std
-    if dataset_name == "CUB":
-        MEAN = [0.485, 0.456, 0.406]  # ImageNet pretrained mean
-        STD = [0.229, 0.224, 0.225]   # ImageNet pretrained std
-    elif dataset_name in ["MiniImageNet", "TieredImageNet"]:
+    if "augment_method" not in config or config["augment_method"] == "NormalAug":
         MEAN = [120.39586422 / 255.0, 115.59361427 / 255.0, 104.54012653 / 255.0]
         STD = [70.68188272 / 255.0, 68.27635443 / 255.0, 72.54505529 / 255.0]
-    
-    # Override with augment method specific settings if present
-    if "augment_method" in config:
-        if config["augment_method"] == "S2M2Augment":
-            MEAN = [0.485, 0.456, 0.406]
-            STD = [0.229, 0.224, 0.225]
-        # Add other augment method specific settings here if needed
-    
-    return MEAN, STD
+    elif config["augment_method"]== "S2M2Augment":
+        MEAN= [0.485, 0.456, 0.406]
+        STD=[0.229, 0.224, 0.225]
+    return MEAN,STD

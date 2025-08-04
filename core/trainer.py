@@ -74,7 +74,6 @@ class Trainer(object):
         """
         The normal train loop: train-val-test and save model when val-acc increases.
         """
-
         experiment_begin = time()
         for epoch_idx in range(self.from_epoch + 1, self.config["epoch"]):
             if self.distribute and self.model_type == ModelType.FINETUNING:
@@ -687,16 +686,12 @@ class Trainer(object):
             rank,
             config["device_ids"],
             config["n_gpu"],
-            backend=(
-                "nccl"
-                if "dist_backend" not in self.config
-                else self.config["dist_backend"]
-            ),
-            dist_url=(
-                "tcp://127.0.0.1:" + str(config["port"])
-                if "dist_url" not in self.config
-                else self.config["dist_url"]
-            ),
+            backend="nccl"
+            if "dist_backend" not in self.config
+            else self.config["dist_backend"],
+            dist_url="tcp://127.0.0.1:" + str(config["port"])
+            if "dist_url" not in self.config
+            else self.config["dist_url"],
         )
         torch.cuda.set_device(self.rank)
 
