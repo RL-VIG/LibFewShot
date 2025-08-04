@@ -128,16 +128,16 @@ def get_mean_std(
 ):
     """Return the corresponding mean and std according to the setting.
 
+
     Args:
         config (dict): A LFS setting dict
         mode (str): mode in train/test/val
 
     Returns:
-        tuple: A tuple of (mean, std) lists.
+        list: A list of specific transforms.
         
     """
-    
-    # Default mean and std (MiniImageNet/TieredImageNet)
+
     MEAN = [120.39586422 / 255.0, 115.59361427 / 255.0, 104.54012653 / 255.0]
     STD = [70.68188272 / 255.0, 68.27635443 / 255.0, 72.54505529 / 255.0]
     
