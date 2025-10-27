@@ -25,8 +25,7 @@ class DropBlock(nn.Module):
                     width - (self.block_size - 1),
                 )
             )
-            if torch.cuda.is_available():
-                mask = mask.cuda()
+            mask = mask.to(x.device)
             block_mask = self._compute_block_mask(mask)
             countM = (
                 block_mask.size()[0]
@@ -60,8 +59,8 @@ class DropBlock(nn.Module):
         offsets = torch.cat(
             (torch.zeros(self.block_size**2, 2).long(), offsets.long()), 1
         )
-        if torch.cuda.is_available():
-            offsets = offsets.cuda()
+        # 确保offsets在与mask相同的设备上
+        offsets = offsets.to(mask.device)
 
         if nr_blocks > 0:
             non_zero_idxs = non_zero_idxs.repeat(self.block_size**2, 1)

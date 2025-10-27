@@ -6,6 +6,14 @@ import pickle
 from PIL import Image
 from torch.utils.data import Dataset
 
+try:
+    import torch_dct as dct
+
+    FGFL_DCT_AVAILABLE = True
+except ImportError:
+    FGFL_DCT_AVAILABLE = False
+    print("torch_dct not available. FGFL frequency domain processing disabled.")
+
 
 def pil_loader(path):
     # open path as file to avoid ResourceWarning
@@ -182,4 +190,183 @@ class GeneralDataset(Dataset):
             data = self.trfms(data)
         label = self.label_list[idx]
 
+        return data, label
+
+
+class FGFLDataset(GeneralDataset):
+    """
+    FGFL Dataset with frequency domain processing capability.
+    Extends GeneralDataset to support DCT-based frequency analysis.
+    """
+
+    def __init__(
+        self,
+        data_root="",
+        mode="train",
+        loader=default_loader,
+        use_memory=True,
+        trfms=None,
+        freq_trfms=None,
+        enable_freq_domain=True,
+        freq_config=None,
+        dataset_name="MiniImageNet",
+    ):
+        """Initialize FGFLDataset.
+
+        Args:
+            freq_trfms: Additional transforms applied after frequency domain
+            enable_freq_domain (bool): Whether to enable frequency processing
+            freq_config (dict): Frequency processing configuration
+            dataset_name (str): Name of the dataset ("MiniImageNet", "CUB", "TieredImageNet")
+        """
+        self.dataset_name = dataset_name
+        super().__init__(data_root, mode, loader, use_memory, trfms)
+        self.freq_trfms = freq_trfms
+        self.enable_freq_domain = enable_freq_domain and FGFL_DCT_AVAILABLE
+        self.freq_config = freq_config or {}
+
+        if self.enable_freq_domain and not FGFL_DCT_AVAILABLE:
+            print("Warning: torch_dct not available, disabling frequency")
+            self.enable_freq_domain = False
+
+    def _get_dataset_config(self):
+        """Get dataset-specific configuration."""
+        dataset_configs = {
+            "MiniImageNet": {
+                "image_dir": "images",
+                "csv_format": "standard",  # filename, class
+                "mean": [120.39586422 / 255.0, 115.59361427 / 255.0, 104.54012653 / 255.0],
+                "std": [70.68188272 / 255.0, 68.27635443 / 255.0, 72.54505529 / 255.0],
+            },
+            "CUB": {
+                "image_dir": "images", 
+                "csv_format": "standard",  # filename, class
+                "mean": [0.485, 0.456, 0.406],  # ImageNet pretrained mean
+                "std": [0.229, 0.224, 0.225],   # ImageNet pretrained std
+            },
+            "TieredImageNet": {
+                "image_dir": "images",
+                "csv_format": "standard",  # filename, class
+                "mean": [120.39586422 / 255.0, 115.59361427 / 255.0, 104.54012653 / 255.0],
+                "std": [70.68188272 / 255.0, 68.27635443 / 255.0, 72.54505529 / 255.0],
+            }
+        }
+        return dataset_configs.get(self.dataset_name, dataset_configs["MiniImageNet"])
+
+    def _generate_data_list(self):
+        """Parse dataset files based on dataset type."""
+        dataset_config = self._get_dataset_config()
+        
+        if dataset_config["csv_format"] == "standard":
+            return self._generate_csv_data_list(dataset_config)
+        else:
+            # For future extension to other formats
+            return super()._generate_data_list()
+
+    def _generate_csv_data_list(self, dataset_config):
+        """Parse a CSV file for the specific dataset format."""
+        meta_csv = os.path.join(self.data_root, "{}.csv".format(self.mode))
+        
+        data_list = []
+        label_list = []
+        class_label_dict = dict()
+        
+        with open(meta_csv) as f_csv:
+            f_train = csv.reader(f_csv, delimiter=",")
+            for row in f_train:
+                if f_train.line_num == 1:
+                    continue
+                
+                # Handle different CSV formats
+                if len(row) >= 2:
+                    image_name, image_class = row[0], row[1]
+                else:
+                    continue
+                    
+                if image_class not in class_label_dict:
+                    class_label_dict[image_class] = len(class_label_dict)
+                image_label = class_label_dict[image_class]
+                data_list.append(image_name)
+                label_list.append(image_label)
+
+        return data_list, label_list, class_label_dict
+
+    def _save_cache(self, cache_path):
+        """Save a pickle cache to the disk with dataset-specific image path."""
+        data_list, label_list, class_label_dict = self._generate_data_list()
+        dataset_config = self._get_dataset_config()
+        
+        # Load images with dataset-specific path
+        data_list = [
+            self.loader(os.path.join(self.data_root, dataset_config["image_dir"], path))
+            for path in data_list
+        ]
+
+        with open(cache_path, "wb") as fout:
+            pickle.dump((data_list, label_list, class_label_dict), fout)
+        return data_list, label_list, class_label_dict
+
+    def _apply_frequency_filter(self, cc):
+        """Apply frequency filtering based on configuration."""
+        freq_type = self.freq_config.get("type", "all")
+        low_cutoff = self.freq_config.get("low_freq_cutoff", 8)
+        mid_cutoff = self.freq_config.get("mid_freq_cutoff", 42)
+
+        if freq_type == "low":
+            # Only low frequency
+            cc[:, low_cutoff:, low_cutoff:] = 0
+        elif freq_type == "mid":
+            # Only mid frequency
+            cc[:, :low_cutoff, :low_cutoff] = 0
+            cc[:, mid_cutoff:, mid_cutoff:] = 0
+        elif freq_type == "high":
+            # Only high frequency
+            cc[:, :mid_cutoff, :mid_cutoff] = 0
+        elif freq_type == "wo_low":
+            # Without low frequency
+            cc[:, :low_cutoff, :low_cutoff] = 0
+        elif freq_type == "wo_mid":
+            # Without mid frequency
+            cc[:, low_cutoff:mid_cutoff, low_cutoff:mid_cutoff] = 0
+        elif freq_type == "wo_high":
+            # Without high frequency
+            cc[:, mid_cutoff:, mid_cutoff:] = 0
+        # "all" means no filtering
+
+        return cc
+
+    def __getitem__(self, idx):
+        """Return a data item with optional frequency domain processing."""
+        dataset_config = self._get_dataset_config()
+        
+        if self.use_memory:
+            data = self.data_list[idx]
+        else:
+            image_name = self.data_list[idx]
+            image_path = os.path.join(self.data_root, dataset_config["image_dir"], image_name)
+            data = self.loader(image_path)
+
+        # Do NOT apply transforms here - they will be handled by collate_fn
+        # Only apply frequency domain processing if enabled
+        if self.enable_freq_domain:
+            # Convert PIL image to tensor for DCT processing
+            import torchvision.transforms as T
+
+            to_tensor = T.ToTensor()
+            data_tensor = to_tensor(data)
+
+            # Convert to frequency domain
+            cc = dct.dct_2d(data_tensor, norm="ortho")
+
+            # Apply frequency filtering
+            cc = self._apply_frequency_filter(cc)
+
+            # Convert back to spatial domain
+            data_tensor = dct.idct_2d(cc, norm="ortho")
+
+            # Convert back to PIL for transforms in collate_fn
+            to_pil = T.ToPILImage()
+            data = to_pil(data_tensor)
+
+        label = self.label_list[idx]
         return data, label

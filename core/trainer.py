@@ -166,9 +166,25 @@ class Trainer(object):
 
             # calculate the output
             calc_begin = time()
-            output, acc, loss = self.model(
-                [elem for each_batch in batch for elem in each_batch]
+
+            # Handle data input based on model type
+            # For FGFL (GAINModel), pass only image data
+            is_fgfl = hasattr(self.model, "__class__") and "GAIN" in str(
+                self.model.__class__.__name__
             )
+
+            if is_fgfl:
+                # FGFL expects only image tensor
+                images = batch[0][0]  # Get images from batch
+                images = images.to(
+                    self.device
+                )  # Ensure images are on the correct device
+                output, acc, loss = self.model(images)
+            else:
+                # Standard LibFewShot data handling
+                output, acc, loss = self.model(
+                    [elem for each_batch in batch for elem in each_batch]
+                )
 
             # compute gradients
             self.optimizer.zero_grad()
@@ -259,9 +275,23 @@ class Trainer(object):
 
                 # calculate the output
                 calc_begin = time()
-                output, acc = self.model(
-                    [elem for each_batch in batch for elem in each_batch]
+
+                # Handle data input based on model type
+                # For FGFL (GAINModel), pass only image data
+                is_fgfl = hasattr(self.model, "__class__") and "GAIN" in str(
+                    self.model.__class__.__name__
                 )
+
+                if is_fgfl:
+                    # FGFL expects only image tensor
+                    images = batch[0][0]  # Get images from batch
+                    images = images.to(self.device)
+                    output, acc = self.model(images)
+                else:
+                    # Standard LibFewShot data handling
+                    output, acc = self.model(
+                        [elem for each_batch in batch for elem in each_batch]
+                    )
                 meter.update("calc_time", time() - calc_begin)
 
                 # measure accuracy and record loss
@@ -436,7 +466,31 @@ class Trainer(object):
                 print("Missing keys:{}".format(msg.missing_keys), level="warning")
             if len(msg.unexpected_keys) != 0:
                 print("Unexpected keys:{}".format(msg.unexpected_keys), level="warning")
+        if (
+            "fgfl_init_weights" in self.config
+            and self.config["fgfl_init_weights"] is not None
+        ):
+            print(
+                "load FGFL encoder weights from {}".format(
+                    self.config["fgfl_init_weights"]
+                )
+            )
+            self._load_fgfl_weights(
+                model, self.config["fgfl_init_weights"], target="encoder"
+            )
 
+        if (
+            "fgfl_init_weights2" in self.config
+            and self.config["fgfl_init_weights2"] is not None
+        ):
+            print(
+                "load FGFL encoder_f weights from {}".format(
+                    self.config["fgfl_init_weights2"]
+                )
+            )
+            self._load_fgfl_weights(
+                model, self.config["fgfl_init_weights2"], target="encoder_f"
+            )
         if self.config["resume"]:
             resume_path = os.path.join(
                 self.config["resume_path"], "checkpoints", "model_last.pth"
@@ -478,6 +532,58 @@ class Trainer(object):
             model = model.to(self.rank)
 
             return model, model.model_type
+
+    def _load_fgfl_weights(self, model, weight_path, target="encoder"):
+
+        try:
+            model_dict = model.state_dict()
+            pretrained_dict = torch.load(weight_path, map_location=self.device)
+
+            # 处理FGFL的权重格式
+            if "params" in pretrained_dict:
+                pretrained_dict = pretrained_dict["params"]
+
+            # 根据backbone类型调整键名
+            if (
+                hasattr(self.config["backbone"], "name")
+                and self.config["backbone"]["name"] == "ConvNet"
+            ):
+                pretrained_dict = {
+                    f"encoder.{k}": v for k, v in pretrained_dict.items()
+                }
+
+            # 如果目标是encoder_f，则进行键名转换
+            if target == "encoder_f":
+                pretrained_dict = {
+                    k.replace("encoder", "encoder_f"): v
+                    for k, v in pretrained_dict.items()
+                }
+
+            # 过滤权重：只保留模型中存在且不包含fc层的权重
+            filtered_dict = {
+                k: v
+                for k, v in pretrained_dict.items()
+                if k in model_dict and "fc" not in k
+            }
+
+            # 更新模型权重
+            model_dict.update(filtered_dict)
+            msg = model.load_state_dict(model_dict, strict=False)
+
+            print(f"✅ Successfully loaded {len(filtered_dict)} weights for {target}")
+
+            if len(msg.missing_keys) != 0:
+                print(f"Missing keys for {target}: {msg.missing_keys}", level="warning")
+            if len(msg.unexpected_keys) != 0:
+                print(
+                    f"Unexpected keys for {target}: {msg.unexpected_keys}",
+                    level="warning",
+                )
+
+        except Exception as e:
+            print(
+                f"❌ Failed to load FGFL weights for {target}: {str(e)}", level="error"
+            )
 
     def _init_optim(self, config):
         """

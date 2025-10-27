@@ -1,0 +1,107 @@
+augment: 1
+augment_methods: []
+augment_times: 1
+augment_times_query: 1
+backbone:
+  kwargs:
+    avg_pool: false
+    keep_prob: 1.0
+  name: fgfl_resnet12
+batch_size: 128
+classifier:
+  kwargs:
+    balance: 0.1
+    lr_mul: 1
+    temperature: 64.0
+    temperature2: 32
+    use_euclidean: true
+  name: GAINModel
+data:
+  test:
+    episode_num: 600
+    episode_size: 100
+    name: TieredImageNet
+    query: 15
+    shot: 1
+    split: test
+    total_categories: 160
+    way: 5
+  train:
+    episode_num: 2000
+    episode_size: 100
+    name: TieredImageNet
+    query: 15
+    shot: 1
+    split: train
+    total_categories: 351
+    way: 5
+  val:
+    episode_num: 600
+    episode_size: 100
+    name: TieredImageNet
+    query: 15
+    shot: 1
+    split: val
+    total_categories: 97
+    way: 5
+data_root: ./data/tiered_imagenet
+dataloader_num: 1
+deterministic: true
+device_ids: 2
+episode_size: 1
+epoch: 200
+eval_shot: 1
+fgfl_init_weights: ./saves/tiered_feat/feat-1-shot.pth
+fgfl_init_weights2: ./saves/tiered_proto_freq/tiered-pre.pth
+image_size: 84
+includes:
+- headers/data.yaml
+- headers/device.yaml
+- headers/misc.yaml
+- headers/model.yaml
+- headers/optimizer.yaml
+log_interval: 100
+log_level: info
+log_name: null
+log_paramerter: false
+log_pararms: []
+lr_scheduler:
+  kwargs:
+    gamma: 0.5
+    step_size: 20
+  name: StepLR
+max_epoch: 200
+n_gpu: 1
+optimizer:
+  kwargs:
+    lr: 0.0001
+    momentum: 0.9
+    weight_decay: 0.0005
+  name: SGD
+parallel_part:
+- emb_func
+port: 40252
+pretrain_path: null
+query_num: 15
+rank: 0
+result_root: ./results
+resume: false
+save_interval: 10
+save_part:
+- emb_func
+save_path: ./results
+seed: 0
+shot_num: 1
+tag: null
+tb_scale: 1.0
+test_episode: 100
+test_epoch: 5
+test_query: 15
+test_shot: 1
+test_way: 5
+train_episode: 100
+use_memory: false
+val_per_epoch: 5
+warmup: 0
+way_num: 5
+workers: 8

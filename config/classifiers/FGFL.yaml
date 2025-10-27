@@ -1,0 +1,6 @@
+# FGFL (Frequency-enhanced Graph Few-shot Learning) classifier configuration
+# This classifier integrates frequency domain processing with graph-based learning
+
+classifier:
+  name: GAINMODEL
+  kwargs:

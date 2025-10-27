@@ -4,8 +4,8 @@ from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 from torchvision import transforms
 
-from core.data.dataset import GeneralDataset
-from .collates import get_collate_function, get_augment_method,get_mean_std
+from core.data.dataset import GeneralDataset, FGFLDataset
+from .collates import get_collate_function, get_augment_method, get_mean_std
 from .samplers import DistributedCategoriesSampler, get_sampler
 from ..utils import ModelType
 
@@ -44,12 +44,34 @@ def get_dataloader(config, mode, model_type, distribute):
     trfms_list.append(transforms.ToTensor())
     trfms_list.append(transforms.Normalize(mean=MEAN, std=STD))
     trfms = transforms.Compose(trfms_list)
+    # TODO
+    classifier_name = config.get("classifier", {}).get("name", "")
+    use_fgfl = "GAIN" in classifier_name.upper()
+    # Check if FGFL mode is enabled
+    print("use_fgfl:", use_fgfl)
 
-    dataset = GeneralDataset(
-        data_root=config["data_root"],
-        mode=mode,
-        use_memory=config["use_memory"],
-    )
+    if use_fgfl:
+        # For FGFL, we need frequency domain processing in dataset
+        # but transforms should still be handled by collate_fn
+        # Get dataset name from config
+        dataset_name = config.get("data", {}).get(mode, {}).get("name", "MiniImageNet")
+        
+        dataset = FGFLDataset(
+            data_root=config["data_root"],
+            mode=mode,
+            use_memory=config["use_memory"],
+            trfms=None,  # No transforms in dataset
+            freq_trfms=None,  # No post-frequency transforms
+            enable_freq_domain=config.get("enable_freq_domain", True),
+            freq_config=config.get("freq_processing", {}),
+            dataset_name=dataset_name,
+        )
+    else:
+        dataset = GeneralDataset(
+            data_root=config["data_root"],
+            mode=mode,
+            use_memory=config["use_memory"],
+        )
 
     if config["dataloader_num"] == 1 or mode in ["val", "test"]:
 
