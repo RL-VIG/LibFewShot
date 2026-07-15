@@ -115,7 +115,7 @@ class GeneralDataset(Dataset):
         data_list = []
         label_list = []
         class_label_dict = dict()
-        with open(meta_csv) as f_csv:
+        with open(meta_csv, encoding="utf-8-sig") as f_csv:
             f_train = csv.reader(f_csv, delimiter=",")
             for row in f_train:
                 if f_train.line_num == 1:
@@ -271,7 +271,7 @@ class FGFLDataset(GeneralDataset):
         label_list = []
         class_label_dict = dict()
         
-        with open(meta_csv) as f_csv:
+        with open(meta_csv, encoding="utf-8-sig") as f_csv:
             f_train = csv.reader(f_csv, delimiter=",")
             for row in f_train:
                 if f_train.line_num == 1:

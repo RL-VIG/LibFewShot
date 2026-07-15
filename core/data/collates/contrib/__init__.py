@@ -75,7 +75,16 @@ def get_augment_method(
             ]
             
     else:
-        if config["image_size"] == 224:
+        if (
+            config.get("classifier", {}).get("name") == "LDPNet"
+            and config["image_size"] == 224
+        ):
+            resize_size = int(config["image_size"] * 1.15)
+            trfms_list = [
+                transforms.Resize((resize_size, resize_size)),
+                transforms.CenterCrop((config["image_size"], config["image_size"])),
+            ]
+        elif config["image_size"] == 224:
             trfms_list = [
                 transforms.Resize((256, 256)),
                 transforms.CenterCrop((224, 224)),

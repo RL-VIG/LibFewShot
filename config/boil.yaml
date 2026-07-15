@@ -10,7 +10,7 @@ includes:
 way_num: 5
 shot_num: 5
 query_num: 15
-data_root: /data/wzy/miniImageNet--ravi
+data_root: ./data/miniImageNet--ravi
 image_size: 84
 use_memory: False
 augment: True

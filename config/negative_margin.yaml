@@ -47,7 +47,7 @@ warmup_params:
   multiplier: 16
   epoch: 0
 
-data_root: /data/yxs/tiered_imagenet
+data_root: ./data/tiered_imagenet
 test_episode: 600
 shot_num: 1
 device_ids: 1

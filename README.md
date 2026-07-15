@@ -1,7 +1,6 @@
 # [LibFewShot](https://arxiv.org/abs/2109.04898)
 Make few-shot learning easy.
 
-
 [LibFewShot: A Comprehensive Library for Few-shot Learning](https://www.computer.org/csdl/journal/tp/5555/01/10239698/1Qck3o85t60).
 Wenbin Li, Ziyi Wang, Xuesong Yang, Chuanqi Dong, Pinzhuo Tian, Tiexin Qin, Jing Huo, Yinghuan Shi, Lei Wang, Yang Gao, Jiebo Luo. In TPAMI 2023.<br>
 <img src='flowchart.png' width=1000/>
@@ -48,6 +47,32 @@ Wenbin Li, Ziyi Wang, Xuesong Yang, Chuanqi Dong, Pinzhuo Tian, Tiexin Qin, Jing
 Please refer to [install.md](https://libfewshot-en.readthedocs.io/en/latest/install.html)([安装](https://libfewshot-en.readthedocs.io/zh_CN/latest/install.html)) for installation.
 
 Complete tutorials can be found at [document](https://libfewshot-en.readthedocs.io/en/latest/)([中文文档](https://libfewshot-en.readthedocs.io/zh_CN/latest/index.html)).
+
+## Command-line Usage
+
+All standard entry points are config-driven; no local experiment path is
+embedded in the scripts.
+
+Train a model:
+
+```bash
+python run_trainer.py --config ./config/proto.yaml
+```
+
+Evaluate a result directory (the saved `config.yaml` is loaded automatically):
+
+```bash
+python run_test.py --result-path ./results/your-experiment
+```
+
+Resume training:
+
+```bash
+python run_trainer_resume.py --result-path ./results/your-experiment
+```
+
+Dataset paths and other common settings can still be overridden on the command
+line. For example: `--data_root ./data/miniImageNet--ravi --n_gpu 1`.
 
 ## Reproduction
 We provide some validated configs in [reproduce](./reproduce/), please refer to `./reproduce/<Method_Name>/README.md` for further infomations. The meanings of the symbols are as follows:

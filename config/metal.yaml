@@ -5,7 +5,7 @@ includes:
   - headers/model.yaml
   - headers/optimizer.yaml
 
-data_root: /data/Libfewshot/tiered_imagenet
+data_root: ./data/tiered_imagenet
 way_num: 5
 shot_num: 1
 

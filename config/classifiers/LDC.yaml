@@ -1,0 +1,4 @@
+classifier:
+  name: LDC
+  kwargs:
+    paper_mode: true

@@ -2,6 +2,7 @@
 from .conv_four import Conv32F, Conv64F, R2D2Embedding
 from .conv_four_mcl import Conv64F_MCL
 from .resnet_12 import resnet12, resnet12woLSC
+from .resnet_10 import resnet10
 from .resnet_12_mcl import resnet12_mcl, resnet12_r2d2
 from .resnet_18 import resnet18
 from .wrn import WRN

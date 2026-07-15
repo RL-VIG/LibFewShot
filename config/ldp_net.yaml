@@ -1,0 +1,70 @@
+includes:
+  - headers/data.yaml
+  - headers/device.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
+  - classifiers/LDPNet.yaml
+  - backbones/resnet10.yaml
+
+classifier:
+  name: LDPNet
+  kwargs:
+    lamba1: 1.0
+    lamba2: 0.15
+    momentum: 0.998
+    beta: 0.5
+    query_aug_times: 1
+    use_lr_classifier: True
+    transductive: False
+    transductive_iter: 7
+    transductive_k: 10
+    lr_max_iter: 1000
+    local_query_crops: 6
+
+data_root: ./data/miniImageNet--ravi
+image_size: 224
+augment: True
+augment_times: 1
+augment_times_query: 1
+augment_method: S2M2Augment
+ldp_local_crops: 6
+ldp_local_size: 96
+use_memory: False
+workers: 4
+pin_memory: False
+
+device_ids: 0
+n_gpu: 1
+seed: 1111
+deterministic: True
+epoch: 100
+val_per_epoch: 101
+way_num: 5
+shot_num: 5
+query_num: 15
+test_way: 5
+test_shot: 5
+test_query: 15
+episode_size: 1
+train_episode: 100
+test_episode: 600
+
+pretrain_path: ./pretrain/399.tar
+result_root: ./results
+save_interval: 10
+save_part:
+  - emb_func
+test_checkpoint: model_last.pth
+
+optimizer:
+  name: Adam
+  kwargs:
+    lr: 0.001
+  other: ~
+
+lr_scheduler:
+  name: StepLR
+  kwargs:
+    gamma: 1.0
+    step_size: 100

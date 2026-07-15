@@ -193,7 +193,8 @@ class Test(object):
             rank=self.rank,
         )
 
-        state_dict_path = os.path.join(result_path, "checkpoints", "model_best.pth")
+        checkpoint_name = config.get("test_checkpoint", "model_best.pth")
+        state_dict_path = os.path.join(result_path, "checkpoints", checkpoint_name)
         if self.rank == 0:
             create_dirs([result_path, log_path, viz_path])
             
@@ -204,15 +205,14 @@ class Test(object):
         self.logger = getLogger(__name__)
 
         # Hack print
-        def use_logger(msg, level="info"):
+        def use_logger(*msg, level="info"):
             if self.rank != 0:
                 return
-            if level == "info":
-                self.logger.info(msg)
-            elif level == "warning":
-                self.logger.warning(msg)
-            else:
-                raise ("Not implemente {} level log".format(level))
+            try:
+                text = " ".join(map(str, msg))
+                getattr(self.logger, level)(text)
+            except AttributeError:
+                raise ValueError("Not implemente {} level log".format(level))
 
         builtins.print = use_logger
 
@@ -280,10 +280,10 @@ class Test(object):
         model_kwargs = {
             "way_num": config["way_num"],
             "shot_num": config["shot_num"] * config["augment_times"],
-            "query_num": config["query_num"],
+            "query_num": config["query_num"] * config["augment_times_query"],
             "test_way": config["test_way"],
             "test_shot": config["test_shot"] * config["augment_times"],
-            "test_query": config["test_query"],
+            "test_query": config["test_query"] * config["augment_times_query"],
             "emb_func": emb_func,
             "device": self.device,
         }
@@ -292,7 +292,11 @@ class Test(object):
         print(model)
         print("Trainable params in the model: {}.".format(count_parameters(model)))
         print("Loading the state dict from {}.".format(self.state_dict_path))
-        state_dict = torch.load(self.state_dict_path, map_location="cpu")
+        state_dict = torch.load(
+            self.state_dict_path, map_location="cpu", weights_only=False
+        )
+        if isinstance(state_dict, dict) and "model" in state_dict:
+            state_dict = state_dict["model"]
         model.load_state_dict(state_dict)
 
         if self.distribute:

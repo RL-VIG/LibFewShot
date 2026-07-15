@@ -194,6 +194,9 @@ class Trainer(object):
             #     if (param.grad != param.grad).float().sum() != 0:  # nan detected
             #         param.grad.zero_()
             self.optimizer.step()
+            model_for_ema = self.model.module if self.distribute else self.model
+            if hasattr(model_for_ema, "_momentum_update_ema"):
+                model_for_ema._momentum_update_ema()
             meter.update("calc_time", time() - calc_begin)
 
             # measure accuracy and record loss
@@ -442,10 +445,10 @@ class Trainer(object):
         model_kwargs = {
             "way_num": config["way_num"],
             "shot_num": config["shot_num"] * config["augment_times"],
-            "query_num": config["query_num"],
+            "query_num": config["query_num"] * config["augment_times_query"],
             "test_way": config["test_way"],
             "test_shot": config["test_shot"] * config["augment_times"],
-            "test_query": config["test_query"],
+            "test_query": config["test_query"] * config["augment_times_query"],
             "emb_func": emb_func,
             "device": self.device,
         }
@@ -460,7 +463,13 @@ class Trainer(object):
                 "load pretraining emb_func from {}".format(self.config["pretrain_path"])
             )
             state_dict = torch.load(self.config["pretrain_path"], map_location="cpu")
+            if isinstance(state_dict, dict) and "state" in state_dict:
+                state_dict = state_dict["state"]
+            if hasattr(model.emb_func, "convert_state_dict"):
+                state_dict = model.emb_func.convert_state_dict(state_dict)
             msg = model.emb_func.load_state_dict(state_dict, strict=False)
+            if hasattr(model, "ema_emb_func"):
+                model.ema_emb_func.load_state_dict(model.emb_func.state_dict())
 
             if len(msg.missing_keys) != 0:
                 print("Missing keys:{}".format(msg.missing_keys), level="warning")
@@ -496,7 +505,9 @@ class Trainer(object):
                 self.config["resume_path"], "checkpoints", "model_last.pth"
             )
             print("load the resume model checkpoints dict from {}.".format(resume_path))
-            state_dict = torch.load(resume_path, map_location="cpu")["model"]
+            state_dict = torch.load(
+                resume_path, map_location="cpu", weights_only=False
+            )["model"]
             msg = model.load_state_dict(state_dict, strict=False)
 
             if len(msg.missing_keys) != 0:
@@ -659,7 +670,9 @@ class Trainer(object):
                     resume_path
                 )
             )
-            all_state_dict = torch.load(resume_path, map_location="cpu")
+            all_state_dict = torch.load(
+                resume_path, map_location="cpu", weights_only=False
+            )
             state_dict = all_state_dict["optimizer"]
             optimizer.load_state_dict(state_dict)
             state_dict = all_state_dict["lr_scheduler"]

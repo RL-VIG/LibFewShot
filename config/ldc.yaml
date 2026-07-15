@@ -1,0 +1,62 @@
+includes:
+  - headers/data.yaml
+  - headers/device.yaml
+  - headers/misc.yaml
+  - headers/model.yaml
+  - headers/optimizer.yaml
+  - classifiers/LDC.yaml
+  - backbones/Conv64F.yaml
+
+# LDC paper-mode example. Change these fields when switching datasets/shots.
+# The author repository can also be selected with the LDC_ROOT environment variable.
+ldc_root: ../LDC
+data_root: ./data/EuroSAT
+dataset_name: eurosat
+path_prefix: "2750"
+
+clip_model: RN50
+device: cuda
+device_ids: 0
+n_gpu: 1
+seed: 2024
+deterministic: True
+
+shot_num: 1
+way_num: 10
+query_num: 1
+test_way: 10
+test_shot: 1
+test_query: 1
+episode_size: 1
+train_episode: 1
+test_episode: 1
+
+epoch: 50
+batch_size: 64
+eval_batch_size: 64
+workers: 0
+num_workers: 0
+pin_memory: False
+image_size: 224
+
+lr: 0.001
+weight_decay: 0.0001
+eps: 0.0001
+fuse_type: 2
+loss_lambda:
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+  - 1.0
+
+optimizer:
+  name: AdamW
+  kwargs:
+    lr: 0.0001
+    weight_decay: 0.0001
+
+lr_scheduler:
+  name: CosineAnnealingLR
+  kwargs:
+    T_max: 50

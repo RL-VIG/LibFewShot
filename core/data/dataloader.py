@@ -47,8 +47,6 @@ def get_dataloader(config, mode, model_type, distribute):
     # TODO
     classifier_name = config.get("classifier", {}).get("name", "")
     use_fgfl = "GAIN" in classifier_name.upper()
-    # Check if FGFL mode is enabled
-    print("use_fgfl:", use_fgfl)
 
     if use_fgfl:
         # For FGFL, we need frequency domain processing in dataset
@@ -89,6 +87,7 @@ def get_dataloader(config, mode, model_type, distribute):
 
         data_scale = 1 if config["n_gpu"] == 0 else config["n_gpu"]
         workers = config["workers"] // data_scale
+        pin_memory = config.get("pin_memory", True)
         if workers == 0:
             print(
                 "with zero workers, the training phase will be very slow",
@@ -105,7 +104,7 @@ def get_dataloader(config, mode, model_type, distribute):
             shuffle=False if few_shot or distribute else True,
             num_workers=workers,  # num_workers for each gpu
             drop_last=False if few_shot else True,
-            pin_memory=True,
+            pin_memory=pin_memory,
             collate_fn=collate_function,
         )
 
@@ -120,11 +119,12 @@ def get_dataloader(config, mode, model_type, distribute):
             mode=mode,
             config=config,
         )
+        pin_memory = config.get("pin_memory", True)
         dataloader = DataLoader(
             dataset,
             batch_sampler=sampler,
             num_workers=config["n_gpu"] * 4,
-            pin_memory=True,
+            pin_memory=pin_memory,
             collate_fn=collate_function,
         )
         collate_function = get_collate_function(
@@ -143,7 +143,7 @@ def get_dataloader(config, mode, model_type, distribute):
             shuffle=True,
             num_workers=config["n_gpu"] * 4,
             drop_last=True,
-            pin_memory=True,
+            pin_memory=pin_memory,
             collate_fn=collate_function,
         )
 

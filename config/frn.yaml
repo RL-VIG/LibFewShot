@@ -23,7 +23,7 @@ augment_method: DeepBdcAugment
 
 # pre_training: True
 # data_root: /data/fewshot/miniImageNet--ravi/
-data_root: /data/fewshot/tiered_imagenet/
+data_root: ./data/tiered_imagenet
 backbone:
   name: resnet12
   kwargs:

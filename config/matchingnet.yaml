@@ -29,7 +29,7 @@ backbone:
       avg_pool: True
       is_flatten: True
 
-pretrain_path: /data1/student/stx/ML/FSL/pretrained/IfslPretrain-miniImageNet-resnet12-5-1-Jun-02-2024-19-27-07/checkpoints/emb_func_best.pth
+pretrain_path: ./pretrain/IfslPretrain-miniImageNet-resnet12/emb_func_best.pth
 classifier:
   name: DMatchingNet
   kwargs:

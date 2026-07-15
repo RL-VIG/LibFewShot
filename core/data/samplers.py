@@ -10,8 +10,6 @@ def get_sampler(dataset, few_shot, distribute, mode, config):
         # Check if FGFL mode is enabled by classifier name
         classifier_name = config.get("classifier", {}).get("name", "")
         use_fgfl = "GAIN" in classifier_name.upper()
-        print(f"Sampler debug: classifier_name={classifier_name}, use_fgfl={use_fgfl}")
-
         if distribute:
             # Choose distributed sampler based on FGFL mode
             sampler_class = FGFLDistributedCategoriesSampler if use_fgfl else DistributedCategoriesSampler
